@@ -3,7 +3,7 @@
 /// Host apps add a path or pub dependency, then import this library.
 library;
 
-export 'src/app_colors.dart';
+export 'src/unified_colors.dart';
 export 'src/unified_fields_context.dart';
 export 'src/unified_sheet_button.dart';
 export 'src/unified_date_picker_sheet.dart';

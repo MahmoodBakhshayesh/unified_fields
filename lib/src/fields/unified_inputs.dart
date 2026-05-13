@@ -7,6 +7,7 @@ export 'unified_base_text_field.dart';
 export 'unified_async_picker_field.dart';
 export 'unified_form_fields.dart';
 export 'unified_form_more_fields.dart';
+export 'unified_form_customizable_fields.dart';
 export 'unified_input_brightness.dart';
 export 'unified_input_decoration.dart';
 export 'unified_input_palette.dart';

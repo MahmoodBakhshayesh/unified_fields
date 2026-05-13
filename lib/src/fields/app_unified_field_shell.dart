@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../app_colors.dart';
+import '../unified_colors.dart';
 import 'unified_input_decoration.dart';
 
 /// Shared chrome: optional label (column or row), bordered body, optional inline validation panel.
 ///
 /// Use when the inner control is not [UnifiedBaseTextField] but should match its visual language.
 class AppUnifiedFieldShell extends StatelessWidget {
+  /// Creates a field shell.
   const AppUnifiedFieldShell({
     super.key,
     required this.decoration,
@@ -15,7 +16,10 @@ class AppUnifiedFieldShell extends StatelessWidget {
     this.minBodyHeight,
   });
 
+  /// Resolved decoration controlling label, palette, border, padding, etc.
   final UnifiedInputDecoration decoration;
+
+  /// Inner content widget rendered inside the bordered body.
   final Widget body;
 
   /// Non-null non-empty shows validation strip when [decoration.showError] is true.
@@ -135,7 +139,7 @@ class _LabelRow extends StatelessWidget {
           children: [
             Text(
               dec.label!,
-              style: dec.labelStyle ?? const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textColorDark),
+              style: dec.labelStyle ?? const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: UnifiedColors.textColorDark),
             ),
             if (dec.requiredField)
               const Padding(

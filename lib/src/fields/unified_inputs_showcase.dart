@@ -21,6 +21,7 @@ import 'unified_time_of_day_field.dart';
 ///
 /// Safe to embed under scrollables / tabs: [LayoutBuilder] + [SizedBox] clamps to viewport when the parent passes unbounded constraints (otherwise [Scaffold] cannot compute size).
 class UnifiedInputsShowcasePage extends StatefulWidget {
+  /// Creates the showcase page.
   const UnifiedInputsShowcasePage({super.key});
 
   @override

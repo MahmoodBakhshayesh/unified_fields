@@ -44,6 +44,7 @@ typedef UnifiedFormResetValue<T> = T Function();
 /// Resolution order for autovalidate: [autovalidateMode] here → nearest [Form]'s
 /// [Form.autovalidateMode] → [AutovalidateMode.disabled].
 class UnifiedFormFieldScope extends InheritedWidget {
+  /// Creates a unified form field scope.
   const UnifiedFormFieldScope({
     super.key,
     this.autovalidateMode,
@@ -53,6 +54,7 @@ class UnifiedFormFieldScope extends InheritedWidget {
   /// When null, falls back to the nearest [Form] (if any), then disabled.
   final AutovalidateMode? autovalidateMode;
 
+  /// Resolves the effective [AutovalidateMode] for unified form fields under [context].
   static AutovalidateMode autovalidateModeOf(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<UnifiedFormFieldScope>();
     if (scope?.autovalidateMode != null) {
@@ -154,6 +156,7 @@ class _UnifiedFormShakeHostState extends State<_UnifiedFormShakeHost> with Singl
 /// See [UnifiedFormTextField] and [UnifiedFormSinglePickerField] later in this file for
 /// ready-made wrappers; everything else composes with this class.
 class UnifiedFormField<T> extends StatelessWidget {
+  /// Creates a unified [FormField] adapter.
   const UnifiedFormField({
     super.key,
     this.formFieldKey,
@@ -169,8 +172,13 @@ class UnifiedFormField<T> extends StatelessWidget {
   /// (for example binding or controller listeners).
   final GlobalKey<FormFieldState<T>>? formFieldKey;
 
+  /// Initial value passed to the underlying [FormField].
   final T? initialValue;
+
+  /// Validator forwarded to the underlying [FormField].
   final FormFieldValidator<T>? validator;
+
+  /// Callback forwarded to the underlying [FormField.onSaved].
   final FormFieldSetter<T>? onSaved;
 
   /// Called after [FormFieldState.reset] restores [initialValue]; use to sync
@@ -180,6 +188,7 @@ class UnifiedFormField<T> extends StatelessWidget {
   /// When true, shakes horizontally once when [FormFieldState.hasError] becomes true.
   final bool shakeOnError;
 
+  /// Builder that renders the actual control given the current [FormFieldState].
   final UnifiedFormFieldBuilder<T> builder;
 
   @override
@@ -235,6 +244,7 @@ String? unifiedFormPickerOverride<T>(FormFieldState<T> field) =>
 /// **Initial text**
 /// - [initialValue] seeds the controller when [controller] is null.
 class UnifiedFormTextField extends StatefulWidget {
+  /// Creates a [Form]-aware text field.
   const UnifiedFormTextField({
     super.key,
     this.decoration,
@@ -270,44 +280,94 @@ class UnifiedFormTextField extends StatefulWidget {
     this.shakeOnError = false,
   });
 
+  /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
 
   /// When null, an internal [TextEditingController] is created and disposed here.
   final TextEditingController? controller;
 
+  /// Initial text when [controller] is null.
   final String? initialValue;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (e.g. `() => ''` to clear).
   final UnifiedFormResetValue<String>? resetValue;
 
+  /// Two-way binding for the field value.
   final AppInputController<String>? binding;
+
+  /// External focus node.
   final FocusNode? focusNode;
 
+  /// Validator passed to the underlying [FormField].
   final FormFieldValidator<String>? validator;
+
+  /// Called from [FormState.save].
   final FormFieldSetter<String>? onSaved;
+
+  /// Called on every keystroke.
   final ValueChanged<String>? onChanged;
+
+  /// Called on keyboard submit.
   final ValueChanged<String>? onSubmitted;
 
+  /// When true, the field is non-editable and visually muted.
   final bool disabled;
+
+  /// When true, the field rejects edits but still looks active.
   final bool readOnly;
+
+  /// When true, paints the field in the "locked" style.
   final bool locked;
+
+  /// Autofocus the field on first build.
   final bool autofocus;
 
+  /// Keyboard type.
   final TextInputType? keyboardType;
+
+  /// Keyboard action button.
   final TextInputAction? textInputAction;
+
+  /// Custom input formatters.
   final List<TextInputFormatter>? inputFormatters;
+
+  /// Maximum visible lines.
   final int maxLines;
+
+  /// Minimum visible lines.
   final int? minLines;
+
+  /// Maximum allowed characters.
   final int? maxLength;
+
+  /// Obscure entered text.
   final bool obscureText;
+
+  /// Show a clear button when the field has content.
   final bool showClearButton;
+
+  /// Capitalization rule applied to typed text.
   final TextCapitalization textCapitalization;
+
+  /// Horizontal alignment of typed text.
   final TextAlign textAlign;
+
+  /// Placeholder text shown when empty.
   final String? placeholder;
+
+  /// Field label.
   final String? label;
+
+  /// Infer text direction from typed content.
   final bool mustResolveTextDirectionByInput;
+
+  /// Render entered text as obscured and add a visibility toggle.
   final bool isPassword;
+
+  /// Marks the field as required (visual hint only).
   final bool isRequired;
 
   /// When true, shakes once when validation error appears on this field.
@@ -488,6 +548,7 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
 /// - When the reset target differs from the current [value]/[binding], the picker still
 ///   shows the current value until reset (post-frame sync), unless both are null.
 class UnifiedFormSinglePickerField<T> extends StatefulWidget {
+  /// Creates a [Form]-aware single-select picker field.
   const UnifiedFormSinglePickerField({
     super.key,
     required this.items,
@@ -507,36 +568,70 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
     this.showClearButton = true,
     this.locked = false,
     this.placeholder,
+    this.isRequired = false,
     this.validator,
     this.onSaved,
     this.shakeOnError = false,
   });
 
+  /// Choices shown in the picker sheet.
   final List<T> items;
+
+  /// Label for the field and sheet title fallback.
   final String label;
+
+  /// Placeholder shown when empty.
   final String? placeholder;
 
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
+
+  /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
 
+  /// Direct value when not using [binding].
   final T? value;
+
+  /// Optional external state binding.
   final AppInputController<T>? binding;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (`T Function()`).
   final UnifiedFormResetValue<T>? resetValue;
+
+  /// Called when the user picks (or clears) a value.
   final ValueChanged<T?>? onChanged;
 
+  /// Renders an item to its display text.
   final String Function(T value)? valueToString;
+
+  /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
+
+  /// Custom row builder inside the sheet.
   final Widget Function(T value)? itemToWidget;
 
+  /// Suggestion list pinned above the searchable list.
   final List<T> suggestion;
+
+  /// Whether the sheet shows a search field.
   final bool hasSearch;
+
+  /// Autofocus the search field on open.
   final bool searchAutoFocus;
+
+  /// Show a Clear button in the sheet header.
   final bool showClearButton;
+
+  /// When true, the field is non-interactive.
   final bool locked;
 
+  /// Validator passed to the underlying [FormField].
   final FormFieldValidator<T?>? validator;
+
+  /// Called from [FormState.save].
   final FormFieldSetter<T?>? onSaved;
 
   /// When true, shakes once when validation error appears on this field.
@@ -643,6 +738,7 @@ class _UnifiedFormSinglePickerFieldState<T> extends State<UnifiedFormSinglePicke
           items: widget.items,
           label: widget.label,
           placeholder: widget.placeholder,
+          isRequired: widget.isRequired,
           decoration: widget.decoration,
           brightness: widget.brightness,
           value: fieldState.value,

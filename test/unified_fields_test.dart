@@ -4,6 +4,6 @@ import 'package:unified_fields/unified_fields.dart';
 
 void main() {
   test('package exports core types', () {
-    expect(AppColors.hintColor, isA<Color>());
+    expect(UnifiedColors.hintColor, isA<Color>());
   });
 }

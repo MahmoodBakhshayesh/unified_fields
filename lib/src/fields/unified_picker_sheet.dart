@@ -6,18 +6,39 @@ import '../unified_sheet_button.dart';
 import '../scrollable_list/item_positions_listener.dart';
 import '../scrollable_list/scrollable_positioned_list.dart';
 
+/// Bottom-sheet content used by [UnifiedSinglePickerField] for single-selection.
 class PickerSheetWidget<T> extends StatefulWidget {
+  /// Choices shown in the sheet.
   final List<T> items;
+
+  /// Suggestion list pinned above the searchable list.
   final List<T> suggestion;
+
+  /// Sheet title.
   final String label;
+
+  /// Whether the sheet shows a search field.
   final bool hasSearch;
+
+  /// Whether the sheet shows the Clear action in the header.
   final bool hasClear;
+
+  /// Autofocus the search field on open.
   final bool searchAutoFocus;
+
+  /// Currently selected value (highlights the row on open).
   final T? value;
+
+  /// Optional widget rendered above the list, below the title.
   final Widget? headerWidget;
+
+  /// Custom row builder; defaults to a [Text] of [searchBuilder] or `toString`.
   final Widget Function(T)? itemToWidget;
+
+  /// Custom searchable text per item.
   final String Function(T)? searchBuilder;
 
+  /// Creates a single-picker sheet.
   const PickerSheetWidget({
     super.key,
     required this.items,
@@ -189,6 +210,10 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
         backgroundColor: const Color(0xffEAECF2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         constraints: BoxConstraints(maxHeight: context.height * 0.9),
+        // The outer showModalBottomSheet already owns drag-to-dismiss and the
+        // animation controller. Disabling drag here avoids the
+        // `BottomSheet.animationController cannot be null` assertion.
+        enableDrag: false,
         onClosing: () {},
         builder: (BuildContext context) {
           return Column(

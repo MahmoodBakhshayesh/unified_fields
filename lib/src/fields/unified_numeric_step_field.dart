@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../app_colors.dart';
+import '../unified_colors.dart';
 import 'unified_base_text_field.dart';
 
 double _pow10(int digits) {
@@ -32,6 +32,7 @@ const int _kDecimalStepQuantizeDigits = 2;
 ///
 /// Prefer using [UnifiedNumberField] for app styling; this is the raw unified primitive.
 class UnifiedNumericStepField extends StatefulWidget {
+  /// Creates a numeric step field.
   const UnifiedNumericStepField({
     super.key,
     this.controller,
@@ -61,42 +62,92 @@ class UnifiedNumericStepField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.fractionDigits,
+    this.requiredField = false,
   }) : assert(step != 0, 'step must be non-zero');
 
+  /// External [TextEditingController]; if null one is created internally.
   final TextEditingController? controller;
+
+  /// External focus node.
   final FocusNode? focusNode;
 
+  /// Field label.
   final String? label;
+
+  /// Placeholder / hint shown when empty.
   final String? placeholder;
+
+  /// Override for the label text style.
   final TextStyle? labelStyle;
+
+  /// Inner content padding.
   final EdgeInsetsGeometry? padding;
+
+  /// Border radius of the field box.
   final BorderRadius borderRadius;
+
+  /// Border side of the field box.
   final BorderSide borderSide;
+
+  /// Background color of the field.
   final Color backgroundColor;
+
+  /// Background of the left label area when in row layout.
   final Color? headerBackgroundColor;
+
+  /// Minimum height of the inner row.
   final double? height;
+
+  /// Override for the editing text style.
   final TextStyle? style;
 
+  /// When true, allow decimal values.
   final bool allowDecimals;
+
+  /// Step applied by the +/- buttons (must be non-zero).
   final num step;
 
+  /// Minimum allowed value (enforced on focus loss / submit).
   final num? min;
+
+  /// Maximum allowed value (enforced on focus loss / submit).
   final num? max;
 
+  /// When true, the field is non-editable and visually muted.
   final bool disabled;
+
+  /// When true, the field rejects edits.
   final bool readOnly;
+
+  /// Autofocus the field on first build.
   final bool autofocus;
+
+  /// Keyboard action button.
   final TextInputAction? textInputAction;
 
+  /// Synchronous validator returning the error message, or null when valid.
   final String? Function(String value)? validator;
+
+  /// Render the inline error strip when present.
   final bool showError;
+
+  /// Color used for error chrome.
   final Color? validationColor;
+
+  /// Optional icon shown in the inline error strip.
   final IconData? validationIcon;
 
+  /// Called when the numeric value changes (from typing or +/- buttons).
   final ValueChanged<num>? onChanged;
+
+  /// Called on keyboard submit.
   final ValueChanged<String>? onSubmitted;
 
+  /// Number of decimal digits to render when [allowDecimals] is true.
   final int? fractionDigits;
+
+  /// Shows the required marker next to [label].
+  final bool requiredField;
 
   @override
   State<UnifiedNumericStepField> createState() => _UnifiedNumericStepFieldState();
@@ -317,7 +368,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
             child: Icon(
               icon,
               size: 22,
-              color: enabled ? AppColors.textColorDark.withValues(alpha: 0.85) : AppColors.textColorDark.withValues(alpha: 0.35),
+              color: enabled ? UnifiedColors.textColorDark.withValues(alpha: 0.85) : UnifiedColors.textColorDark.withValues(alpha: 0.35),
             ),
           ),
         ),
@@ -344,12 +395,13 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       keyboardType: _keyboardType,
       inputFormatters: _formatters,
       textAlign: TextAlign.center,
-      style: widget.style ?? TextStyle(color: AppColors.textColorDark),
+      style: widget.style ?? TextStyle(color: UnifiedColors.textColorDark),
       padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 4),
       disabled: widget.disabled,
       readOnly: widget.readOnly,
       autofocus: widget.autofocus,
       textInputAction: widget.textInputAction ?? TextInputAction.done,
+      requiredField: widget.requiredField,
       showError: widget.showError,
       validationColor: widget.validationColor,
       validationIcon: widget.validationIcon,

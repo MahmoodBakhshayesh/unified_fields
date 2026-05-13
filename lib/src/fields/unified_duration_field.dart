@@ -17,6 +17,7 @@ enum UnifiedDurationGranularity {
   minutesSeconds,
 }
 
+/// Formats [d] using the rules of [g] (`HH:MM:SS` or `MM:SS`).
 String unifiedFormatDuration(Duration d, UnifiedDurationGranularity g) {
   String two(int n) => n.clamp(0, 999999).toString().padLeft(2, '0');
 
@@ -33,6 +34,7 @@ String unifiedFormatDuration(Duration d, UnifiedDurationGranularity g) {
   }
 }
 
+/// Parses [raw] according to [g]; returns null when the string is malformed.
 Duration? unifiedTryParseDuration(String raw, UnifiedDurationGranularity g) {
   final p = raw.trim().split(':');
   try {
@@ -54,6 +56,7 @@ Duration? unifiedTryParseDuration(String raw, UnifiedDurationGranularity g) {
   }
 }
 
+/// Clamps [d] inside the inclusive range `[min, max]` (each bound is optional).
 Duration unifiedClampDuration(Duration d, Duration? min, Duration? max) {
   var x = d;
   if (min != null && x < min) x = min;
@@ -63,6 +66,7 @@ Duration unifiedClampDuration(Duration d, Duration? min, Duration? max) {
 
 /// Duration picker / display field with sheet editor (Cupertino-style wheels).
 class UnifiedDurationField extends StatefulWidget {
+  /// Creates a duration field.
   const UnifiedDurationField({
     super.key,
     this.decoration,
@@ -77,23 +81,55 @@ class UnifiedDurationField extends StatefulWidget {
     this.max,
     this.locked = false,
     this.focusNode,
+    this.label,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
 
+  /// Optional external state binding.
   final AppInputController<Duration>? binding;
+
+  /// Direct value when not using [binding].
   final Duration? value;
 
+  /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
+
+  /// Called when the duration changes.
   final ValueChanged<Duration?>? onChanged;
+
+  /// Forwarded to the inner text field's submit.
   final ValueChanged<String>? onSubmitted;
 
+  /// Format and editing granularity (h:m:s vs m:s).
   final UnifiedDurationGranularity granularity;
+
+  /// Minimum allowed duration.
   final Duration? min;
+
+  /// Maximum allowed duration.
   final Duration? max;
+
+  /// When true, the field is non-interactive.
   final bool locked;
+
+  /// Optional focus node.
   final FocusNode? focusNode;
+
+  /// Field label. Overrides [UnifiedInputDecoration.label] when set.
+  final String? label;
+
+  /// Hint text shown when empty. Overrides [UnifiedInputDecoration.placeholder] when set.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
 
   @override
   State<UnifiedDurationField> createState() => _UnifiedDurationFieldState();
@@ -186,7 +222,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) {
         return _DurationPickerSheet(
-          title: d.placeholder ?? d.label ?? 'Duration',
+          title: widget.placeholder ?? d.placeholder ?? widget.label ?? d.label ?? 'Duration',
           palette: palette,
           initial: _effective,
           min: widget.min ?? Duration.zero,
@@ -221,8 +257,8 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
           focusNode: _fn,
           locked: widget.locked,
           readOnly: true,
-          label: d.label,
-          placeholder: d.placeholder ?? d.label,
+          label: widget.label ?? d.label,
+          placeholder: widget.placeholder ?? d.placeholder ?? d.label,
           labelStyle: d.labelStyle,
           style: d.fieldStyle,
           backgroundColor: d.backgroundColor ?? Colors.black26,
@@ -232,7 +268,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
           height: d.height,
           rowLabelRatio: d.rowLabelRatio,
           labelInRow: d.labelInRow,
-          requiredField: d.requiredField,
+          requiredField: widget.isRequired || d.requiredField,
           showError: d.showError,
           validationColor: d.validationColor,
           validationIcon: d.validationIcon,

@@ -2,21 +2,42 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../unified_fields_context.dart';
-import '../app_colors.dart';
+import '../unified_colors.dart';
 import '../unified_sheet_button.dart';
 
+/// Bottom-sheet content used by [UnifiedMultiPickerField] for multi-selection.
 class MultiPickerSheetWidget<T> extends StatefulWidget {
+  /// Choices shown in the sheet.
   final List<T> items;
+
+  /// Suggestion list pinned above the searchable list.
   final List<T> suggestion;
+
+  /// Sheet title.
   final String label;
+
+  /// Whether the sheet shows a search field.
   final bool hasSearch;
+
+  /// Whether the sheet shows the Clear action in the header.
   final bool hasClear;
+
+  /// Autofocus the search field on open.
   final bool searchAutoFocus;
+
+  /// Current selection used to seed the sheet.
   final List<T> values;
+
+  /// Optional widget rendered above the list, below the title.
   final Widget? headerWidget;
+
+  /// Custom row builder; defaults to a [Text] of [searchBuilder] or `toString`.
   final Widget Function(T)? itemToWidget;
+
+  /// Custom searchable text per item.
   final String Function(T)? searchBuilder;
 
+  /// Creates a multi-picker sheet.
   const MultiPickerSheetWidget({
     super.key,
     required this.items,
@@ -101,6 +122,10 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
         backgroundColor: const Color(0xffEAECF2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         constraints: BoxConstraints(maxHeight: context.height * 0.9),
+        // The outer showModalBottomSheet already owns drag-to-dismiss and the
+        // animation controller. Disabling drag here avoids the
+        // `BottomSheet.animationController cannot be null` assertion.
+        enableDrag: false,
         onClosing: () {},
         builder: (BuildContext context) {
           return Column(
@@ -140,7 +165,7 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                     onTap: () => Navigator.of(context).pop(s),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: AppColors.mainGreen.withValues(alpha: 0.18),
+                        color: UnifiedColors.mainGreen.withValues(alpha: 0.18),
                         border: const Border(bottom: BorderSide(color: Colors.white)),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
@@ -199,7 +224,7 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                       child: UnifiedSheetButton(
                         label: "Cancel",
                         radius: 12,
-                        color: AppColors.headlineColor,
+                        color: UnifiedColors.headlineColor,
                         reverse: true,
                         textColor: Colors.black,
                         borderSide: BorderSide(color: Colors.grey),

@@ -1,0 +1,277 @@
+import 'package:flutter/material.dart';
+import 'package:unified_fields/unified_fields.dart';
+
+void main() => runApp(const UnifiedFieldsDemoApp());
+
+/// Demo entry. Wires every notable widget from the `unified_fields` package
+/// into a single `Form` so you can see validate / save / reset working with
+/// the same `GlobalKey<FormState>` for every field type.
+class UnifiedFieldsDemoApp extends StatelessWidget {
+  const UnifiedFieldsDemoApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'unified_fields demo',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff2A5CFF)),
+      ),
+      home: const DemoHomePage(),
+    );
+  }
+}
+
+/// Demo page hosting the showcase and a simple form that exercises every
+/// `UnifiedForm*` wrapper.
+class DemoHomePage extends StatefulWidget {
+  const DemoHomePage({super.key});
+
+  @override
+  State<DemoHomePage> createState() => _DemoHomePageState();
+}
+
+class _DemoHomePageState extends State<DemoHomePage> {
+  final _formKey = GlobalKey<FormState>();
+
+  final _name = AppInputController<String>(initialValue: '');
+  final _country = AppInputController<String>(initialValue: null);
+  final _flavors = AppInputController<List<String>>(initialValue: const []);
+  final _date = AppInputController<DateTime>(initialValue: null);
+  final _time = AppInputController<TimeOfDay>(initialValue: null);
+  final _duration = AppInputController<Duration>(initialValue: const Duration(minutes: 5));
+
+  late final CustomizableSinglePickerController<String> _customSingle;
+  late final CustomizableMultiPickerController<String> _customMulti;
+
+  static const _countries = <String>['Iran', 'Türkiye', 'Germany', 'Japan', 'Brazil', 'Canada'];
+  static const _flavorChoices = <String>['Sweet', 'Acidic', 'Nutty', 'Floral', 'Chocolate'];
+
+  String _savedSummary = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _customSingle = CustomizableSinglePickerController<String>(
+      valueToString: (e) => e,
+      initialKind: CustomizablePickerInputKind.typed,
+      initialTyped: '',
+    );
+    _customMulti = CustomizableMultiPickerController<String>(
+      valueToString: (e) => e,
+    );
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _country.dispose();
+    _flavors.dispose();
+    _date.dispose();
+    _time.dispose();
+    _duration.dispose();
+    _customSingle.dispose();
+    _customMulti.dispose();
+    super.dispose();
+  }
+
+  Future<List<String>> _loadAsyncCountries() async {
+    await Future<void>.delayed(const Duration(milliseconds: 350));
+    return _countries;
+  }
+
+  void _onValidate() {
+    if (_formKey.currentState?.validate() ?? false) {
+      _formKey.currentState!.save();
+      setState(() {
+        _savedSummary = [
+          'name: ${_name.value ?? ''}',
+          'country: ${_country.value ?? '—'}',
+          'flavors: ${_flavors.value?.join(', ') ?? ''}',
+          'date: ${_date.value?.toIso8601String().split('T').first ?? '—'}',
+          'time: ${_time.value?.format(context) ?? '—'}',
+          'duration: ${_duration.value}',
+          'custom single: ${_customSingle.fieldDisplayText}',
+          'custom multi: ${_customMulti.fieldDisplayText}',
+        ].join('\n');
+      });
+    }
+  }
+
+  void _onReset() {
+    _formKey.currentState?.reset();
+    setState(() => _savedSummary = '');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('unified_fields demo'),
+        actions: [
+          IconButton(
+            tooltip: 'Open full showcase',
+            icon: const Icon(Icons.dashboard_customize_outlined),
+
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => Scaffold(
+                    appBar: AppBar(),
+                    body: const SafeArea(child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: UnifiedInputsShowcasePage(),
+                ))),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: UnifiedFormFieldScope(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'A small form using every UnifiedForm* widget. '
+                    'Tap Validate to run validators and save state, '
+                    'or Reset to restore each field with its resetValue.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 12),
+
+                  UnifiedFormTextField(
+                    label: 'Full name',
+                    placeholder: 'e.g. Ada Lovelace',
+                    isRequired: true,
+                    binding: _name,
+                    resetValue: () => '',
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 12),
+
+                  UnifiedFormSinglePickerField<String>(
+                    label: 'Country',
+                    placeholder: 'Pick one',
+                    isRequired: true,
+                    items: _countries,
+                    binding: _country,
+                    validator: (v) => v == null ? 'Pick a country' : null,
+                  ),
+                  const SizedBox(height: 12),
+
+                  UnifiedFormMultiPickerField<String>(
+                    label: 'Flavors',
+                    placeholder: 'Add some',
+                    items: _flavorChoices,
+                    values: _flavors.value ?? const [],
+                    binding: _flavors,
+                    resetValue: () => const <String>[],
+                  ),
+                  const SizedBox(height: 12),
+
+                  UnifiedFormDateField(
+                    label: 'Date',
+                    placeholder: 'Tap to pick',
+                    isRequired: true,
+                    binding: _date,
+                    min: DateTime(2020),
+                    max: DateTime(2035),
+                    pickerGranularity: UnifiedFieldsDatePickerGranularity.year,
+                    resetValue: () => null,
+                    validator: (v) => v == null ? 'Pick a date' : null,
+
+                  ),
+                  const SizedBox(height: 12),
+
+                  UnifiedFormTimeOfDayField(
+                    label: 'Time',
+                    placeholder: 'Tap to pick',
+
+                    binding: _time,
+                    resetValue: () => null,
+                  ),
+                  const SizedBox(height: 12),
+
+                  UnifiedFormDurationField(
+                    label: 'Duration',
+                    placeholder: 'Tap to edit',
+                    binding: _duration,
+                    granularity: UnifiedDurationGranularity.hoursMinutesSeconds,
+                    resetValue: () => Duration.zero,
+                  ),
+                  const SizedBox(height: 12),
+
+                  UnifiedFormAsyncPickerField<String>(
+                    label: 'Country (async)',
+                    placeholder: 'Loads on tap',
+                    itemProvider: _loadAsyncCountries,
+                  ),
+                  const SizedBox(height: 12),
+
+                  UnifiedFormCustomizablePickerField<String>(
+                    label: 'Origin (free text or pick)',
+                    placeholder: 'Type or open the sheet',
+                    items: _countries,
+                    pickerController: _customSingle,
+                    resetValue: () => const CustomizableSinglePickerSnapshot<String>.empty(),
+                  ),
+                  const SizedBox(height: 12),
+
+                  UnifiedFormCustomizableMultiPickerField<String>(
+                    label: 'Tags',
+                    placeholder: 'Type or pick multiple',
+                    items: _flavorChoices,
+                    pickerController: _customMulti,
+                    allowFreeText: false,
+                    resetValue: () => const CustomizableMultiPickerSnapshot<String>.empty(),
+                  ),
+                  const SizedBox(height: 20),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: _onValidate,
+                          child: const Text('Validate + Save'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _onReset,
+                          child: const Text('Reset'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_savedSummary.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        _savedSummary,
+                        style: const TextStyle(fontFamily: 'monospace'),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

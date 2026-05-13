@@ -7,6 +7,10 @@ import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 
+/// Formats [dt] for display inside a [UnifiedDateField].
+///
+/// [valueFormat] may be a [DateFormat]; if null, a sensible default is picked
+/// based on [granularity].
 String formatUnifiedDateFieldText(
   DateTime? dt,
   Object? valueFormat, {
@@ -23,6 +27,7 @@ String formatUnifiedDateFieldText(
   return DateFormat('dd,MMM yyyy').format(dt);
 }
 
+/// Formats a [DateTimeRange] as `dd,MMM yyyy – dd,MMM yyyy`.
 String formatUnifiedDateRangeFieldText(DateTimeRange? r) {
   if (r == null) return '';
   final f = DateFormat('dd,MMM yyyy');
@@ -31,6 +36,7 @@ String formatUnifiedDateRangeFieldText(DateTimeRange? r) {
 
 /// Single date using [UnifiedBaseTextField] + [showUnifiedFieldsDatePicker] (no legacy `App*` wrapper).
 class UnifiedDateField extends StatefulWidget {
+  /// Creates a single-date field.
   const UnifiedDateField({
     super.key,
     this.decoration,
@@ -50,6 +56,8 @@ class UnifiedDateField extends StatefulWidget {
     this.prefix,
     this.prefixIcon,
     this.label,
+    this.placeholder,
+    this.isRequired = false,
     this.showClearButton = false,
     this.readOnly = true,
     this.autofocus = false,
@@ -58,30 +66,73 @@ class UnifiedDateField extends StatefulWidget {
     this.pickerGranularity = UnifiedFieldsDatePickerGranularity.day,
   });
 
+  /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
 
+  /// Optional external state binding.
   final AppInputController<DateTime>? binding;
+
+  /// Direct value when not using [binding].
   final DateTime? value;
+
+  /// External [TextEditingController] for the displayed text.
   final TextEditingController? controller;
+
+  /// Optional focus node.
   final FocusNode? focusNode;
 
+  /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
+
+  /// Called when the user picks a date.
   final ValueChanged<DateTime?>? onChanged;
+
+  /// Forwarded to the inner text field's submit.
   final ValueChanged<String>? onSubmit;
 
+  /// Earliest allowed date.
   final DateTime? min;
+
+  /// Latest allowed date.
   final DateTime? max;
+
+  /// Either a [DateFormat] or a custom format object used to render the field.
   final Object? valueFormat;
+
+  /// Forwarded to the picker (calendar vs input).
   final DatePickerEntryMode mode;
 
+  /// Trailing widget; defaults to a fixed-size placeholder so the field height stays stable.
   final Widget? suffixIcon;
+
+  /// Leading widget shown before the field content.
   final Widget? prefix;
+
+  /// Leading icon shown before the field content.
   final Widget? prefixIcon;
+
+  /// Field label. Overrides [UnifiedInputDecoration.label] when set.
   final String? label;
+
+  /// Hint text shown when empty. Overrides [UnifiedInputDecoration.placeholder] when set.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
+
+  /// Whether to show the inline clear button when there is a value.
   final bool showClearButton;
+
+  /// Whether the inner text field is read-only (the date is picked from the sheet).
   final bool readOnly;
+
+  /// Autofocus the inner text field.
   final bool autofocus;
+
+  /// Text alignment.
   final TextAlign textAlign;
 
   /// When false, the picker sheet hides the Gregorian / Shamsi switch.
@@ -181,7 +232,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
         focusNode: widget.focusNode,
         controller: _effectiveController,
         label:widget.label?? d.label,
-        placeholder: d.placeholder ?? d.label,
+        placeholder: widget.placeholder ?? d.placeholder ?? d.label,
         style: d.fieldStyle ?? const TextStyle(fontSize: 14),
         backgroundColor: bg,
         headerBackgroundColor: headerBg,
@@ -190,7 +241,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
         height: d.height ?? 56,
         rowLabelRatio: d.rowLabelRatio,
         labelInRow: false,
-        requiredField: d.requiredField,
+        requiredField: widget.isRequired || d.requiredField,
         showError: true,
         validationColor: d.validationColor,
         validationIcon: d.validationIcon,
@@ -210,6 +261,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
 
 /// Date range using [UnifiedBaseTextField] + [showUnifiedFieldsDatePickerRange].
 class UnifiedDateRangeField extends StatefulWidget {
+  /// Creates a date-range field.
   const UnifiedDateRangeField({
     super.key,
     this.decoration,
@@ -223,19 +275,52 @@ class UnifiedDateRangeField extends StatefulWidget {
     this.max,
     this.showCalendarKindToggle = true,
     this.textAlign = TextAlign.start,
+    this.label,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
+
+  /// Optional external state binding.
   final AppInputController<DateTimeRange>? binding;
+
+  /// Direct value when not using [binding].
   final DateTimeRange? rangeValue;
+
+  /// External [TextEditingController] for the displayed text.
   final TextEditingController? controller;
+
+  /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
+
+  /// Called when the user picks a range.
   final ValueChanged<DateTimeRange?>? onRangeChanged;
+
+  /// Earliest allowed date.
   final DateTime? min;
+
+  /// Latest allowed date.
   final DateTime? max;
+
+  /// When false, the picker sheet hides the Gregorian / Shamsi switch.
   final bool showCalendarKindToggle;
+
+  /// Text alignment.
   final TextAlign textAlign;
+
+  /// Field label. Overrides [UnifiedInputDecoration.label] when set.
+  final String? label;
+
+  /// Hint text shown when empty. Overrides [UnifiedInputDecoration.placeholder] when set.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
 
   @override
   State<UnifiedDateRangeField> createState() => _UnifiedDateRangeFieldState();
@@ -324,8 +409,8 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
       onTap: () => _pick(context, d),
       child: UnifiedBaseTextField(
         controller: _effectiveController,
-        label: d.label,
-        placeholder: d.placeholder ?? d.label,
+        label: widget.label ?? d.label,
+        placeholder: widget.placeholder ?? d.placeholder ?? d.label,
         style: d.fieldStyle ?? const TextStyle(fontSize: 14),
         backgroundColor: bg,
         headerBackgroundColor: headerBg,
@@ -334,7 +419,7 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
         height: d.height ?? 56,
         rowLabelRatio: d.rowLabelRatio,
         labelInRow: false,
-        requiredField: d.requiredField,
+        requiredField: widget.isRequired || d.requiredField,
         showError: true,
         validationColor: d.validationColor,
         validationIcon: d.validationIcon,

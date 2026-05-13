@@ -1,11 +1,18 @@
 import 'package:flutter/foundation.dart';
 
 /// Whether the field value came from free typing or from the picker sheet.
-enum CustomizablePickerInputKind { typed, selected }
+enum CustomizablePickerInputKind {
+  /// User typed text directly into the field.
+  typed,
+
+  /// User selected an item (single or multi) through the sheet.
+  selected,
+}
 
 /// Holds either a typed [String] or a single selected item [T] for
 /// [UnifiedCustomizablePickerField] and [UnifiedCustomizableAsyncPickerField].
 class CustomizableSinglePickerController<T> extends ChangeNotifier {
+  /// Creates a controller with optional initial state.
   CustomizableSinglePickerController({
     this.valueToString,
     CustomizablePickerInputKind initialKind = CustomizablePickerInputKind.selected,
@@ -15,12 +22,14 @@ class CustomizableSinglePickerController<T> extends ChangeNotifier {
         _selected = initialSelected,
         _typedText = initialTyped;
 
+  /// Renders an item to its display text.
   String Function(T value)? valueToString;
 
   CustomizablePickerInputKind _kind;
   T? _selected;
   String _typedText;
 
+  /// Whether the controller currently holds typed text or a selection.
   CustomizablePickerInputKind get inputKind => _kind;
 
   /// Non-null only when [inputKind] is [CustomizablePickerInputKind.selected].
@@ -29,6 +38,7 @@ class CustomizableSinglePickerController<T> extends ChangeNotifier {
   /// Meaningful only when [inputKind] is [CustomizablePickerInputKind.typed].
   String get typedText => _kind == CustomizablePickerInputKind.typed ? _typedText : '';
 
+  /// Display text used by the field.
   String get fieldDisplayText {
     switch (_kind) {
       case CustomizablePickerInputKind.selected:
@@ -41,6 +51,7 @@ class CustomizableSinglePickerController<T> extends ChangeNotifier {
     }
   }
 
+  /// Switches to typed mode and updates the typed text.
   void applyTyped(String text) {
     _kind = CustomizablePickerInputKind.typed;
     _typedText = text;
@@ -48,6 +59,7 @@ class CustomizableSinglePickerController<T> extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Switches to selected mode and updates the selected value.
   void applySelected(T? value) {
     _kind = CustomizablePickerInputKind.selected;
     _selected = value;
@@ -73,6 +85,7 @@ class CustomizableSinglePickerController<T> extends ChangeNotifier {
 /// Holds either a typed [String] or a multi selection [List] for
 /// [UnifiedCustomizableMultiPickerField] and [UnifiedCustomizableAsyncMultiPickerField].
 class CustomizableMultiPickerController<T> extends ChangeNotifier {
+  /// Creates a controller with optional initial state.
   CustomizableMultiPickerController({
     this.valueToString,
     CustomizablePickerInputKind initialKind = CustomizablePickerInputKind.selected,
@@ -82,12 +95,14 @@ class CustomizableMultiPickerController<T> extends ChangeNotifier {
         _selected = List<T>.from(initialSelected),
         _typedText = initialTyped;
 
+  /// Renders an item to its display text.
   String Function(T value)? valueToString;
 
   CustomizablePickerInputKind _kind;
   List<T> _selected;
   String _typedText;
 
+  /// Whether the controller currently holds typed text or a selection.
   CustomizablePickerInputKind get inputKind => _kind;
 
   /// Empty when [inputKind] is [CustomizablePickerInputKind.typed].
@@ -96,6 +111,7 @@ class CustomizableMultiPickerController<T> extends ChangeNotifier {
   /// Meaningful only when [inputKind] is [CustomizablePickerInputKind.typed].
   String get typedText => _kind == CustomizablePickerInputKind.typed ? _typedText : '';
 
+  /// Display text used by the field (comma-joined selection or typed text).
   String get fieldDisplayText {
     switch (_kind) {
       case CustomizablePickerInputKind.selected:
@@ -106,6 +122,7 @@ class CustomizableMultiPickerController<T> extends ChangeNotifier {
     }
   }
 
+  /// Switches to typed mode and updates the typed text.
   void applyTyped(String text) {
     _kind = CustomizablePickerInputKind.typed;
     _typedText = text;
@@ -113,6 +130,7 @@ class CustomizableMultiPickerController<T> extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Switches to selected mode and updates the selected values.
   void applySelected(List<T> values) {
     _kind = CustomizablePickerInputKind.selected;
     _selected = List<T>.from(values);
@@ -120,6 +138,7 @@ class CustomizableMultiPickerController<T> extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Parent-driven reset (e.g. form reload) without notifying.
   void silentReplace({
     required CustomizablePickerInputKind kind,
     List<T> selected = const [],
@@ -130,6 +149,7 @@ class CustomizableMultiPickerController<T> extends ChangeNotifier {
     _typedText = typed;
   }
 
+  /// Call after [silentReplace] to refresh bound widgets.
   void notifyView() => notifyListeners();
 }
 

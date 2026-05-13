@@ -1,5 +1,5 @@
 import '../unified_fields_context.dart';
-import '../app_colors.dart';
+import '../unified_colors.dart';
 import 'package:flutter/material.dart';
 
 
@@ -15,6 +15,7 @@ import 'unified_picker_sheet.dart';
 ///
 /// Choices come from [itemProvider] when the dropdown [IconButton] is pressed.
 class UnifiedCustomizableAsyncPickerField<T> extends StatefulWidget {
+  /// Creates a customizable async single-select picker field.
   const UnifiedCustomizableAsyncPickerField({
     super.key,
     required this.itemProvider,
@@ -33,30 +34,63 @@ class UnifiedCustomizableAsyncPickerField<T> extends StatefulWidget {
     this.locked = false,
     this.validator,
     this.placeholder,
+    this.isRequired = false,
+    this.onChanged,
   });
 
+  /// Fetched when the user opens the picker.
   final Future<List<T>> Function() itemProvider;
+
+  /// Label for the field and sheet title fallback.
   final String label;
+
+  /// Hint text shown when empty.
   final String? placeholder;
 
+  /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
 
+  /// Holds either typed text or a selected [T].
   final CustomizableSinglePickerController<T> pickerController;
 
   /// If false, the text field is read-only and tapping the field opens the sheet (after load).
   final bool allowFreeText;
 
+  /// Renders an item to its display text.
   final String Function(T value)? valueToString;
+
+  /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
+
+  /// Custom row builder inside the sheet.
   final Widget Function(T value)? itemToWidget;
 
+  /// Optional suggestion list pinned above the searchable list.
   final List<T> suggestion;
+
+  /// Whether the sheet shows a search field.
   final bool hasSearch;
+
+  /// Autofocus the search field on open.
   final bool searchAutoFocus;
+
+  /// Show a Clear button in the sheet header.
   final bool showClearButton;
+
+  /// When true, the field is non-interactive.
   final bool locked;
+
+  /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
+
+  /// Notified when the controller value transitions (typed text or selection change).
+  final ValueChanged<CustomizableSinglePickerController<T>>? onChanged;
 
   @override
   State<UnifiedCustomizableAsyncPickerField<T>> createState() => _UnifiedCustomizableAsyncPickerFieldState<T>();
@@ -109,7 +143,10 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
     _syncText();
   }
 
-  void _onPickerController() => setState(_syncText);
+  void _onPickerController() {
+    setState(_syncText);
+    widget.onChanged?.call(widget.pickerController);
+  }
 
   @override
   void dispose() {
@@ -145,7 +182,7 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
           hasClear: widget.showClearButton,
           searchBuilder: widget.searchBuilder,
           items: _items,
-          label: dec.placeholder ?? dec.label ?? widget.label,
+          label: widget.placeholder ?? dec.placeholder ?? dec.label ?? widget.label,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
         ),
@@ -178,7 +215,7 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
           onPressed: widget.locked || _loading ? null : _open,
           icon: Icon(
             Icons.arrow_drop_down,
-            color: AppColors.textColorDark,
+            color: UnifiedColors.textColorDark,
           ),
         );
 
@@ -197,7 +234,7 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
       height: dec.height,
       rowLabelRatio: dec.rowLabelRatio,
       labelInRow: dec.labelInRow,
-      requiredField: dec.requiredField,
+      requiredField: widget.isRequired || dec.requiredField,
       showError: dec.showError,
       validationColor: dec.validationColor,
       validationIcon: dec.validationIcon,
@@ -245,6 +282,7 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
 /// Like [UnifiedAsyncMultiPickerField] but uses [CustomizableMultiPickerController]
 /// for typed vs selected state, same model as [UnifiedCustomizableMultiPickerField].
 class UnifiedCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
+  /// Creates a customizable async multi-select picker field.
   const UnifiedCustomizableAsyncMultiPickerField({
     super.key,
     required this.itemProvider,
@@ -262,28 +300,64 @@ class UnifiedCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
     this.showClearButton = true,
     this.locked = false,
     this.validator,
+    this.placeholder,
+    this.isRequired = false,
+    this.onChanged,
   });
 
+  /// Fetched when the user opens the picker.
   final Future<List<T>> Function() itemProvider;
+
+  /// Label for the field and sheet title fallback.
   final String label;
 
+  /// Hint text shown when empty.
+  final String? placeholder;
+
+  /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
 
+  /// Holds either typed text or selected [List] of [T].
   final CustomizableMultiPickerController<T> pickerController;
 
+  /// If false, the text field is read-only and tapping the field opens the sheet.
   final bool allowFreeText;
 
+  /// Renders an item to its display text.
   final String Function(T value)? valueToString;
+
+  /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
+
+  /// Custom row builder inside the sheet.
   final Widget Function(T value)? itemToWidget;
 
+  /// Optional suggestion list pinned above the searchable list.
   final List<T> suggestion;
+
+  /// Whether the sheet shows a search field.
   final bool hasSearch;
+
+  /// Autofocus the search field on open.
   final bool searchAutoFocus;
+
+  /// Show a Clear button in the sheet header.
   final bool showClearButton;
+
+  /// When true, the field is non-interactive.
   final bool locked;
+
+  /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
+
+  /// Notified when the controller value transitions (typed text or selection change).
+  final ValueChanged<CustomizableMultiPickerController<T>>? onChanged;
 
   @override
   State<UnifiedCustomizableAsyncMultiPickerField<T>> createState() => _UnifiedCustomizableAsyncMultiPickerFieldState<T>();
@@ -336,7 +410,10 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
     _syncText();
   }
 
-  void _onPickerController() => setState(_syncText);
+  void _onPickerController() {
+    setState(_syncText);
+    widget.onChanged?.call(widget.pickerController);
+  }
 
   @override
   void dispose() {
@@ -370,7 +447,7 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
           hasClear: widget.showClearButton,
           searchBuilder: widget.searchBuilder,
           items: _items,
-          label: dec.placeholder ?? dec.label ?? widget.label,
+          label: widget.placeholder ?? dec.placeholder ?? dec.label ?? widget.label,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
         ),
@@ -404,7 +481,7 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
           onPressed: widget.locked || _loading ? null : () => _open(dec),
           icon: Icon(
             Icons.arrow_drop_down,
-            color: AppColors.textColorDark,
+            color: UnifiedColors.textColorDark,
           ),
         );
 
@@ -413,7 +490,7 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
       readOnly: readOnly,
       onChanged: widget.allowFreeText ? _onFieldTextChanged : null,
       label: dec.label ?? widget.label,
-      placeholder: dec.placeholder ?? widget.label,
+      placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
       labelStyle: dec.labelStyle,
       style: dec.fieldStyle,
       backgroundColor: dec.backgroundColor ?? Colors.black26,
@@ -423,7 +500,7 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
       height: dec.height,
       rowLabelRatio: dec.rowLabelRatio,
       labelInRow: dec.labelInRow,
-      requiredField: dec.requiredField,
+      requiredField: widget.isRequired || dec.requiredField,
       showError: dec.showError,
       validationColor: dec.validationColor,
       validationIcon: dec.validationIcon,

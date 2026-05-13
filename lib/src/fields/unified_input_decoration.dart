@@ -9,29 +9,66 @@ import 'unified_input_theme.dart';
 /// Widget-specific parameters stay on each field; this carries the cross-cutting chrome.
 @immutable
 class UnifiedInputDecoration {
+  /// Default field label (overridden by a field-level `label` when both are set).
   final String? label;
+
+  /// Default placeholder / hint (overridden by a field-level `placeholder`).
   final String? placeholder;
+
+  /// Override for the label text style.
   final TextStyle? labelStyle;
+
+  /// Override for the inner field text style.
   final TextStyle? fieldStyle;
+
+  /// Field background color.
   final Color? backgroundColor;
+
+  /// Background for the left label area when [labelInRow] is true.
   final Color? headerBackgroundColor;
+
+  /// Border radius of the field box.
   final BorderRadius? borderRadius;
+
+  /// Border side of the field box.
   final BorderSide? borderSide;
+
+  /// Fixed minimum height of the inner field row.
   final double? height;
+
+  /// Flex ratio for the label vs body when [labelInRow] is true.
   final List<int> rowLabelRatio;
+
+  /// When true, the label is rendered on the left of the field (split row),
+  /// otherwise on top.
   final bool labelInRow;
 
+  /// Default for `isRequired` (overridden by field-level `isRequired`).
   final bool requiredField;
+
+  /// Whether to draw the inline error strip when the field has an error.
   final bool showError;
+
+  /// Color used for error chrome (border, label) when present.
   final Color? validationColor;
+
+  /// Optional icon shown in the inline error strip.
   final IconData? validationIcon;
 
+  /// Leading widget shown before the field content.
   final Widget? prefix;
+
+  /// Leading icon shown before the field content.
   final Widget? prefixIcon;
+
+  /// Trailing widget shown after the field content.
   final Widget? suffixIcon;
 
+  /// Inner padding of the editing area.
   final EdgeInsetsGeometry? contentPadding;
 
+  /// Creates a decoration; all fields are optional and merged on top of the
+  /// resolved palette defaults from [resolveUnifiedDecoration].
   const UnifiedInputDecoration({
     this.label,
     this.placeholder,
@@ -54,6 +91,7 @@ class UnifiedInputDecoration {
     this.contentPadding,
   });
 
+  /// Merges [other] on top of this; non-null fields from [other] win.
   UnifiedInputDecoration merge(UnifiedInputDecoration? other) {
     if (other == null) return this;
     return UnifiedInputDecoration(

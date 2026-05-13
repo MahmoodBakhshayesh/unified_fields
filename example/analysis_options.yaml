@@ -1,0 +1,6 @@
+# Lint config for the unified_fields example app. We don't include
+# package:flutter_lints/flutter.yaml because the example deliberately
+# avoids that dependency (the package itself uses it as a dev_dependency).
+analyzer:
+  exclude:
+    - build/**

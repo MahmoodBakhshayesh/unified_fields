@@ -9,6 +9,7 @@ import 'unified_input_decoration.dart';
 /// Drive programmatic updates via [controller]; optionally observe edits with [onChanged].
 /// Set [fractionDigits] when you need fixed decimal places for display and step rounding.
 class UnifiedNumberField extends StatelessWidget {
+  /// Creates a unified number field.
   const UnifiedNumberField({
     super.key,
     this.decoration,
@@ -28,28 +29,66 @@ class UnifiedNumberField extends StatelessWidget {
     this.fractionDigits,
     this.textInputAction,
     this.label,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
 
+  /// Backing text controller. The field always edits this text.
   final TextEditingController? controller;
+
+  /// Optional focus node.
   final FocusNode? focusNode;
 
+  /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
+
+  /// Called when the parsed numeric value changes.
   final ValueChanged<num>? onChanged;
+
+  /// Forwarded to the inner text field's submit.
   final ValueChanged<String>? onSubmitted;
 
+  /// When true, the field is disabled.
   final bool disabled;
+
+  /// When true, the field is read-only.
   final bool readOnly;
+
+  /// Autofocus on mount.
   final bool autofocus;
+
+  /// Whether to allow decimal input.
   final bool allowDecimals;
+
+  /// Step used by the increment / decrement buttons.
   final num step;
+
+  /// Minimum allowed value.
   final num? min;
+
+  /// Maximum allowed value.
   final num? max;
+
+  /// Fixed number of decimals shown / rounded to.
   final int? fractionDigits;
+
+  /// Field label. Overrides [UnifiedInputDecoration.label] when set.
   final String? label;
+
+  /// Hint text shown when empty. Overrides [UnifiedInputDecoration.placeholder] when set.
+  final String? placeholder;
+
+  /// Forwarded to the inner text field.
   final TextInputAction? textInputAction;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +98,7 @@ class UnifiedNumberField extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       label: label ?? d.label,
-      placeholder: d.placeholder ?? d.label,
+      placeholder: placeholder ?? d.placeholder ?? d.label,
       labelStyle: d.labelStyle,
       padding: d.contentPadding,
       borderRadius:
@@ -79,6 +118,7 @@ class UnifiedNumberField extends StatelessWidget {
       autofocus: autofocus,
       textInputAction: textInputAction,
       validator: validator,
+      requiredField: isRequired || d.requiredField,
       showError: d.showError,
       validationColor: d.validationColor,
       validationIcon: d.validationIcon,

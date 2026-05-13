@@ -8,13 +8,28 @@ import 'unified_fields_context.dart';
 
 /// Default English strings for the date picker (host app can fork and localize).
 abstract final class UnifiedDatePickerStrings {
+  /// Title above the month/year jump controls.
   static const String jumpToMonthYear = 'Jump to month / year';
+
+  /// Label for the year input in the jump controls.
   static const String yearLabel = 'Year';
+
+  /// Generic "Date" label used in headers.
   static const String date = 'Date';
+
+  /// Cancel action label.
   static const String cancel = 'Cancel';
+
+  /// Hint shown when picking a range without start/end yet.
   static const String pickDateRangeHint = 'Select start and end dates';
+
+  /// Label for the Gregorian calendar toggle.
   static const String calendarGregorian = 'Gregorian';
+
+  /// Label for the Shamsi (Jalali) calendar toggle.
   static const String calendarShamsi = 'Shamsi (Jalali)';
+
+  /// Confirm action label.
   static const String confirm = 'Confirm';
 }
 
@@ -26,8 +41,12 @@ int _clampPageIndex(int page, int pageCount) {
   return page;
 }
 
+/// Calendar systems supported by the unified date picker.
 enum UnifiedFieldsCalendarKind {
+  /// Gregorian calendar (default).
   gregorian,
+
+  /// Shamsi (Jalali) calendar.
   jalali,
 }
 
@@ -149,6 +168,7 @@ Future<T?> _presentPicker<T>({
 
 /// Inline calendar between [firstDate] and [lastDate]; single date or range via [pickRange].
 class UnifiedFieldsDatePickerSheet extends StatefulWidget {
+  /// Creates an inline calendar picker.
   const UnifiedFieldsDatePickerSheet({
     super.key,
     required this.firstDate,
@@ -161,12 +181,25 @@ class UnifiedFieldsDatePickerSheet extends StatefulWidget {
     this.granularity = UnifiedFieldsDatePickerGranularity.day,
   });
 
+  /// Earliest selectable date (inclusive).
   final DateTime firstDate;
+
+  /// Latest selectable date (inclusive).
   final DateTime lastDate;
+
+  /// Date to seed single-date pick.
   final DateTime initialDate;
+
+  /// Range to seed range-pick (when [pickRange] is true).
   final DateTimeRange? initialRange;
+
+  /// When true, picks a [DateTimeRange]; otherwise a single date.
   final bool pickRange;
+
+  /// Optional title rendered above the calendar.
   final String? title;
+
+  /// When false, hides the Gregorian / Shamsi switch.
   final bool showCalendarKindToggle;
 
   /// For single-date pick only; range pick always uses [day] UI.
@@ -191,6 +224,12 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
 
   /// Jalali year shown in month-granularity UI.
   late int _jYearForMonthPicker;
+
+  /// Fixed row height for the year-granularity list (matches default [ListTile] minHeight).
+  static const double _kYearListItemExtent = 48;
+
+  ScrollController? _yearScrollController;
+  bool _pendingYearAutoScroll = true;
 
   DateTime get _pageAnchor => widget.pickRange ? (_rangeStart ?? _selected) : _selected;
 
@@ -247,7 +286,33 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
   @override
   void dispose() {
     _pageController.dispose();
+    _yearScrollController?.dispose();
     super.dispose();
+  }
+
+  /// Index of the selected year in the year-granularity list for the active calendar.
+  int _selectedYearIndex() {
+    if (_kind == UnifiedFieldsCalendarKind.gregorian) {
+      return (_selected.year - widget.firstDate.year)
+          .clamp(0, widget.lastDate.year - widget.firstDate.year);
+    }
+    final years = <int>{for (final e in _jalaliMonths) e.$1}.toList()..sort();
+    if (years.isEmpty) return 0;
+    final jSel = PersianJalaliCalendar.fromGregorian(_selected).year;
+    final idx = years.indexOf(jSel);
+    return idx < 0 ? 0 : idx;
+  }
+
+  /// Centers the selected year in the year-granularity list when it first appears.
+  void _scrollYearListToSelected() {
+    final ctrl = _yearScrollController;
+    if (ctrl == null || !ctrl.hasClients) return;
+    final viewport = ctrl.position.viewportDimension;
+    final max = ctrl.position.maxScrollExtent;
+    final centerOffset =
+        (_selectedYearIndex() * _kYearListItemExtent) - (viewport / 2) + (_kYearListItemExtent / 2);
+    final clamped = centerOffset.clamp(0.0, max);
+    ctrl.jumpTo(clamped);
   }
 
   int _computeInitialPage({required UnifiedFieldsCalendarKind kind, required DateTime anchor}) {
@@ -286,6 +351,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
       final jMinY = PersianJalaliCalendar.fromGregorian(widget.firstDate).year;
       final jMaxY = PersianJalaliCalendar.fromGregorian(widget.lastDate).year;
       _jYearForMonthPicker = PersianJalaliCalendar.fromGregorian(_selected).year.clamp(jMinY, jMaxY);
+    }
+    if (widget.granularity == UnifiedFieldsDatePickerGranularity.year) {
+      _pendingYearAutoScroll = true;
     }
   }
 
@@ -420,7 +488,7 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
 
     return Material(
       color: theme.bottomSheetTheme.backgroundColor,
-      // color: AppColors.scaffoldBackgroundColorDark,
+      // color: UnifiedColors.scaffoldBackgroundColorDark,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -624,10 +692,33 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
     return !start.isAfter(widget.lastDate) && !end.isBefore(widget.firstDate);
   }
 
+  /// Updates [_selected] from the tapped year (Gregorian [DateTime] anchor at
+  /// Jan 1st) and immediately confirms/pops with the granularity-normalized result.
+  void _pickYearAndConfirm(DateTime anchor) {
+    setState(() {
+      _selected = DateUtils.dateOnly(_clampDate(anchor, widget.firstDate, widget.lastDate));
+    });
+    _confirm();
+  }
+
   Widget _buildYearGranularity(ThemeData theme, UnifiedInputPalette palette) {
+    _yearScrollController ??= ScrollController();
+    if (_pendingYearAutoScroll) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _scrollYearListToSelected();
+        _pendingYearAutoScroll = false;
+      });
+    }
+
+    final accent = theme.colorScheme.primary;
+    final selectedBg = accent.withValues(alpha: 0.12);
+
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
       final years = <int>[for (var y = widget.firstDate.year; y <= widget.lastDate.year; y++) y];
       return ListView.builder(
+        controller: _yearScrollController,
+        itemExtent: _kYearListItemExtent,
         itemCount: years.length,
         itemBuilder: (context, i) {
           final y = years[i];
@@ -636,13 +727,17 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
           return ListTile(
             enabled: enabled,
             selected: sel,
-            title: Text('$y', style: TextStyle(color: palette.fieldTextColor)),
-            onTap: enabled
-                ? () => setState(() {
-                      final d = DateTime(y, 1, 1);
-                      _selected = DateUtils.dateOnly(_clampDate(d, widget.firstDate, widget.lastDate));
-                    })
-                : null,
+            selectedTileColor: selectedBg,
+            selectedColor: accent,
+            trailing: sel ? Icon(Icons.check_rounded, color: accent) : null,
+            title: Text(
+              '$y',
+              style: TextStyle(
+                color: sel ? accent : palette.fieldTextColor,
+                fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+            onTap: enabled ? () => _pickYearAndConfirm(DateTime(y, 1, 1)) : null,
           );
         },
       );
@@ -652,6 +747,8 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
       return Center(child: Text('-', style: TextStyle(color: palette.hintColor)));
     }
     return ListView.builder(
+      controller: _yearScrollController,
+      itemExtent: _kYearListItemExtent,
       itemCount: years.length,
       itemBuilder: (context, i) {
         final jy = years[i];
@@ -661,12 +758,18 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
         return ListTile(
           enabled: enabled,
           selected: sel,
-          title: Text('$jy', style: TextStyle(color: palette.fieldTextColor)),
+          selectedTileColor: selectedBg,
+          selectedColor: accent,
+          trailing: sel ? Icon(Icons.check_rounded, color: accent) : null,
+          title: Text(
+            '$jy',
+            style: TextStyle(
+              color: sel ? accent : palette.fieldTextColor,
+              fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
           onTap: enabled
-              ? () => setState(() {
-                    final d = PersianJalaliCalendar.toGregorianDate(jy, 1, 1);
-                    _selected = DateUtils.dateOnly(_clampDate(d, widget.firstDate, widget.lastDate));
-                  })
+              ? () => _pickYearAndConfirm(PersianJalaliCalendar.toGregorianDate(jy, 1, 1))
               : null,
         );
       },
@@ -699,40 +802,54 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
             ),
           ),
           Expanded(
-            child: GridView.count(
-              crossAxisCount: 4,
+            child: Padding(
               padding: const EdgeInsets.all(8),
-              children: List.generate(12, (idx) {
-                final m = idx + 1;
-                final ok = _gregorianMonthCellEnabled(_gYearForMonthPicker, m);
-                final d = DateTime(_gYearForMonthPicker, m, 1);
-                final sel = _selected.year == _gYearForMonthPicker && _selected.month == m;
-                return Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: InkWell(
-                    onTap: ok
-                        ? () => setState(() {
-                              _selected = DateUtils.dateOnly(_clampDate(d, widget.firstDate, widget.lastDate));
-                            })
-                        : null,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: sel ? theme.colorScheme.primary.withValues(alpha: 0.35) : palette.sheetHeaderBackground,
-                      ),
-                      child: Text(
-                        DateFormat.MMM().format(DateTime(2000, m)),
-                        style: TextStyle(
-                          color: ok ? palette.fieldTextColor : palette.hintColor,
-                          fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
+              child: LayoutBuilder(
+                builder: (context, c) {
+                  const cols = 4;
+                  const rows = 3;
+                  final cellW = c.maxWidth / cols;
+                  final cellH = c.maxHeight / rows;
+                  final aspect = cellH <= 0 ? 1.0 : (cellW / cellH);
+                  return GridView.count(
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: cols,
+                    padding: EdgeInsets.zero,
+                    childAspectRatio: aspect,
+                    children: List.generate(12, (idx) {
+                      final m = idx + 1;
+                      final ok = _gregorianMonthCellEnabled(_gYearForMonthPicker, m);
+                      final d = DateTime(_gYearForMonthPicker, m, 1);
+                      final sel = _selected.year == _gYearForMonthPicker && _selected.month == m;
+                      return Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: InkWell(
+                          onTap: ok
+                              ? () => setState(() {
+                                    _selected = DateUtils.dateOnly(_clampDate(d, widget.firstDate, widget.lastDate));
+                                  })
+                              : null,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: sel ? theme.colorScheme.primary.withValues(alpha: 0.35) : palette.sheetHeaderBackground,
+                            ),
+                            child: Text(
+                              DateFormat.MMM().format(DateTime(2000, m)),
+                              style: TextStyle(
+                                color: ok ? palette.fieldTextColor : palette.hintColor,
+                                fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
+                      );
+                    }),
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -765,44 +882,58 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
           ),
         ),
         Expanded(
-          child: GridView.count(
-            crossAxisCount: 4,
+          child: Padding(
             padding: const EdgeInsets.all(8),
-            children: List.generate(12, (idx) {
-              final jm = idx + 1;
-              final ok = _jalaliMonthCellEnabled(_jYearForMonthPicker, jm);
-              final d = PersianJalaliCalendar.toGregorianDate(_jYearForMonthPicker, jm, 1);
-              final jSel = PersianJalaliCalendar.fromGregorian(_selected);
-              final sel = jSel.year == _jYearForMonthPicker && jSel.month == jm;
-              final label = PersianJalaliCalendar.englishMonthName(jm);
-              return Padding(
-                padding: const EdgeInsets.all(4),
-                child: InkWell(
-                  onTap: ok
-                      ? () => setState(() {
-                            _selected = DateUtils.dateOnly(_clampDate(d, widget.firstDate, widget.lastDate));
-                          })
-                      : null,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: sel ? theme.colorScheme.primary.withValues(alpha: 0.35) : palette.sheetHeaderBackground,
-                    ),
-                    child: Text(
-                      label,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: ok ? palette.fieldTextColor : palette.hintColor,
-                        fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
+            child: LayoutBuilder(
+              builder: (context, c) {
+                const cols = 4;
+                const rows = 3;
+                final cellW = c.maxWidth / cols;
+                final cellH = c.maxHeight / rows;
+                final aspect = cellH <= 0 ? 1.0 : (cellW / cellH);
+                return GridView.count(
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: cols,
+                  padding: EdgeInsets.zero,
+                  childAspectRatio: aspect,
+                  children: List.generate(12, (idx) {
+                    final jm = idx + 1;
+                    final ok = _jalaliMonthCellEnabled(_jYearForMonthPicker, jm);
+                    final d = PersianJalaliCalendar.toGregorianDate(_jYearForMonthPicker, jm, 1);
+                    final jSel = PersianJalaliCalendar.fromGregorian(_selected);
+                    final sel = jSel.year == _jYearForMonthPicker && jSel.month == jm;
+                    final label = PersianJalaliCalendar.englishMonthName(jm);
+                    return Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: InkWell(
+                        onTap: ok
+                            ? () => setState(() {
+                                  _selected = DateUtils.dateOnly(_clampDate(d, widget.firstDate, widget.lastDate));
+                                })
+                            : null,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: sel ? theme.colorScheme.primary.withValues(alpha: 0.35) : palette.sheetHeaderBackground,
+                          ),
+                          child: Text(
+                            label,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: ok ? palette.fieldTextColor : palette.hintColor,
+                              fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-              );
-            }),
+                    );
+                  }),
+                );
+              },
+            ),
           ),
         ),
       ],

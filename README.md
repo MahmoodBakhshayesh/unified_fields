@@ -28,7 +28,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.1.1
+  unified_fields: ^0.1.2
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -67,13 +67,13 @@ dependencies:
 |------|------------------|---------|
 | **Plain fields** | `UnifiedTextField`, `UnifiedNumberField`, `UnifiedNumericStepField`, `UnifiedDurationField`, `UnifiedDateField`, `UnifiedDateRangeField`, `UnifiedTimeOfDayField` | Same visual system as form fields, without `FormField` |
 | **Pickers** | `UnifiedSinglePickerField`, `UnifiedMultiPickerField`, `UnifiedAsyncPickerField`, `UnifiedAsyncMultiPickerField` | Bottom-sheet selection; async variants load items on demand |
-| **Customizable pickers** | `UnifiedCutomizablePickerField`, `UnifiedCustomizableAsyncPickerField`, `CustomizableSinglePickerController` | Controller-driven single selection with custom sheet content |
-| **Form wrappers** | `UnifiedFormField`, `UnifiedFormTextField`, `UnifiedFormSinglePickerField`, `UnifiedFormMultiPickerField`, `UnifiedFormAsyncPickerField`, `UnifiedFormAsyncMultiPickerField`, `UnifiedFormDateField`, `UnifiedFormDateRangeField`, `UnifiedFormTimeOfDayField`, `UnifiedFormDurationField`, `UnifiedFormNumberField` | `Form` integration: `validate`, `save`, `reset`, validators |
+| **Customizable pickers** | `UnifiedCustomizablePickerField`, `UnifiedCustomizableMultiPickerField`, `UnifiedCustomizableAsyncPickerField`, `UnifiedCustomizableAsyncMultiPickerField`, `CustomizableSinglePickerController`, `CustomizableMultiPickerController` | Controller-driven single or multi selection that also accepts free typed text |
+| **Form wrappers** | `UnifiedFormField`, `UnifiedFormTextField`, `UnifiedFormSinglePickerField`, `UnifiedFormMultiPickerField`, `UnifiedFormAsyncPickerField`, `UnifiedFormAsyncMultiPickerField`, `UnifiedFormDateField`, `UnifiedFormDateRangeField`, `UnifiedFormTimeOfDayField`, `UnifiedFormDurationField`, `UnifiedFormNumberField`, `UnifiedFormCustomizablePickerField`, `UnifiedFormCustomizableMultiPickerField`, `UnifiedFormCustomizableAsyncPickerField`, `UnifiedFormCustomizableAsyncMultiPickerField` | `Form` integration: `validate`, `save`, `reset`, validators |
 | **Form scope** | `UnifiedFormFieldScope` | Shared `AutovalidateMode` for all unified form descendants |
 | **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind` | Single date or range; day / month / year granularity; Gregorian vs Jalali toggle |
 | **Time** | `TimePickerUtils.show` | Wraps `showTimePicker` with sensible defaults |
 | **Chrome helpers** | `UnifiedBaseTextField`, `AppUnifiedFieldShell`, `UnifiedInputDecoration`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputTheme`, `UnifiedInputThemeScope` | Labels, errors, light/dark palettes, optional global theme scope |
-| **Utilities** | `AppInputController`, `UnifiedFieldsContextX`, `AppColors`, `UnifiedSheetButton`, `unifiedFormErrorText`, `unifiedFormPickerOverride` | State binding, layout helpers, default colors, sheet actions |
+| **Utilities** | `AppInputController`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedFormErrorText`, `unifiedFormPickerOverride` | State binding, layout helpers, default colors, sheet actions |
 | **Demo** | `UnifiedInputsShowcasePage` | Scrollable gallery of widgets + palette toggle |
 
 ---
@@ -88,6 +88,18 @@ Fields share **`UnifiedInputDecoration`** (label, placeholder, radii, validation
 
 1. **Standalone** — e.g. `UnifiedTextField`, `UnifiedSinglePickerField`: drop into any screen; you own validation if needed.  
 2. **Under a `Form`** — use `UnifiedForm…` variants so **`GlobalKey<FormState>`** can call **`validate()`**, **`save()`**, and **`reset()`** on the whole form.
+
+### `label`, `placeholder`, `isRequired`
+
+Every field exposes **`label`**, **`placeholder`**, and **`isRequired`** as root-level constructor parameters. They always win over the equivalent values inside **`UnifiedInputDecoration`** (which still work as the form-wide default):
+
+```dart
+UnifiedTextField(
+  label: 'Email',
+  placeholder: 'name@example.com',
+  isRequired: true,
+)
+```
 
 ### `UnifiedFormField<T>`
 
@@ -208,7 +220,7 @@ Users can switch **Gregorian** vs **Jalali (Shamsi)** when **`showCalendarKindTo
 
 **`PickerSheetWidget`** / **`MultiPickerSheetWidget`** are the sheet implementations (scrollable list + search). Form variants mirror the same behavior with **`FormField`**.
 
-**Customizable** APIs (`unified_cutomizable_picker_fields.dart` — filename keeps the historical typo **cutomizable**): single selection with **`CustomizableSinglePickerController`** and async sibling for remote data.
+**Customizable** APIs (`unified_cutomizable_picker_fields.dart` — filename keeps the historical typo **cutomizable**): single or multi selection with **`CustomizableSinglePickerController`** / **`CustomizableMultiPickerController`** plus async siblings for remote data. Each controller carries either typed text **or** the selected value(s); the matching **`UnifiedFormCustomizable…`** wrappers expose `resetValue` snapshots so `FormState.reset` restores both the mode and the payload in one step.
 
 ---
 
@@ -220,7 +232,7 @@ Users can switch **Gregorian** vs **Jalali (Shamsi)** when **`showCalendarKindTo
 
 ## Theming & layout
 
-- **`AppColors`** — default static palette used by built-in styles (replace over time with your design tokens or override via **`UnifiedInputDecoration`** / **`Theme`**).  
+- **`UnifiedColors`** — default static palette used by built-in styles (replace over time with your design tokens or override via **`UnifiedInputDecoration`** / **`Theme`**).  
 - **`resolveUnifiedDecoration(context, overrides: …, brightness: …)`** — merges theme + field overrides (used internally by several fields).  
 - **`UnifiedFieldsContextX`** on **`BuildContext`**: **`width`**, **`height`**, **`isDesktop`**, **`mainColor`** — no dependency on routing or app-specific l10n.  
 - **`UnifiedSheetButton`** — compact primary / outlined actions used inside picker sheets.
@@ -246,6 +258,8 @@ Navigator.of(context).push(
   ),
 );
 ```
+
+A runnable example app lives in **`example/`** — open it with `flutter run` from that folder to interact with every field in isolation.
 
 ---
 
@@ -285,7 +299,7 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.1.0`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.1.2`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
 
 ---
 

@@ -8,6 +8,7 @@ import 'unified_input_decoration.dart';
 
 /// Text input using shared unified decoration + optional external [AppInputController] binding.
 class UnifiedTextField extends StatefulWidget {
+  /// Creates a unified text input.
   const UnifiedTextField({
     super.key,
     this.decoration,
@@ -40,37 +41,88 @@ class UnifiedTextField extends StatefulWidget {
     this.isRequired = false,
   });
 
+  /// Visual chrome overrides; merged on top of palette defaults.
   final UnifiedInputDecoration? decoration;
+
+  /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
 
+  /// External [TextEditingController]; if null one is created internally.
   final TextEditingController? controller;
+
+  /// Two-way binding to a [String] value.
   final AppInputController<String>? binding;
+
+  /// External focus node; if null one is created by the inner widget.
   final FocusNode? focusNode;
 
+  /// Synchronous validator returning the error message, or null when valid.
   final String? Function(String value)? validator;
+
+  /// Called on every keystroke.
   final ValueChanged<String>? onChanged;
+
+  /// Called when the user submits via the keyboard action button.
   final ValueChanged<String>? onSubmitted;
 
+  /// When true, the field is non-editable and visually muted.
   final bool disabled;
+
+  /// When true, the field rejects edits but still looks active.
   final bool readOnly;
+
+  /// When true, paints the field in the "locked" style and disables editing.
   final bool locked;
+
+  /// Whether the field should request focus on first build.
   final bool autofocus;
 
+  /// Keyboard type.
   final TextInputType? keyboardType;
+
+  /// Keyboard action button.
   final TextInputAction? textInputAction;
+
+  /// Custom input formatters applied to user keystrokes.
   final List<TextInputFormatter>? inputFormatters;
+
+  /// Maximum visible lines.
   final int? maxLines;
+
+  /// Minimum visible lines.
   final int? minLines;
+
+  /// Maximum number of characters (also enforces a counter when set).
   final int? maxLength;
+
+  /// Render entered text as obscured (alias for [isPassword]).
   final bool obscureText;
+
+  /// Show an "x" suffix to clear the field when it has content.
   final bool showClearButton;
+
+  /// Capitalization rule applied to typed text.
   final TextCapitalization textCapitalization;
+
+  /// Horizontal alignment of typed text.
   final TextAlign textAlign;
+
+  /// Initial text when [controller] is null.
   final String? initialValue;
+
+  /// Placeholder / hint text shown when the field is empty.
   final String? placeholder;
+
+  /// Field label.
   final String? label;
+
+  /// If true, the text direction is inferred from the typed content.
   final bool mustResolveTextDirectionByInput;
+
+  /// When true, the field obscures content and adds a visibility toggle.
   final bool isPassword;
+
+  /// When true, marks the field as required (visual hint only).
   final bool isRequired;
 
   @override

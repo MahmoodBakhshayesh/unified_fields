@@ -23,6 +23,7 @@ bool _unifiedListsEqual<T>(List<T>? a, List<T> b) {
 
 /// [FormField] + [UnifiedMultiPickerField].
 class UnifiedFormMultiPickerField<T> extends StatefulWidget {
+  /// Creates a [Form]-aware multi-select picker field.
   const UnifiedFormMultiPickerField({
     super.key,
     required this.items,
@@ -44,32 +45,68 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
     this.validator,
     this.onSaved,
     this.shakeOnError = false,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Choices shown in the picker sheet.
   final List<T> items;
+
+  /// Label for the field and sheet title fallback.
   final String label;
+
+  /// Current selection.
   final List<T> values;
+
+  /// Hint text shown when empty.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (e.g. `() => const []` to clear).
   final UnifiedFormResetValue<List<T>>? resetValue;
 
+  /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
 
+  /// Optional external state binding.
   final AppInputController<List<T>>? binding;
+
+  /// Called when the selection changes.
   final ValueChanged<List<T>>? onChanged;
 
+  /// Renders an item to its display text.
   final String Function(T value)? valueToString;
+
+  /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
+
+  /// Custom row builder inside the sheet.
   final Widget Function(T value)? itemToWidget;
 
+  /// Suggestion list pinned above the searchable list.
   final List<T> suggestion;
+
+  /// Whether the sheet shows a search field.
   final bool hasSearch;
+
+  /// Autofocus the search field on open.
   final bool searchAutoFocus;
+
+  /// Show a Clear button in the sheet header.
   final bool showClearButton;
+
+  /// When true, the field is non-interactive.
   final bool locked;
 
+  /// Validator passed to the underlying [FormField].
   final FormFieldValidator<List<T>>? validator;
+
+  /// Called from [FormState.save].
   final FormFieldSetter<List<T>>? onSaved;
 
   /// When true, shakes once when validation error appears on this field.
@@ -185,6 +222,8 @@ class _UnifiedFormMultiPickerFieldState<T> extends State<UnifiedFormMultiPickerF
           items: widget.items,
           label: widget.label,
           values: fieldState.value ?? [],
+          placeholder: widget.placeholder,
+          isRequired: widget.isRequired,
           decoration: widget.decoration,
           brightness: widget.brightness,
           binding: null,
@@ -217,6 +256,7 @@ class _UnifiedFormMultiPickerFieldState<T> extends State<UnifiedFormMultiPickerF
 
 /// [FormField] + [UnifiedDateField].
 class UnifiedFormDateField extends StatefulWidget {
+  /// Creates a [Form]-aware date field.
   const UnifiedFormDateField({
     super.key,
     this.decoration,
@@ -245,39 +285,89 @@ class UnifiedFormDateField extends StatefulWidget {
     this.showCalendarKindToggle = true,
     this.pickerGranularity = UnifiedFieldsDatePickerGranularity.day,
     this.shakeOnError = false,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
 
+  /// Optional external state binding.
   final AppInputController<DateTime>? binding;
+
+  /// Direct value when not using [binding].
   final DateTime? value;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (may return null to clear).
   final UnifiedFormResetValue<DateTime?>? resetValue;
 
+  /// External [TextEditingController] for the displayed text.
   final TextEditingController? controller;
+
+  /// External focus node.
   final FocusNode? focusNode;
 
+  /// Validator passed to the underlying [FormField].
   final FormFieldValidator<DateTime?>? validator;
+
+  /// Called from [FormState.save].
   final FormFieldSetter<DateTime?>? onSaved;
+
+  /// Called when the picker yields a value.
   final ValueChanged<DateTime?>? onChanged;
+
+  /// Forwarded to the inner text field's submit.
   final ValueChanged<String>? onSubmit;
 
+  /// Earliest allowed date.
   final DateTime? min;
+
+  /// Latest allowed date.
   final DateTime? max;
+
+  /// Either a [DateFormat] or custom format object used to render the field.
   final Object? valueFormat;
+
+  /// Forwarded to the picker (calendar vs input).
   final DatePickerEntryMode mode;
 
+  /// Trailing widget.
   final Widget? suffixIcon;
+
+  /// Leading widget shown before the field content.
   final Widget? prefix;
+
+  /// Leading icon shown before the field content.
   final Widget? prefixIcon;
+
+  /// Field label.
   final String? label;
+
+  /// Hint text shown when empty.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
+
+  /// Whether to show the inline clear button when there is a value.
   final bool showClearButton;
+
+  /// Whether the inner text field is read-only.
   final bool readOnly;
+
+  /// Autofocus the inner text field.
   final bool autofocus;
+
+  /// Text alignment.
   final TextAlign textAlign;
+
+  /// When false, the picker sheet hides the Gregorian / Shamsi switch.
   final bool showCalendarKindToggle;
+
+  /// Precision for the picker sheet.
   final UnifiedFieldsDatePickerGranularity pickerGranularity;
 
   /// When true, shakes once when validation error appears on this field.
@@ -393,6 +483,8 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
           value: fieldState.value,
           controller: widget.controller,
           focusNode: widget.focusNode,
+          placeholder: widget.placeholder,
+          isRequired: widget.isRequired,
           validator: (_) => unifiedFormErrorText(fieldState),
           onChanged: (dt) {
             fieldState.didChange(dt);
@@ -428,6 +520,7 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
 
 /// [FormField] + [UnifiedDateRangeField].
 class UnifiedFormDateRangeField extends StatefulWidget {
+  /// Creates a [Form]-aware date range field.
   const UnifiedFormDateRangeField({
     super.key,
     this.decoration,
@@ -444,26 +537,58 @@ class UnifiedFormDateRangeField extends StatefulWidget {
     this.showCalendarKindToggle = true,
     this.textAlign = TextAlign.start,
     this.shakeOnError = false,
+    this.label,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
+
+  /// Optional external state binding.
   final AppInputController<DateTimeRange>? binding;
+
+  /// Direct value when not using [binding].
   final DateTimeRange? rangeValue;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (may return null to clear).
   final UnifiedFormResetValue<DateTimeRange?>? resetValue;
 
+  /// External [TextEditingController].
   final TextEditingController? controller;
 
+  /// Validator passed to the underlying [FormField].
   final FormFieldValidator<DateTimeRange?>? validator;
+
+  /// Called from [FormState.save].
   final FormFieldSetter<DateTimeRange?>? onSaved;
+
+  /// Called when the picker yields a range.
   final ValueChanged<DateTimeRange?>? onRangeChanged;
 
+  /// Earliest allowed date.
   final DateTime? min;
+
+  /// Latest allowed date.
   final DateTime? max;
+
+  /// When false, the picker sheet hides the Gregorian / Shamsi switch.
   final bool showCalendarKindToggle;
+
+  /// Text alignment.
   final TextAlign textAlign;
+
+  /// Field label.
+  final String? label;
+
+  /// Hint text shown when empty.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
 
   /// When true, shakes once when validation error appears on this field.
   final bool shakeOnError;
@@ -577,6 +702,9 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
           binding: null,
           rangeValue: fieldState.value,
           controller: widget.controller,
+          label: widget.label,
+          placeholder: widget.placeholder,
+          isRequired: widget.isRequired,
           validator: (_) => unifiedFormErrorText(fieldState),
           onRangeChanged: (r) {
             fieldState.didChange(r);
@@ -601,6 +729,7 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
 
 /// [FormField] + [UnifiedTimeOfDayField].
 class UnifiedFormTimeOfDayField extends StatefulWidget {
+  /// Creates a [Form]-aware time-of-day field.
   const UnifiedFormTimeOfDayField({
     super.key,
     this.decoration,
@@ -615,22 +744,51 @@ class UnifiedFormTimeOfDayField extends StatefulWidget {
     this.locked = false,
     this.timePickerEntryMode = TimePickerEntryMode.dial,
     this.shakeOnError = false,
+    this.label,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Field label.
+  final String? label;
+
+  /// Hint text shown when empty.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
+
+  /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
+
+  /// Optional external state binding.
   final AppInputController<TimeOfDay>? binding;
+
+  /// Direct value when not using [binding].
   final TimeOfDay? value;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (may return null to clear).
   final UnifiedFormResetValue<TimeOfDay?>? resetValue;
 
+  /// Validator passed to the underlying [FormField].
   final FormFieldValidator<TimeOfDay?>? validator;
+
+  /// Called from [FormState.save].
   final FormFieldSetter<TimeOfDay?>? onSaved;
+
+  /// Called when the picker yields a value.
   final ValueChanged<TimeOfDay?>? onChanged;
+
+  /// Forwarded to the inner submit.
   final ValueChanged<String>? onSubmitted;
 
+  /// When true, the field is non-interactive.
   final bool locked;
+
+  /// Entry mode for the time picker.
   final TimePickerEntryMode timePickerEntryMode;
 
   /// When true, shakes once when validation error appears on this field.
@@ -738,6 +896,9 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
           brightness: widget.brightness,
           binding: null,
           value: fieldState.value,
+          label: widget.label,
+          placeholder: widget.placeholder,
+          isRequired: widget.isRequired,
           validator: (_) => unifiedFormErrorText(fieldState),
           onChanged: (t) {
             fieldState.didChange(t);
@@ -761,6 +922,7 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
 
 /// [FormField] + [UnifiedDurationField].
 class UnifiedFormDurationField extends StatefulWidget {
+  /// Creates a [Form]-aware duration field.
   const UnifiedFormDurationField({
     super.key,
     this.decoration,
@@ -778,25 +940,60 @@ class UnifiedFormDurationField extends StatefulWidget {
     this.locked = false,
     this.focusNode,
     this.shakeOnError = false,
+    this.label,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Field label.
+  final String? label;
+
+  /// Hint text shown when empty.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
+
+  /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
+
+  /// Optional external state binding.
   final AppInputController<Duration>? binding;
+
+  /// Direct value when not using [binding].
   final Duration? value;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (may return null to clear).
   final UnifiedFormResetValue<Duration?>? resetValue;
 
+  /// Validator passed to the underlying [FormField].
   final FormFieldValidator<Duration?>? validator;
+
+  /// Called from [FormState.save].
   final FormFieldSetter<Duration?>? onSaved;
+
+  /// Called when the picker yields a value.
   final ValueChanged<Duration?>? onChanged;
+
+  /// Forwarded to the inner submit.
   final ValueChanged<String>? onSubmitted;
 
+  /// Granularity of the duration picker.
   final UnifiedDurationGranularity granularity;
+
+  /// Minimum allowed duration.
   final Duration? min;
+
+  /// Maximum allowed duration.
   final Duration? max;
+
+  /// When true, the field is non-interactive.
   final bool locked;
+
+  /// External focus node.
   final FocusNode? focusNode;
 
   /// When true, shakes once when validation error appears on this field.
@@ -904,6 +1101,9 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
           brightness: widget.brightness,
           binding: null,
           value: fieldState.value,
+          label: widget.label,
+          placeholder: widget.placeholder,
+          isRequired: widget.isRequired,
           validator: (_) => unifiedFormErrorText(fieldState),
           onChanged: (d) {
             fieldState.didChange(d);
@@ -930,6 +1130,7 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
 
 /// [FormField] + [UnifiedAsyncPickerField].
 class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
+  /// Creates a [Form]-aware async single-select picker field.
   const UnifiedFormAsyncPickerField({
     super.key,
     required this.itemProvider,
@@ -951,32 +1152,68 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
     this.validator,
     this.onSaved,
     this.shakeOnError = false,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Fetched when the user opens the picker.
   final Future<List<T>> Function() itemProvider;
+
+  /// Label for the field and sheet title fallback.
   final String label;
 
+  /// Hint text shown when empty.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
+
+  /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
 
+  /// Optional external state binding.
   final AppInputController<T>? binding;
+
+  /// Direct value when not using [binding].
   final T? value;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (`T Function()`).
   final UnifiedFormResetValue<T>? resetValue;
+
+  /// Called when the user picks (or clears) a value.
   final ValueChanged<T?>? onChanged;
 
+  /// Renders an item to its display text.
   final String Function(T value)? valueToString;
+
+  /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
+
+  /// Custom row builder inside the sheet.
   final Widget Function(T value)? itemToWidget;
 
+  /// Suggestion list pinned above the searchable list.
   final List<T> suggestion;
+
+  /// Whether the sheet shows a search field.
   final bool hasSearch;
+
+  /// Autofocus the search field on open.
   final bool searchAutoFocus;
+
+  /// Show a Clear button in the sheet header.
   final bool showClearButton;
+
+  /// When true, the field is non-interactive.
   final bool locked;
 
+  /// Validator passed to the underlying [FormField].
   final FormFieldValidator<T?>? validator;
+
+  /// Called from [FormState.save].
   final FormFieldSetter<T?>? onSaved;
 
   /// When true, shakes once when validation error appears on this field.
@@ -1082,6 +1319,8 @@ class _UnifiedFormAsyncPickerFieldState<T> extends State<UnifiedFormAsyncPickerF
         return UnifiedAsyncPickerField<T>(
           itemProvider: widget.itemProvider,
           label: widget.label,
+          placeholder: widget.placeholder,
+          isRequired: widget.isRequired,
           decoration: widget.decoration,
           brightness: widget.brightness,
           binding: null,
@@ -1115,6 +1354,7 @@ class _UnifiedFormAsyncPickerFieldState<T> extends State<UnifiedFormAsyncPickerF
 
 /// [FormField] + [UnifiedAsyncMultiPickerField].
 class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
+  /// Creates a [Form]-aware async multi-select picker field.
   const UnifiedFormAsyncMultiPickerField({
     super.key,
     required this.itemProvider,
@@ -1136,32 +1376,68 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
     this.validator,
     this.onSaved,
     this.shakeOnError = false,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Fetched when the user opens the picker.
   final Future<List<T>> Function() itemProvider;
+
+  /// Label for the field and sheet title fallback.
   final String label;
+
+  /// Current selection.
   final List<T> values;
+
+  /// Hint text shown when empty.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (e.g. `() => const []` to clear).
   final UnifiedFormResetValue<List<T>>? resetValue;
 
+  /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
 
+  /// Optional external state binding.
   final AppInputController<List<T>>? binding;
+
+  /// Called when the selection changes.
   final ValueChanged<List<T>>? onChanged;
 
+  /// Renders an item to its display text.
   final String Function(T value)? valueToString;
+
+  /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
+
+  /// Custom row builder inside the sheet.
   final Widget Function(T value)? itemToWidget;
 
+  /// Suggestion list pinned above the searchable list.
   final List<T> suggestion;
+
+  /// Whether the sheet shows a search field.
   final bool hasSearch;
+
+  /// Autofocus the search field on open.
   final bool searchAutoFocus;
+
+  /// Show a Clear button in the sheet header.
   final bool showClearButton;
+
+  /// When true, the field is non-interactive.
   final bool locked;
 
+  /// Validator passed to the underlying [FormField].
   final FormFieldValidator<List<T>>? validator;
+
+  /// Called from [FormState.save].
   final FormFieldSetter<List<T>>? onSaved;
 
   /// When true, shakes once when validation error appears on this field.
@@ -1277,6 +1553,8 @@ class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMu
           itemProvider: widget.itemProvider,
           label: widget.label,
           values: fieldState.value ?? [],
+          placeholder: widget.placeholder,
+          isRequired: widget.isRequired,
           decoration: widget.decoration,
           brightness: widget.brightness,
           binding: null,
@@ -1309,6 +1587,7 @@ class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMu
 
 /// [FormField] + [UnifiedNumberField] (string snapshot matches [TextEditingController] text).
 class UnifiedFormNumberField extends StatefulWidget {
+  /// Creates a [Form]-aware number field.
   const UnifiedFormNumberField({
     super.key,
     this.decoration,
@@ -1333,13 +1612,29 @@ class UnifiedFormNumberField extends StatefulWidget {
     this.textInputAction,
     this.label,
     this.shakeOnError = false,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Hint text shown when empty.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
+
+  /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
 
+  /// External [TextEditingController].
   final TextEditingController? controller;
+
+  /// External focus node.
   final FocusNode? focusNode;
+
+  /// Two-way binding for the displayed text.
   final AppInputController<String>? binding;
 
   /// Used when [controller] is null to seed the field.
@@ -1348,20 +1643,46 @@ class UnifiedFormNumberField extends StatefulWidget {
   /// When non-null, [FormState.reset] restores `resetValue()` (e.g. `() => ''` to clear).
   final UnifiedFormResetValue<String>? resetValue;
 
+  /// Validator passed to the underlying [FormField].
   final FormFieldValidator<String>? validator;
+
+  /// Called from [FormState.save].
   final FormFieldSetter<String>? onSaved;
+
+  /// Called when the numeric value changes.
   final ValueChanged<num>? onChanged;
+
+  /// Called on keyboard submit.
   final ValueChanged<String>? onSubmitted;
 
+  /// When true, the field is non-editable.
   final bool disabled;
+
+  /// When true, the field rejects edits.
   final bool readOnly;
+
+  /// Autofocus the field on first build.
   final bool autofocus;
+
+  /// When true, allow decimal values in the field.
   final bool allowDecimals;
+
+  /// Step amount used by the +/- buttons.
   final num step;
+
+  /// Minimum allowed value.
   final num? min;
+
+  /// Maximum allowed value.
   final num? max;
+
+  /// Number of decimal digits to render.
   final int? fractionDigits;
+
+  /// Keyboard action button.
   final TextInputAction? textInputAction;
+
+  /// Field label.
   final String? label;
 
   /// When true, shakes once when validation error appears on this field.
@@ -1468,6 +1789,8 @@ class _UnifiedFormNumberFieldState extends State<UnifiedFormNumberField> {
           brightness: widget.brightness,
           controller: _effectiveController,
           focusNode: widget.focusNode,
+          placeholder: widget.placeholder,
+          isRequired: widget.isRequired,
           validator: (_) => unifiedFormErrorText(fieldState),
           onChanged: (n) {
             fieldState.didChange(_effectiveController.text);

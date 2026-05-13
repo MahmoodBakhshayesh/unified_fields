@@ -3,6 +3,7 @@ import 'package:shamsi_date/shamsi_date.dart';
 
 /// Jalali / Persian solar (Shamsi) calendar helpers for date-picker grids.
 abstract final class PersianJalaliCalendar {
+  /// Number of days in the given Jalali year/month.
   static int monthLength(int jalaliYear, int jalaliMonth) =>
       Jalali(jalaliYear, jalaliMonth, 1).monthLength;
 
@@ -11,6 +12,7 @@ abstract final class PersianJalaliCalendar {
     return DateUtils.dateOnly(Jalali(jalaliYear, jalaliMonth, jalaliDay).toDateTime());
   }
 
+  /// Converts a [DateTime] (Gregorian) into a [Jalali] date.
   static Jalali fromGregorian(DateTime g) => Jalali.fromDateTime(g);
 
   /// Every Jalali month that intersects `[first, last]` (local midnights).

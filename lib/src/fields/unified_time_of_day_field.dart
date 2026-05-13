@@ -9,6 +9,7 @@ import 'unified_input_decoration.dart';
 
 /// Time-of-day picker using unified chrome + [TimePickerUtils].
 class UnifiedTimeOfDayField extends StatefulWidget {
+  /// Creates a time-of-day field.
   const UnifiedTimeOfDayField({
     super.key,
     this.decoration,
@@ -20,20 +21,46 @@ class UnifiedTimeOfDayField extends StatefulWidget {
     this.onSubmitted,
     this.locked = false,
     this.timePickerEntryMode = TimePickerEntryMode.dial,
+    this.label,
+    this.placeholder,
+    this.isRequired = false,
   });
 
+  /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
 
+  /// Optional external state binding.
   final AppInputController<TimeOfDay>? binding;
+
+  /// Direct value when not using [binding].
   final TimeOfDay? value;
 
+  /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
+
+  /// Called when the user picks a time.
   final ValueChanged<TimeOfDay?>? onChanged;
+
+  /// Forwarded to the inner text field's submit.
   final ValueChanged<String>? onSubmitted;
 
+  /// When true, the field is non-interactive.
   final bool locked;
+
+  /// Forwarded to [showTimePicker].
   final TimePickerEntryMode timePickerEntryMode;
+
+  /// Field label. Overrides [UnifiedInputDecoration.label] when set.
+  final String? label;
+
+  /// Hint text shown when empty. Overrides [UnifiedInputDecoration.placeholder] when set.
+  final String? placeholder;
+
+  /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
+  final bool isRequired;
 
   @override
   State<UnifiedTimeOfDayField> createState() => _UnifiedTimeOfDayFieldState();
@@ -82,7 +109,7 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
     final initial = widget.binding?.value ?? widget.value ?? TimeOfDay.now();
     final picked = await TimePickerUtils.show(
       context,
-      title: widget.decoration?.label,
+      title: widget.label ?? widget.decoration?.label,
       initialTime: initial,
       timePickerEntryMode: widget.timePickerEntryMode,
     );
@@ -109,8 +136,8 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
           controller: _txt,
           locked: widget.locked,
           readOnly: true,
-          label: d.label,
-          placeholder: d.placeholder ?? d.label,
+          label: widget.label ?? d.label,
+          placeholder: widget.placeholder ?? d.placeholder ?? d.label,
           labelStyle: d.labelStyle,
           style: d.fieldStyle,
           backgroundColor: d.backgroundColor ?? Colors.black26,
@@ -120,7 +147,7 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
           height: d.height,
           rowLabelRatio: d.rowLabelRatio,
           labelInRow: d.labelInRow,
-          requiredField: d.requiredField,
+          requiredField: widget.isRequired || d.requiredField,
           showError: d.showError,
           validationColor: d.validationColor,
           validationIcon: d.validationIcon,

@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../app_colors.dart';
+import '../unified_colors.dart';
 
 /// Lean Cupertino-styled field: label (column or row), editable area, optional inline error.
 ///
@@ -16,6 +16,7 @@ import '../app_colors.dart';
 /// - [UnifiedBaseTextFieldState.validate] / [UnifiedBaseTextFieldState.save] via
 ///   `GlobalKey<UnifiedBaseTextFieldState>`.
 class UnifiedBaseTextField extends StatefulWidget {
+  /// Creates the base text field used by every unified input widget.
   const UnifiedBaseTextField({
     super.key,
     this.controller,
@@ -65,41 +66,97 @@ class UnifiedBaseTextField extends StatefulWidget {
     this.mustResolveTextDirectionByInput = false,
   });
 
+  /// External [TextEditingController]; if null one is created internally.
   final TextEditingController? controller;
+
+  /// External focus node; if null one is created internally.
   final FocusNode? focusNode;
+
+  /// Initial text when [controller] is null.
   final String? initialValue;
 
+  /// Label rendered above (or beside) the editing area.
   final String? label;
+
+  /// Placeholder / hint text shown when empty.
   final String? placeholder;
+
+  /// Override for the label text style.
   final TextStyle? labelStyle;
+
+  /// Override for the editing text style.
   final TextStyle? style;
 
+  /// Background color of the editing area.
   final Color backgroundColor;
+
+  /// Background of the left label area when [labelInRow] is true.
   final Color? headerBackgroundColor;
+
+  /// Border radius of the field box.
   final BorderRadius borderRadius;
+
+  /// Border side of the field box.
   final BorderSide? borderSide;
+
+  /// Minimum height of the inner row.
   final double? height;
+
+  /// Inner content padding.
   final EdgeInsetsGeometry? padding;
 
+  /// Keyboard type.
   final TextInputType? keyboardType;
+
+  /// Keyboard action button.
   final TextInputAction? textInputAction;
+
+  /// Capitalization rule applied to typed text.
   final TextCapitalization textCapitalization;
+
+  /// Horizontal alignment of typed text.
   final TextAlign textAlign;
+
+  /// Custom input formatters applied to user keystrokes.
   final List<TextInputFormatter>? inputFormatters;
+
+  /// Maximum visible lines.
   final int? maxLines;
+
+  /// Minimum visible lines.
   final int? minLines;
+
+  /// Maximum allowed characters.
   final int? maxLength;
 
+  /// When true, the inner field rejects edits.
   final bool readOnly;
+
+  /// When true, the field is non-editable and visually muted.
   final bool disabled;
+
+  /// When true, paints the field in "locked" style.
   final bool locked;
+
+  /// Whether to reset to [initialValue] when [locked] becomes true.
   final bool resetTextWhenLocked;
+
+  /// Whether the inner field should request focus on first build.
   final bool autofocus;
+
+  /// Render entered text as obscured and add a visibility toggle.
   final bool isPassword;
+
+  /// Show an "x" suffix to clear the field when it has content.
   final bool showClearButton;
 
+  /// Render the required marker next to [label].
   final bool requiredField;
+
+  /// Render the label in the same row as the editing area.
   final bool labelInRow;
+
+  /// Flex ratio between the label cell and the body cell when [labelInRow] is true.
   final List<int> rowLabelRatio;
 
   /// Imperative / server-side error; non-empty trim wins over [validator] for display.
@@ -108,25 +165,44 @@ class UnifiedBaseTextField extends StatefulWidget {
   /// When [validator] runs for UI feedback. `null` means [AutovalidateMode.always].
   final AutovalidateMode? autovalidateMode;
 
+  /// Synchronous validator returning the error message, or null when valid.
   final String? Function(String value)? validator;
+
+  /// Called from [UnifiedBaseTextFieldState.save].
   final ValueChanged<String>? onSaved;
+
+  /// Whether to render the inline error strip below the field when present.
   final bool showError;
+
+  /// Color used for error chrome (border, label).
   final Color? validationColor;
+
+  /// Optional icon shown in the inline error strip.
   final IconData? validationIcon;
 
+  /// Leading widget shown before the field content.
   final Widget? prefix;
+
+  /// Leading icon shown before the field content.
   final Widget? prefixIcon;
+
+  /// Trailing widget shown after the field content.
   final Widget? suffixIcon;
 
+  /// Called on every keystroke.
   final ValueChanged<String>? onChanged;
+
+  /// Called when the user submits via the keyboard action button.
   final ValueChanged<String>? onSubmit;
 
+  /// If true, the text direction is inferred from the typed content.
   final bool mustResolveTextDirectionByInput;
 
   @override
   State<UnifiedBaseTextField> createState() => UnifiedBaseTextFieldState();
 }
 
+/// State for [UnifiedBaseTextField] with imperative [validate] / [resetValidation] / [save] hooks.
 class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   late TextEditingController _ctrl;
   bool _ownsController = false;
@@ -156,6 +232,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     return null;
   }
 
+  /// Whether the field currently has no resolved error.
   bool get isValid => _resolvedError == null;
 
   /// Runs [validator] visibility rules and rebuilds. Returns whether the field is valid.
@@ -260,7 +337,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
 
   Widget _labelBlock(String? errorText) {
     if (widget.label == null) return const SizedBox.shrink();
-    final defaultLabelStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textColorDark);
+    final defaultLabelStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: UnifiedColors.textColorDark);
     return Padding(
       padding: const EdgeInsets.only(bottom: 4, top: 8),
       child: IgnorePointer(
@@ -272,7 +349,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
               if (widget.requiredField)
                 const Padding(
                   padding: EdgeInsets.only(bottom: 6,right: 4),
-                  child: Icon(Icons.star_rate_rounded, color: AppColors.textColorDark, size: 8),
+                  child: Icon(Icons.star_rate_rounded, color: UnifiedColors.textColorDark, size: 8),
                 ),
             ],)),
             Text(errorText ?? '', style: TextStyle(color: widget.validationColor ?? Colors.red, fontSize: 12)),
@@ -294,7 +371,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints.tightFor(width: 32, height: 32),
             onPressed: null,
-            icon: Icon(Icons.lock, size: 18, color: AppColors.textColorDark.withValues(alpha: 0.7)),
+            icon: Icon(Icons.lock, size: 18, color: UnifiedColors.textColorDark.withValues(alpha: 0.7)),
           ),
         ),
       );
@@ -307,7 +384,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(width: 32, height: 32),
               onPressed: widget.disabled ? null : _toggleObscure,
-              icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, size: 18, color: AppColors.textColorDark.withValues(alpha: 0.7)),
+              icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, size: 18, color: UnifiedColors.textColorDark.withValues(alpha: 0.7)),
               tooltip: _obscure ? 'Show password' : 'Hide password',
             ),
           ),
@@ -326,7 +403,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(width: 32, height: 32),
               onPressed: widget.disabled ? null : () => _ctrl.clear(),
-              icon: Icon(Icons.clear, size: 18, color: AppColors.textColor.withValues(alpha: 0.7)),
+              icon: Icon(Icons.clear, size: 18, color: UnifiedColors.textColor.withValues(alpha: 0.7)),
             ),
           ),
         );
@@ -362,9 +439,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       minLines: widget.minLines,
       maxLength: widget.maxLength,
       inputFormatters: widget.inputFormatters ?? const [],
-      style: widget.style ?? TextStyle(color: AppColors.textColorDark),
+      style: widget.style ?? TextStyle(color: UnifiedColors.textColorDark),
       placeholder: widget.placeholder,
-      placeholderStyle: TextStyle(color: AppColors.hintColor),
+      placeholderStyle: TextStyle(color: UnifiedColors.hintColor),
       prefix: widget.prefixIcon ?? widget.prefix,
       suffix: _buildSuffixRow(hasText),
       onSubmitted: widget.onSubmit,
@@ -393,7 +470,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   }
 
   Widget _labelRowCompact() {
-    final defaultLabelStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textColorDark);
+    final defaultLabelStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: UnifiedColors.textColorDark);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
