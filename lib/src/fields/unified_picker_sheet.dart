@@ -1,0 +1,282 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+import '../unified_fields_context.dart';
+import '../unified_sheet_button.dart';
+import '../scrollable_list/item_positions_listener.dart';
+import '../scrollable_list/scrollable_positioned_list.dart';
+
+class PickerSheetWidget<T> extends StatefulWidget {
+  final List<T> items;
+  final List<T> suggestion;
+  final String label;
+  final bool hasSearch;
+  final bool hasClear;
+  final bool searchAutoFocus;
+  final T? value;
+  final Widget? headerWidget;
+  final Widget Function(T)? itemToWidget;
+  final String Function(T)? searchBuilder;
+
+  const PickerSheetWidget({
+    super.key,
+    required this.items,
+    this.headerWidget,
+    required this.suggestion,
+    required this.label,
+    required this.hasClear,
+    this.itemToWidget,
+    required this.value,
+    required this.searchAutoFocus,
+    this.searchBuilder,
+    required this.hasSearch,
+  });
+
+  @override
+  State<PickerSheetWidget<T>> createState() => _PickerSheetWidgetState<T>();
+}
+
+class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
+  final TextEditingController searchC = TextEditingController();
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  final ItemPositionsListener _positionsListener = ItemPositionsListener.create();
+  bool autoPop = false;
+
+  @override
+  void initState() {
+    super.initState();
+    searchC.addListener(() {
+      if (searchC.text.isNotEmpty) {
+        _scrollToTop();
+      }
+      setState(() {});
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
+  }
+
+  @override
+  void didUpdateWidget(covariant PickerSheetWidget<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value || oldWidget.items != widget.items) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
+    }
+  }
+
+  @override
+  void dispose() {
+    searchC.dispose();
+    super.dispose();
+  }
+
+  List<T> _filteredSorted() {
+    final query = searchC.text.toLowerCase();
+    // dev.log(widget.items.first.toString());
+    // dev.log(widget.searchBuilder!(widget.items.first));
+    // dev.log((widget.searchBuilder?.call(widget.items.first) ?? widget.items.first.toString()).toLowerCase().indexOf(query).toString());
+
+    final filtered = widget.items.where((a) => query.isEmpty || (widget.searchBuilder?.call(a) ?? a.toString()).toLowerCase().split(' ').any((sp) => sp.startsWith(query))).toList();
+
+    // same sort rule you had: by match position
+    if (query.isNotEmpty) {
+      filtered.sort((a, b) {
+        var comp = (widget.searchBuilder?.call(a) ?? a.toString()).toLowerCase().indexOf(query).compareTo((widget.searchBuilder?.call(b) ?? b.toString()).toLowerCase().indexOf(query));
+        if (comp == 0) {
+          return (widget.searchBuilder?.call(a) ?? a.toString()).compareTo((widget.searchBuilder?.call(b) ?? b.toString()));
+        }
+        return comp;
+      });
+    }
+    // dev.log(filtered.first.toString());
+    // dev.log(widget.searchBuilder!(filtered.first));
+    // dev.log((widget.searchBuilder?.call(filtered.first) ?? filtered.first.toString()).toLowerCase().indexOf(query).toString());
+    return filtered;
+  }
+
+  void _scrollToSelected() {
+    if (!mounted || widget.value == null) return;
+
+    final items = _filteredSorted(); // <- your filtered list
+    final idx = items.indexOf(widget.value as T);
+    if (idx < 0) return;
+
+    // Defer until laid out so positions are available
+    if (!_itemScrollController.isAttached || _positionsListener.itemPositions.value.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
+      return;
+    }
+
+    // If everything fits, don't scroll
+    if (_listFitsInViewport(items.length)) {
+      return;
+    }
+
+    // If already fully visible, don't scroll
+    if (_isIndexFullyVisible(idx)) {
+      return;
+    }
+
+    _itemScrollController.scrollTo(index: idx, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut, alignment: 0.1);
+  }
+
+  void _scrollToTop() {
+    if (!mounted || widget.value == null) return;
+
+    final items = _filteredSorted(); // <- your filtered list
+    final idx = 0;
+    // Defer until laid out so positions are available
+    if (!_itemScrollController.isAttached || _positionsListener.itemPositions.value.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
+      return;
+    }
+
+    // If everything fits, don't scroll
+    if (_listFitsInViewport(items.length)) {
+      return;
+    }
+
+    // If already fully visible, don't scroll
+    if (_isIndexFullyVisible(idx)) {
+      return;
+    }
+
+    _itemScrollController.scrollTo(index: idx, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut, alignment: 0.1);
+  }
+
+  bool _listFitsInViewport(int itemCount) {
+    final positions = _positionsListener.itemPositions.value;
+    if (positions.isEmpty) return false; // not laid out yet
+
+    // Is the first item fully visible?
+    final first = positions.where((p) => p.index == 0).toList();
+    // Is the last item fully visible?
+    final last = positions.where((p) => p.index == itemCount - 1).toList();
+
+    if (first.isNotEmpty && last.isNotEmpty) {
+      final firstFullyVisible = first.any((p) => p.itemLeadingEdge >= 0 && p.itemTrailingEdge <= 1);
+      final lastFullyVisible = last.any((p) => p.itemLeadingEdge >= 0 && p.itemTrailingEdge <= 1);
+      return firstFullyVisible && lastFullyVisible;
+    }
+    return false;
+  }
+
+  bool _isIndexFullyVisible(int index) {
+    final positions = _positionsListener.itemPositions.value;
+    if (positions.isEmpty) return false;
+    return positions.any((p) => p.index == index && p.itemLeadingEdge >= 0 && p.itemTrailingEdge <= 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = _filteredSorted();
+    // if (items.length == 1 && !autoPop) {
+    //   autoPop = true;
+    //   Future.delayed(Duration(milliseconds: 300), () {
+    //     Navigator.of(context).pop(items.first);
+    //   });
+    // }
+    if (widget.suggestion.isNotEmpty &&
+        items.isEmpty &&
+        widget.suggestion.where((a) => searchC.text.toLowerCase().isEmpty || (widget.searchBuilder?.call(a) ?? a.toString()).toLowerCase().split(' ').any((sp) => sp.startsWith(searchC.text.toLowerCase()))).toList().length == 1 &&
+        !autoPop) {
+      autoPop = true;
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (!context.mounted) return;
+        Navigator.of(context).pop(widget.suggestion.first);
+      });
+    }
+    return SafeArea(
+      child: BottomSheet(
+        backgroundColor: const Color(0xffEAECF2),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        constraints: BoxConstraints(maxHeight: context.height * 0.9),
+        onClosing: () {},
+        builder: (BuildContext context) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                ),
+                padding: const EdgeInsets.only(left: 12.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(widget.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    if (widget.hasClear) UnifiedSheetButton(label: "Clear", reverse: true, color: Colors.blueAccent, onPressed: () => Navigator.of(context).pop(Null)),
+                    const CloseButton(),
+                  ],
+                ),
+              ),
+              if (widget.headerWidget != null) widget.headerWidget!,
+              // Search
+              if (widget.hasSearch)
+                CupertinoTextField(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  controller: searchC,
+                  autofocus: widget.searchAutoFocus,
+                  onSubmitted: (a) {
+                    if (a.isEmpty && widget.suggestion.isNotEmpty) {
+                      Navigator.of(context).pop(widget.suggestion.first);
+                    }
+                  },
+                  prefix: const Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.search)),
+                ),
+
+              // List
+              Column(
+                children: widget.suggestion.map((s) {
+                  return InkWell(
+                    onTap: () => Navigator.of(context).pop(s),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.green.withAlpha(8),
+                        border: const Border(bottom: BorderSide(color: Colors.white)),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
+                      child: Row(
+                        children: [
+                          Expanded(child: widget.itemToWidget?.call(s) ?? Text(s.toString())),
+                          Text("Suggestion", style: TextStyle(color: Colors.black45, fontSize: 10)),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              Expanded(
+                child: ScrollablePositionedList.builder(
+                  padding: EdgeInsets.only(bottom: 400),
+                  itemScrollController: _itemScrollController,
+                  itemPositionsListener: _positionsListener,
+                  itemCount: items.length,
+                  itemBuilder: (c, i) {
+                    final item = items[i];
+                    final isSelected = widget.value == item;
+                    return InkWell(
+                      onTap: () => Navigator.of(context).pop(item),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.blueAccent.withValues(alpha: 0.3) : const Color(0xffF2F3F6),
+                          border: const Border(bottom: BorderSide(color: Colors.white)),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
+                        child: Row(children: [Expanded(child: widget.itemToWidget?.call(item) ?? Text(item.toString()))]),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
