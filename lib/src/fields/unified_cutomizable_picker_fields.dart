@@ -1,10 +1,10 @@
-import '../unified_colors.dart';
 import 'package:flutter/material.dart';
 
 import 'unified_base_text_field.dart';
 import 'unified_customizable_picker_controller.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
+import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_sheet.dart';
 
@@ -247,12 +247,11 @@ class _UnifiedCustomizablePickerFieldState<T>
       prefixIcon: dec.prefixIcon,
       suffixIcon: widget.isDisabled || widget.locked
           ? null
-          : IconButton(
+          : UnifiedInputThemeResolver.defaultSuffixIcon(
+              context,
+              UnifiedInputFieldSuffixKind.picker,
+              UnifiedInputThemeResolver.resolvePalette(context),
               onPressed: () => _open(context),
-              icon: Icon(
-                Icons.arrow_drop_down,
-                color: UnifiedColors.textColorDark,
-              ),
             ),
       padding: dec.contentPadding,
       validator: widget.validator,
@@ -501,12 +500,11 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
       prefixIcon: dec.prefixIcon,
       suffixIcon: widget.isDisabled || widget.locked
           ? null
-          : IconButton(
+          : UnifiedInputThemeResolver.defaultSuffixIcon(
+              context,
+              UnifiedInputFieldSuffixKind.multiPicker,
+              UnifiedInputThemeResolver.resolvePalette(context),
               onPressed: () => _open(context, dec),
-              icon: Icon(
-                Icons.arrow_drop_down,
-                color: UnifiedColors.textColorDark,
-              ),
             ),
       padding: dec.contentPadding,
       validator: widget.validator,

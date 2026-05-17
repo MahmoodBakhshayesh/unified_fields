@@ -1,8 +1,30 @@
+## 0.1.6
+
+### Features
+
+* **`UnifiedInputThemeScope`** — global field chrome via `UnifiedInputThemeData`: disabled/locked label and field colors, placeholder, required icon, validation, suffix/clear/loading colors, picker sheet background, default suffix icons per field type.
+* **`UnifiedInputPickerHeaderStyle`** — settable picker sheet header `padding`, `backgroundColor`, `titleStyle`, and `clearButtonColor` (shared `UnifiedPickerSheetHeader` for single and multi pickers).
+* **`UnifiedInputMultiPickerCheckboxStyle`** — settable multi-picker checkbox `size`, `borderRadius`, `fillColor`, `checkColor`, and `borderColor`.
+* **`UnifiedSuffixIconChrome`** — 32×32 aligned suffix slot so date/time/duration icons line up with picker dropdown and lock/clear affordances.
+* **Custom duration columns** — `pickerColumns` with fixed wheel ranges (year `0…999`, month `0…11`, week `0…4`); presets on `UnifiedFieldsDurationColumnPresets`.
+* **Time / duration wheel pickers**, **Persian digits** (KookFaNum), **Jalali** calendar and field display improvements (see 0.1.4–0.1.5 notes below).
+
+### API
+
+* **`UnifiedFieldsContextX`** — prefixed getters (`unifiedFieldsScreenWidth`, `unifiedFieldsUseDialogLayout`, …); legacy `width` / `isDesktop` deprecated.
+* **`UnifiedFieldsDateWheelStyle.forPicker`** — named `overrides:` and optional `context:` for themed sheet background.
+* **`unifiedFormatDuration`** / **`unifiedTryParseDuration`** — named `granularity:`, optional `pickerColumns:` / `calendarKind:`.
+
+### Fixes
+
+* Picker sheets use theme scope for background color instead of hard-coded values.
+* Static-analysis cleanup (`dart analyze lib` clean).
+
 ## 0.1.5
 
 ### Features
 
-* **`UnifiedInputThemeData`** — optional scope via `UnifiedInputThemeScope` (only `child` required): brightness/palette; disabled & locked label/field colors and opacities; placeholder; required icon (`requiredIcon`, `requiredIconColor`, `requiredIconSize`); `validationColor`; `clearButtonColor`; suffix/loading colors; `pickerSheetBackgroundColor`; `UnifiedInputDefaultSuffixIcons`.
+* **`UnifiedInputThemeData`** — optional scope via `UnifiedInputThemeScope` (only `child` required): brightness/palette; disabled & locked label/field colors and opacities; placeholder; required icon; validation/suffix/loading colors; `pickerSheetBackgroundColor`; `UnifiedInputPickerHeaderStyle` (header padding and colors); `UnifiedInputMultiPickerCheckboxStyle` (radius and colors); `UnifiedInputDefaultSuffixIcons`.
 * **`UnifiedInputThemeResolver`** — helpers used by [UnifiedBaseTextField] (`disabledLabelColor`, `disabledFieldColor`, `requiredIcon`, `placeholderStyle`, `validationColor`, etc.) plus picker sheet background and default suffix icons.
 * Picker sheets and wheel chrome use scope sheet background when set; otherwise `Theme.bottomSheetTheme.backgroundColor` then palette `sheetBackground`.
 

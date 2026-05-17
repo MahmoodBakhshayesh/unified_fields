@@ -1,4 +1,3 @@
-import '../unified_colors.dart';
 import 'package:flutter/material.dart';
 
 import '../controllers/field_controller_sync.dart';
@@ -7,6 +6,7 @@ import 'unified_input_picker.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
+import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_sheet.dart';
 
@@ -292,15 +292,15 @@ class _UnifiedAsyncPickerFieldState<T>
       brightness: widget.brightness,
     );
 
+    final palette = UnifiedInputThemeResolver.resolvePalette(context);
     final Widget? suffix = widget.isDisabled || widget.locked || _loading
         ? dec.suffixIcon
         : (dec.suffixIcon ??
-              IconButton(
+              UnifiedInputThemeResolver.defaultSuffixIcon(
+                context,
+                UnifiedInputFieldSuffixKind.picker,
+                palette,
                 onPressed: _open,
-                icon: Icon(
-                  Icons.arrow_drop_down,
-                  color: UnifiedColors.textColorDark,
-                ),
               ));
 
     return GestureDetector(
@@ -633,15 +633,15 @@ class _UnifiedAsyncMultiPickerFieldState<T>
       brightness: widget.brightness,
     );
 
+    final palette = UnifiedInputThemeResolver.resolvePalette(context);
     final Widget? suffix = widget.isDisabled || widget.locked || _loading
         ? dec.suffixIcon
         : (dec.suffixIcon ??
-              IconButton(
+              UnifiedInputThemeResolver.defaultSuffixIcon(
+                context,
+                UnifiedInputFieldSuffixKind.multiPicker,
+                palette,
                 onPressed: () => _open(dec),
-                icon: Icon(
-                  Icons.arrow_drop_down,
-                  color: UnifiedColors.textColorDark,
-                ),
               ));
 
     return GestureDetector(

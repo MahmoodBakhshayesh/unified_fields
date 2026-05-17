@@ -18,6 +18,13 @@ void main() {
           duration: Icons.timelapse_outlined,
           picker: Icons.unfold_more,
         ),
+        pickerHeaderStyle: const UnifiedInputPickerHeaderStyle(
+          padding: EdgeInsets.fromLTRB(16, 14, 8, 14),
+        ),
+        multiPickerCheckboxStyle: const UnifiedInputMultiPickerCheckboxStyle(
+          borderRadius: 4,
+          fillColor: Color(0xFF1565C0),
+        ),
       ),
       child: const UnifiedFieldsDemoApp(),
     ),

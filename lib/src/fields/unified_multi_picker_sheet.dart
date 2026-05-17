@@ -5,6 +5,7 @@ import '../unified_fields_context.dart';
 import '../unified_colors.dart';
 import '../unified_fields_strings.dart';
 import '../unified_sheet_button.dart';
+import 'unified_input_theme.dart';
 
 /// Bottom-sheet content used by [UnifiedMultiPickerField] for multi-selection.
 class MultiPickerSheetWidget<T> extends StatefulWidget {
@@ -137,9 +138,10 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
     //     Navigator.of(context).pop(widget.suggestion.first);
     //   });
     // }
+    final sheetBg = UnifiedInputThemeResolver.resolvePickerSheetBackground(context);
     return SafeArea(
       child: BottomSheet(
-        backgroundColor: const Color(0xffEAECF2),
+        backgroundColor: sheetBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         constraints: BoxConstraints(
           maxHeight: context.unifiedFieldsScreenHeight * 0.9,
@@ -153,36 +155,11 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
-              Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              UnifiedPickerSheetHeader(
+                title: UnifiedFieldsStrings.instance.multiPickerTitle(
+                  widget.label,
                 ),
-                padding: const EdgeInsets.only(left: 12.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        UnifiedFieldsStrings.instance.multiPickerTitle(
-                          widget.label,
-                        ),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    if (widget.hasClear)
-                      UnifiedSheetButton(
-                        label: UnifiedFieldsStrings.instance.clear,
-                        reverse: true,
-                        color: Colors.blueAccent,
-                        onPressed: () => Navigator.of(context).pop(Null),
-                      ),
-                    const CloseButton(),
-                  ],
-                ),
+                showClear: widget.hasClear,
               ),
               if (widget.headerWidget != null) widget.headerWidget!,
               // Search
@@ -269,16 +246,7 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                         ),
                         child: Row(
                           children: [
-                            IgnorePointer(
-                              child: SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: Checkbox(
-                                  value: isSelected,
-                                  onChanged: (v) {},
-                                ),
-                              ),
-                            ),
+                            UnifiedMultiPickerCheckbox(value: isSelected),
                             const SizedBox(width: 8),
                             Expanded(
                               child:

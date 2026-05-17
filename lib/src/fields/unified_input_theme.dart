@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_palette.dart';
 import 'unified_input_theme_data.dart';
+import 'unified_picker_sheet_style.dart';
+import 'unified_suffix_icon.dart';
 
 export 'unified_input_theme_data.dart';
+export 'unified_picker_sheet_chrome.dart';
+export 'unified_picker_sheet_style.dart';
+export 'unified_suffix_icon.dart';
 
 /// Optional inherited scope for brightness, palette, disabled/placeholder chrome, picker sheets, and default suffix icons.
 class UnifiedInputThemeScope extends InheritedWidget {
@@ -122,15 +127,17 @@ class UnifiedInputThemeResolver {
     }
   }
 
-  /// Builds a default suffix [Icon] using [palette.fieldTextColor].
+  /// Builds a default suffix icon in the standard 32×32 slot.
   static Widget defaultSuffixIcon(
     BuildContext context,
     UnifiedInputFieldSuffixKind kind,
-    UnifiedInputPalette palette,
-  ) {
-    return Icon(
-      defaultSuffixIconData(context, kind),
+    UnifiedInputPalette palette, {
+    VoidCallback? onPressed,
+  }) {
+    return UnifiedSuffixIconChrome.build(
+      icon: defaultSuffixIconData(context, kind),
       color: suffixIconColor(context, palette),
+      onPressed: onPressed,
     );
   }
 
@@ -252,5 +259,49 @@ class UnifiedInputThemeResolver {
   static Color loadingIndicatorColor(BuildContext context) =>
       _theme(context).loadingIndicatorColor ??
       Theme.of(context).colorScheme.primary;
+
+  static UnifiedInputPickerHeaderStyle _headerStyle(BuildContext context) =>
+      _theme(context).pickerHeaderStyle ?? const UnifiedInputPickerHeaderStyle();
+
+  static UnifiedInputMultiPickerCheckboxStyle _checkboxStyle(
+    BuildContext context,
+  ) =>
+      _theme(context).multiPickerCheckboxStyle ??
+      const UnifiedInputMultiPickerCheckboxStyle();
+
+  /// Padding for picker sheet headers.
+  static EdgeInsets pickerHeaderPadding(BuildContext context) =>
+      _headerStyle(context).padding ??
+      const EdgeInsets.fromLTRB(16, 12, 8, 12);
+
+  /// Picker sheet header background.
+  static Color pickerHeaderBackgroundColor(
+    BuildContext context,
+    UnifiedInputPalette palette,
+  ) =>
+      _headerStyle(context).backgroundColor ?? palette.sheetHeaderBackground;
+
+  /// Picker sheet header title style.
+  static TextStyle pickerHeaderTitleStyle(
+    BuildContext context,
+    UnifiedInputPalette palette,
+  ) =>
+      _headerStyle(context).titleStyle ??
+      TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: palette.labelColor,
+      );
+
+  /// Clear button color in picker headers.
+  static Color pickerHeaderClearButtonColor(BuildContext context) =>
+      _headerStyle(context).clearButtonColor ??
+      Theme.of(context).colorScheme.primary;
+
+  /// Multi-picker checkbox style from the active theme scope.
+  static UnifiedInputMultiPickerCheckboxStyle multiPickerCheckboxStyle(
+    BuildContext context,
+  ) =>
+      _checkboxStyle(context);
 }
 

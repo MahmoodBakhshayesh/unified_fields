@@ -448,20 +448,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   }
 
   Widget _stateSuffixIcon(IconData icon, UnifiedInputPalette palette) {
-    return ExcludeFocus(
-      child: IconButton(
-        style: IconButton.styleFrom(
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-        onPressed: null,
-        icon: Icon(
-          icon,
-          size: 18,
-          color: UnifiedInputThemeResolver.suffixIconColor(context, palette),
-        ),
-      ),
+    return UnifiedSuffixIconChrome.build(
+      icon: icon,
+      color: UnifiedInputThemeResolver.suffixIconColor(context, palette),
     );
   }
 
@@ -469,8 +458,8 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     final color = UnifiedInputThemeResolver.loadingIndicatorColor(context);
     return ExcludeFocus(
       child: SizedBox(
-        width: 32,
-        height: 32,
+        width: UnifiedSuffixIconChrome.slotSize,
+        height: UnifiedSuffixIconChrome.slotSize,
         child: Center(
           child: SizedBox(
             width: 18,
@@ -533,25 +522,15 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     } else {
       if (widget.isPassword) {
         widgets.add(
-          ExcludeFocus(
-            child: IconButton(
-              style: IconButton.styleFrom(
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-              onPressed: _blocksInteraction ? null : _toggleObscure,
-              icon: Icon(
-                _obscure ? Icons.visibility : Icons.visibility_off,
-                size: 18,
-                color: UnifiedInputThemeResolver.suffixIconColor(context, palette),
-              ),
-              tooltip: _obscure ? 'Show password' : 'Hide password',
-            ),
+          UnifiedSuffixIconChrome.build(
+            icon: _obscure ? Icons.visibility : Icons.visibility_off,
+            color: UnifiedInputThemeResolver.suffixIconColor(context, palette),
+            onPressed: _blocksInteraction ? null : _toggleObscure,
+            tooltip: _obscure ? 'Show password' : 'Hide password',
           ),
         );
       } else if (widget.suffixIcon != null) {
-        widgets.add(widget.suffixIcon!);
+        widgets.add(UnifiedSuffixIconChrome.normalize(widget.suffixIcon!));
       }
 
       if (widget.showClearButton &&
@@ -562,24 +541,14 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
           !widget.interactionBlocked) {
         widgets.insert(
           0,
-          ExcludeFocus(
-            child: IconButton(
-              style: IconButton.styleFrom(
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              tooltip: MaterialLocalizations.of(context).deleteButtonTooltip,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-              onPressed: _blocksInteraction ? null : () => _ctrl.clear(),
-              icon: Icon(
-                Icons.clear,
-                size: 18,
-                color: UnifiedInputThemeResolver.clearButtonColor(context, palette)
-                    .withValues(
-                      alpha: UnifiedInputThemeScope.themeDataOf(context).suffixIconOpacity ?? 0.7,
-                    ),
-              ),
-            ),
+          UnifiedSuffixIconChrome.build(
+            icon: Icons.clear,
+            color: UnifiedInputThemeResolver.clearButtonColor(context, palette)
+                .withValues(
+                  alpha: UnifiedInputThemeScope.themeDataOf(context).suffixIconOpacity ?? 0.7,
+                ),
+            onPressed: _blocksInteraction ? null : () => _ctrl.clear(),
+            tooltip: MaterialLocalizations.of(context).deleteButtonTooltip,
           ),
         );
       }

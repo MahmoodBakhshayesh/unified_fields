@@ -34,7 +34,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.1.5
+  unified_fields: ^0.1.6
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -79,7 +79,7 @@ dependencies:
 | **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind`, `UnifiedFieldsDatePickerStyle` | Single date or range; calendar grid or scroll wheels; Gregorian vs Jalali |
 | **Time** | `UnifiedTimeOfDayField`, `showUnifiedFieldsTimePicker`, `UnifiedFieldsTimePickerStyle`, `UnifiedFieldsTimeGranularity`, `TimePickerUtils.show` | Material dial (default) or H:M:S wheels with Shamsi digit toggle |
 | **Duration** | `UnifiedDurationField`, `showUnifiedFieldsDurationPicker`, `UnifiedFieldsDurationColumn`, `UnifiedFieldsDurationColumnPresets`, `UnifiedDurationGranularity`, `UnifiedFieldsDurationPickerStyle` | Wheel picker with fixed granularity or custom column order (year · week · day · hour, …) |
-| **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedInputDecoration`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputTheme`, `UnifiedInputThemeScope` | Labels, errors, light/dark palettes, optional global theme scope |
+| **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedInputDecoration`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, global theme scope, picker headers, multi-picker checkboxes, aligned suffix icons |
 | **Controllers** | `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, `UnifiedAsyncPickerFieldController`, `UnifiedDateFieldController`, `UnifiedTimeOfDayFieldController`, `UnifiedDurationFieldController`, `UnifiedNumberFieldController`, `UnifiedFormController` | Listenable value + validation + imperative `openPicker` / `requestFocus` |
 | **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsTypography`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, Persian digits, layout helpers, default colors, sheet actions |
 | **Demo** | `UnifiedInputsShowcasePage` | Scrollable gallery of widgets + palette toggle |
@@ -468,6 +468,15 @@ void main() {
           duration: Icons.timelapse_outlined,
           picker: Icons.unfold_more,
         ),
+        pickerHeaderStyle: UnifiedInputPickerHeaderStyle(
+          padding: EdgeInsets.fromLTRB(16, 14, 8, 14),
+          backgroundColor: Colors.white,
+        ),
+        multiPickerCheckboxStyle: UnifiedInputMultiPickerCheckboxStyle(
+          borderRadius: 6,
+          fillColor: Color(0xFF1565C0),
+          checkColor: Colors.white,
+        ),
       ),
       child: const MyApp(),
     ),
@@ -523,6 +532,8 @@ UnifiedInputThemeScope(
 | `suffixIconColor` / `suffixIconOpacity` | Lock, password, default picker suffixes |
 | `loadingIndicatorColor` | Loading spinner on fields |
 | `pickerSheetBackgroundColor` | Date/time/duration sheets (else `bottomSheetTheme` → palette) |
+| `pickerHeaderStyle` | `UnifiedInputPickerHeaderStyle`: header `padding`, `backgroundColor`, `titleStyle`, `clearButtonColor` |
+| `multiPickerCheckboxStyle` | `UnifiedInputMultiPickerCheckboxStyle`: `size`, `borderRadius`, `fillColor`, `checkColor`, `borderColor` |
 | `defaultSuffixIcons` | Default suffix per field type (`date`, `time`, `duration`, `picker`, …) |
 
 Field-level **`UnifiedInputDecoration`** and per-widget params still win for one-off overrides.
@@ -609,14 +620,15 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.1.5`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.1.6`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
 
-### Upgrading to 0.1.5
+### Upgrading to 0.1.6
 
-- **Duration wheels** are the default (`UnifiedFieldsDurationPickerStyle.wheels`). Pass **`pickerStyle: UnifiedFieldsDurationPickerStyle.cupertino`** to keep the old Cupertino sheet.  
-- **`unifiedFormatDuration`** / **`unifiedTryParseDuration`** now use **named** parameters: `granularity:` and optional `pickerColumns:` / `calendarKind:`.  
-- **Shamsi dates** in the field use Jalali formatting when the active calendar kind is Jalali; set **`initialCalendarKind: jalali`** on date fields and pickers.  
-- Optional **`UnifiedFieldsTypography.instance`** for Persian digits globally or in Shamsi UI only (bundled **KookFaNum** font).
+- Wrap your app (or a screen) in **`UnifiedInputThemeScope`** for global disabled/placeholder/required/validation colors, picker sheet background, header padding, and multi-picker checkbox styling — see [Global theme](#global-theme-unifiedinputthemescope).  
+- Replace **`context.isDesktop`** / **`context.width`** with **`context.unifiedFieldsUseDialogLayout`** / **`context.unifiedFieldsScreenWidth`** (old names are deprecated).  
+- **Duration wheels** default to `UnifiedFieldsDurationPickerStyle.wheels`; use **`pickerColumns`** for year/month/week-style columns.  
+- **`unifiedFormatDuration`** / **`unifiedTryParseDuration`** use **named** `granularity:` and optional `pickerColumns:` / `calendarKind:`.  
+- **Shamsi dates:** set **`initialCalendarKind: jalali`**; optional **`UnifiedFieldsTypography`** for Persian digits (KookFaNum font).
 
 ---
 

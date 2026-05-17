@@ -207,6 +207,14 @@ class _UnifiedInputsShowcasePageState extends State<UnifiedInputsShowcasePage> {
                   date: Icons.event_outlined,
                   duration: Icons.hourglass_bottom_outlined,
                 ),
+                pickerHeaderStyle: UnifiedInputPickerHeaderStyle(
+                  padding: EdgeInsets.fromLTRB(20, 14, 10, 14),
+                ),
+                multiPickerCheckboxStyle: UnifiedInputMultiPickerCheckboxStyle(
+                  borderRadius: 6,
+                  fillColor: Color(0xFFE65100),
+                  checkColor: Colors.white,
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

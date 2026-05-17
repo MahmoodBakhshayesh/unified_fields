@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../unified_fields_context.dart';
 import '../unified_fields_strings.dart';
-import '../unified_sheet_button.dart';
+import 'unified_input_theme.dart';
 import '../scrollable_list/item_positions_listener.dart';
 import '../scrollable_list/scrollable_positioned_list.dart';
 
@@ -257,9 +257,10 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
         Navigator.of(context).pop(widget.suggestion.first);
       });
     }
+    final sheetBg = UnifiedInputThemeResolver.resolvePickerSheetBackground(context);
     return SafeArea(
       child: BottomSheet(
-        backgroundColor: const Color(0xffEAECF2),
+        backgroundColor: sheetBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         constraints: BoxConstraints(
           maxHeight: context.unifiedFieldsScreenHeight * 0.9,
@@ -273,37 +274,9 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
-              Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                ),
-                padding: const EdgeInsets.only(left: 12.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          widget.label,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (widget.hasClear)
-                      UnifiedSheetButton(
-                        label: UnifiedFieldsStrings.instance.clear,
-                        reverse: true,
-                        color: Colors.blueAccent,
-                        onPressed: () => Navigator.of(context).pop(Null),
-                      ),
-                    const CloseButton(),
-                  ],
-                ),
+              UnifiedPickerSheetHeader(
+                title: widget.label,
+                showClear: widget.hasClear,
               ),
               if (widget.headerWidget != null) widget.headerWidget!,
               // Search

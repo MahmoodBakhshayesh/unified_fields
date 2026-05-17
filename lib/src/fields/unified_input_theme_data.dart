@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'unified_input_brightness.dart';
 import 'unified_input_palette.dart';
+import 'unified_picker_sheet_style.dart';
 
 /// Default suffix icons for unified field types when the field does not set its own.
 @immutable
@@ -60,6 +61,8 @@ class UnifiedInputThemeData {
     this.suffixIconOpacity,
     this.loadingIndicatorColor,
     this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
+    this.multiPickerCheckboxStyle,
     this.defaultSuffixIcons,
   });
 
@@ -141,6 +144,12 @@ class UnifiedInputThemeData {
   /// Package-default suffix icons per field type.
   final UnifiedInputDefaultSuffixIcons? defaultSuffixIcons;
 
+  /// Picker sheet title bar padding, colors, and title style.
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
+
+  /// Multi-picker row checkbox colors and corner radius.
+  final UnifiedInputMultiPickerCheckboxStyle? multiPickerCheckboxStyle;
+
   /// Returns a copy with the given fields replaced.
   UnifiedInputThemeData merge(UnifiedInputThemeData? other) {
     if (other == null) return this;
@@ -173,6 +182,9 @@ class UnifiedInputThemeData {
       loadingIndicatorColor: other.loadingIndicatorColor ?? loadingIndicatorColor,
       pickerSheetBackgroundColor:
           other.pickerSheetBackgroundColor ?? pickerSheetBackgroundColor,
+      pickerHeaderStyle: other.pickerHeaderStyle ?? pickerHeaderStyle,
+      multiPickerCheckboxStyle:
+          other.multiPickerCheckboxStyle ?? multiPickerCheckboxStyle,
       defaultSuffixIcons: other.defaultSuffixIcons ?? defaultSuffixIcons,
     );
   }
