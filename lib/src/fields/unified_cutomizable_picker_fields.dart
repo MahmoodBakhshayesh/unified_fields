@@ -204,6 +204,8 @@ class _UnifiedCustomizablePickerFieldState<T> extends State<UnifiedCustomizableP
     final field = UnifiedBaseTextField(
       controller: _txt,
       readOnly: readOnly,
+      focusNode: widget.pickerController.focusNode,
+      errorText: widget.pickerController.errorText,
       isDisabled: widget.isDisabled,
       locked: widget.locked,
       onChanged: widget.allowFreeText ? _onFieldTextChanged : null,
@@ -439,6 +441,8 @@ class _UnifiedCustomizableMultiPickerFieldState<T> extends State<UnifiedCustomiz
     final field = UnifiedBaseTextField(
       controller: _txt,
       readOnly: readOnly,
+      focusNode: widget.pickerController.focusNode,
+      errorText: widget.pickerController.errorText,
       isDisabled: widget.isDisabled,
       locked: widget.locked,
       onChanged: widget.allowFreeText ? _onFieldTextChanged : null,

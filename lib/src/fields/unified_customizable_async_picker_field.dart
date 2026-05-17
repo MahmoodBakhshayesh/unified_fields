@@ -1,4 +1,3 @@
-import '../unified_fields_context.dart';
 import '../unified_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -214,11 +213,11 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
     final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
     final readOnly = widget.locked || widget.isDisabled || !widget.allowFreeText;
 
-    final Widget? suffix = widget.isDisabled || widget.locked
+    final Widget? suffix = widget.isDisabled || widget.locked || _loading
         ? dec.suffixIcon
         : (dec.suffixIcon ??
             IconButton(
-              onPressed: widget.locked || widget.isDisabled || _loading ? null : _open,
+              onPressed: _open,
               icon: Icon(
                 Icons.arrow_drop_down,
                 color: UnifiedColors.textColorDark,
@@ -228,6 +227,10 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
     final field = UnifiedBaseTextField(
       controller: _txt,
       readOnly: readOnly,
+      interactionBlocked: true,
+      loading: _loading,
+      focusNode: widget.pickerController.focusNode,
+      errorText: widget.pickerController.errorText,
       isDisabled: widget.isDisabled,
       locked: widget.locked,
       onChanged: widget.allowFreeText ? _onFieldTextChanged : null,
@@ -253,37 +256,13 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
       validator: widget.validator,
     );
 
-    final wrapped = !widget.allowFreeText
-        ? GestureDetector(
-            onTap: widget.locked || widget.isDisabled || _loading ? null : _open,
-            child: field,
-          )
-        : field;
-
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        wrapped,
-        if (_loading)
-          Positioned.fill(
-            child: AbsorbPointer(
-              child: Material(
-                color: Colors.black.withValues(alpha: 0.05),
-                child: Center(
-                  child: SizedBox(
-                    width: 36,
-                    height: 36,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: context.mainColor,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
+    if (!widget.allowFreeText) {
+      return GestureDetector(
+        onTap: widget.locked || widget.isDisabled || _loading ? null : _open,
+        child: field,
+      );
+    }
+    return field;
   }
 }
 
@@ -488,11 +467,11 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
     final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
     final readOnly = widget.locked || widget.isDisabled || !widget.allowFreeText;
 
-    final Widget? suffix = widget.isDisabled || widget.locked
+    final Widget? suffix = widget.isDisabled || widget.locked || _loading
         ? dec.suffixIcon
         : (dec.suffixIcon ??
             IconButton(
-              onPressed: widget.locked || widget.isDisabled || _loading ? null : () => _open(dec),
+              onPressed: () => _open(dec),
               icon: Icon(
                 Icons.arrow_drop_down,
                 color: UnifiedColors.textColorDark,
@@ -502,6 +481,10 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
     final field = UnifiedBaseTextField(
       controller: _txt,
       readOnly: readOnly,
+      interactionBlocked: true,
+      loading: _loading,
+      focusNode: widget.pickerController.focusNode,
+      errorText: widget.pickerController.errorText,
       isDisabled: widget.isDisabled,
       locked: widget.locked,
       onChanged: widget.allowFreeText ? _onFieldTextChanged : null,
@@ -527,36 +510,12 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
       validator: widget.validator,
     );
 
-    final wrapped = !widget.allowFreeText
-        ? GestureDetector(
-            onTap: widget.locked || widget.isDisabled || _loading ? null : () => _open(dec),
-            child: field,
-          )
-        : field;
-
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        wrapped,
-        if (_loading)
-          Positioned.fill(
-            child: AbsorbPointer(
-              child: Material(
-                color: Colors.black.withValues(alpha: 0.05),
-                child: Center(
-                  child: SizedBox(
-                    width: 36,
-                    height: 36,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: context.mainColor,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
+    if (!widget.allowFreeText) {
+      return GestureDetector(
+        onTap: widget.locked || widget.isDisabled || _loading ? null : () => _open(dec),
+        child: field,
+      );
+    }
+    return field;
   }
 }

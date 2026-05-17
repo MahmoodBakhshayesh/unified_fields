@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'unified_base_text_field.dart';
+import '../controllers/field_controller_sync.dart';
+import '../controllers/unified_duration_field_controller.dart';
 import 'app_input_controller.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
@@ -72,6 +74,7 @@ class UnifiedDurationField extends StatefulWidget {
     this.decoration,
     this.brightness,
     this.binding,
+    this.fieldController,
     this.value,
     this.validator,
     this.onChanged,
@@ -96,7 +99,10 @@ class UnifiedDurationField extends StatefulWidget {
   /// Optional external state binding.
   final AppInputController<Duration>? binding;
 
-  /// Direct value when not using [binding].
+  /// Preferred imperative handle ([UnifiedDurationFieldController.openPicker], validate, focus).
+  final UnifiedDurationFieldController? fieldController;
+
+  /// Direct value when not using [binding] or [fieldController].
   final Duration? value;
 
   /// Synchronous validator on the displayed text.
@@ -144,7 +150,16 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
   late FocusNode _fn;
   bool _ownsFn = false;
 
-  Duration get _effective => unifiedClampDuration(widget.binding?.value ?? widget.value ?? Duration.zero, widget.min, widget.max);
+  Duration get _effective => unifiedClampDuration(
+        unifiedEffectiveValue(
+              fieldController: widget.fieldController,
+              binding: widget.binding,
+              direct: widget.value,
+            ) ??
+            Duration.zero,
+        widget.min,
+        widget.max,
+      );
 
   @override
   void initState() {
@@ -154,6 +169,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
     _fn.addListener(_onFocus);
     _syncText();
     widget.binding?.addListener(_onBinding);
+    widget.fieldController?.addListener(_onBinding);
   }
 
   @override
@@ -166,11 +182,15 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
       _ownsFn = widget.focusNode == null;
       _fn.addListener(_onFocus);
     }
-    if (oldWidget.binding != widget.binding) {
+    if (oldWidget.binding != widget.binding || oldWidget.fieldController != widget.fieldController) {
       oldWidget.binding?.removeListener(_onBinding);
+      oldWidget.fieldController?.removeListener(_onBinding);
       widget.binding?.addListener(_onBinding);
+      widget.fieldController?.addListener(_onBinding);
     }
-    if (oldWidget.value != widget.value || oldWidget.binding?.value != widget.binding?.value) {
+    if (oldWidget.value != widget.value ||
+        oldWidget.binding?.value != widget.binding?.value ||
+        oldWidget.fieldController?.value != widget.fieldController?.value) {
       _syncText();
     }
   }
@@ -181,7 +201,11 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
   }
 
   void _syncText() {
-    final d = widget.binding?.value ?? widget.value;
+    final d = unifiedEffectiveValue(
+      fieldController: widget.fieldController,
+      binding: widget.binding,
+      direct: widget.value,
+    );
     _txt.text = d == null ? '' : unifiedFormatDuration(d, widget.granularity);
   }
 
@@ -200,16 +224,18 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
         selection: TextSelection.collapsed(offset: formatted.length),
       );
     }
-    widget.onChanged?.call(clamped);
-    final b = widget.binding;
-    if (b != null && b.value != clamped) {
-      b.value = clamped;
-    }
+    syncUnifiedFieldValue(
+      value: clamped,
+      onChanged: widget.onChanged,
+      binding: widget.binding,
+      fieldController: widget.fieldController,
+    );
   }
 
   @override
   void dispose() {
     widget.binding?.removeListener(_onBinding);
+    widget.fieldController?.removeListener(_onBinding);
     _fn.removeListener(_onFocus);
     if (_ownsFn) _fn.dispose();
     _txt.dispose();
@@ -218,6 +244,21 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
 
   Future<void> _openSheet(BuildContext context, UnifiedInputDecoration d) async {
     if (widget.isDisabled || widget.locked) return;
+    final fc = widget.fieldController;
+    if (fc != null) {
+      final title = widget.placeholder ?? d.placeholder ?? widget.label ?? d.label ?? 'Duration';
+      final picked = await fc.openPicker(context, title: title, initial: _effective);
+      if (!context.mounted || picked == null) return;
+      _txt.text = unifiedFormatDuration(picked, widget.granularity);
+      syncUnifiedFieldValue(
+        value: picked,
+        onChanged: widget.onChanged,
+        binding: widget.binding,
+        fieldController: widget.fieldController,
+      );
+      setState(() {});
+      return;
+    }
     final palette = widget.brightness != null ? UnifiedInputThemeResolver.paletteFor(widget.brightness!) : UnifiedInputThemeResolver.resolvePalette(context);
 
     final result = await showModalBottomSheet<Duration?>(
@@ -226,7 +267,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
       backgroundColor: palette.sheetBackground,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) {
-        return _DurationPickerSheet(
+        return UnifiedDurationPickerSheet(
           title: widget.placeholder ?? d.placeholder ?? widget.label ?? d.label ?? 'Duration',
           palette: palette,
           initial: _effective,
@@ -241,11 +282,12 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
     if (result == null) return;
     final clamped = unifiedClampDuration(result, widget.min, widget.max);
     _txt.text = unifiedFormatDuration(clamped, widget.granularity);
-    widget.onChanged?.call(clamped);
-    final b = widget.binding;
-    if (b != null && b.value != clamped) {
-      b.value = clamped;
-    }
+    syncUnifiedFieldValue(
+      value: clamped,
+      onChanged: widget.onChanged,
+      binding: widget.binding,
+      fieldController: widget.fieldController,
+    );
     setState(() {});
   }
 
@@ -259,7 +301,8 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
         absorbing: true,
         child: UnifiedBaseTextField(
           controller: _txt,
-          focusNode: _fn,
+          focusNode: widget.fieldController?.focusNode ?? _fn,
+          errorText: widget.fieldController?.errorText,
           isDisabled: widget.isDisabled,
           locked: widget.locked,
           readOnly: true,
@@ -295,8 +338,10 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
   }
 }
 
-class _DurationPickerSheet extends StatefulWidget {
-  const _DurationPickerSheet({
+/// Bottom-sheet duration editor used by [UnifiedDurationField] and [UnifiedDurationFieldController].
+class UnifiedDurationPickerSheet extends StatefulWidget {
+  /// Creates the duration picker sheet content.
+  const UnifiedDurationPickerSheet({
     required this.title,
     required this.palette,
     required this.initial,
@@ -305,18 +350,29 @@ class _DurationPickerSheet extends StatefulWidget {
     required this.granularity,
   });
 
+  /// Sheet title shown in the header.
   final String title;
+
+  /// Palette for sheet chrome.
   final UnifiedInputPalette palette;
+
+  /// Initial duration when the sheet opens.
   final Duration initial;
+
+  /// Minimum selectable duration.
   final Duration min;
+
+  /// Maximum selectable duration.
   final Duration max;
+
+  /// Which wheels (hours / minutes / seconds) are shown.
   final UnifiedDurationGranularity granularity;
 
   @override
-  State<_DurationPickerSheet> createState() => _DurationPickerSheetState();
+  State<UnifiedDurationPickerSheet> createState() => _UnifiedDurationPickerSheetState();
 }
 
-class _DurationPickerSheetState extends State<_DurationPickerSheet> {
+class _UnifiedDurationPickerSheetState extends State<UnifiedDurationPickerSheet> {
   late int _h;
   late int _m;
   late int _s;

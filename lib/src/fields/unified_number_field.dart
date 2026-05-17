@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../controllers/unified_number_field_controller.dart';
 import 'unified_numeric_step_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
@@ -15,6 +16,7 @@ class UnifiedNumberField extends StatelessWidget {
     this.decoration,
     this.brightness,
     this.controller,
+    this.fieldController,
     this.focusNode,
     this.validator,
     this.onChanged,
@@ -43,6 +45,9 @@ class UnifiedNumberField extends StatelessWidget {
 
   /// Backing text controller. The field always edits this text.
   final TextEditingController? controller;
+
+  /// Preferred imperative handle (wraps text editing + numeric value).
+  final UnifiedNumberFieldController? fieldController;
 
   /// Optional focus node.
   final FocusNode? focusNode;
@@ -103,8 +108,9 @@ class UnifiedNumberField extends StatelessWidget {
     final d = resolveUnifiedDecoration(context, overrides: decoration, brightness: brightness);
 
     return UnifiedNumericStepField(
-      controller: controller,
-      focusNode: focusNode,
+      controller: fieldController?.text.textController ?? controller,
+      fieldController: fieldController,
+      focusNode: fieldController?.focusNode ?? focusNode,
       label: label ?? d.label,
       placeholder: placeholder ?? d.placeholder ?? d.label,
       labelStyle: d.labelStyle,

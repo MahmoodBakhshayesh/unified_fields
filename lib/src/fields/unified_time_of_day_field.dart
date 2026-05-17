@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../time_of_day_extension.dart';
 import '../time_picker_utils.dart';
 import 'unified_base_text_field.dart';
+import '../controllers/field_controller_sync.dart';
+import '../controllers/unified_time_field_controller.dart';
 import 'app_input_controller.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
@@ -15,6 +17,7 @@ class UnifiedTimeOfDayField extends StatefulWidget {
     this.decoration,
     this.brightness,
     this.binding,
+    this.fieldController,
     this.value,
     this.validator,
     this.onChanged,
@@ -36,7 +39,10 @@ class UnifiedTimeOfDayField extends StatefulWidget {
   /// Optional external state binding.
   final AppInputController<TimeOfDay>? binding;
 
-  /// Direct value when not using [binding].
+  /// Preferred imperative handle ([UnifiedTimeOfDayFieldController.openPicker], validate, focus).
+  final UnifiedTimeOfDayFieldController? fieldController;
+
+  /// Direct value when not using [binding] or [fieldController].
   final TimeOfDay? value;
 
   /// Synchronous validator on the displayed text.
@@ -73,21 +79,53 @@ class UnifiedTimeOfDayField extends StatefulWidget {
 class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
   late final TextEditingController _txt = TextEditingController();
 
+  void _syncFieldController(BuildContext context) {
+    final d = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    widget.fieldController?.bindPickerTitle(widget.label ?? d.label ?? '');
+    attachUnifiedFieldHandles(
+      opener: (ctx) => _pick(ctx),
+      focusNode: unifiedEffectiveFocusNode(
+        fieldController: widget.fieldController,
+        binding: widget.binding,
+      ),
+      binding: widget.binding,
+      fieldController: widget.fieldController,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _syncText();
     widget.binding?.addListener(_onBinding);
+    widget.fieldController?.addListener(_onBinding);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncFieldController(context);
   }
 
   @override
   void didUpdateWidget(covariant UnifiedTimeOfDayField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.binding != widget.binding) {
-      oldWidget.binding?.removeListener(_onBinding);
-      widget.binding?.addListener(_onBinding);
+    if (oldWidget.fieldController != widget.fieldController ||
+        oldWidget.binding != widget.binding) {
+      detachUnifiedFieldHandles(
+        binding: oldWidget.binding,
+        fieldController: oldWidget.fieldController,
+      );
     }
-    if (oldWidget.value != widget.value || oldWidget.binding?.value != widget.binding?.value) {
+    if (oldWidget.binding != widget.binding || oldWidget.fieldController != widget.fieldController) {
+      oldWidget.binding?.removeListener(_onBinding);
+      oldWidget.fieldController?.removeListener(_onBinding);
+      widget.binding?.addListener(_onBinding);
+      widget.fieldController?.addListener(_onBinding);
+    }
+    if (oldWidget.value != widget.value ||
+        oldWidget.binding?.value != widget.binding?.value ||
+        oldWidget.fieldController?.value != widget.fieldController?.value) {
       _syncText();
     }
   }
@@ -98,36 +136,51 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
   }
 
   void _syncText() {
-    final t = widget.binding?.value ?? widget.value;
+    final t = unifiedEffectiveValue(
+      fieldController: widget.fieldController,
+      binding: widget.binding,
+      direct: widget.value,
+    );
     _txt.text = t?.toJson ?? '';
   }
 
   @override
   void dispose() {
+    detachUnifiedFieldHandles(
+      binding: widget.binding,
+      fieldController: widget.fieldController,
+    );
     widget.binding?.removeListener(_onBinding);
+    widget.fieldController?.removeListener(_onBinding);
     _txt.dispose();
     super.dispose();
   }
 
   Future<void> _pick(BuildContext context) async {
     if (widget.isDisabled || widget.locked) return;
-    final initial = widget.binding?.value ?? widget.value ?? TimeOfDay.now();
+    final initial = _effective ?? TimeOfDay.now();
     final picked = await TimePickerUtils.show(
       context,
       title: widget.label ?? widget.decoration?.label,
       initialTime: initial,
-      timePickerEntryMode: widget.timePickerEntryMode,
+      timePickerEntryMode: widget.fieldController?.timePickerEntryMode ?? widget.timePickerEntryMode,
     );
-    if (!context.mounted) return;
-    if (picked == null) return;
+    if (!context.mounted || picked == null) return;
     _txt.text = picked.toJson ?? '';
-    widget.onChanged?.call(picked);
-    final b = widget.binding;
-    if (b != null && b.value != picked) {
-      b.value = picked;
-    }
+    syncUnifiedFieldValue(
+      value: picked,
+      onChanged: widget.onChanged,
+      binding: widget.binding,
+      fieldController: widget.fieldController,
+    );
     setState(() {});
   }
+
+  TimeOfDay? get _effective => unifiedEffectiveValue(
+        fieldController: widget.fieldController,
+        binding: widget.binding,
+        direct: widget.value,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -139,6 +192,11 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
         absorbing: true,
         child: UnifiedBaseTextField(
           controller: _txt,
+          focusNode: unifiedEffectiveFocusNode(
+            fieldController: widget.fieldController,
+            binding: widget.binding,
+          ),
+          errorText: widget.fieldController?.errorText,
           isDisabled: widget.isDisabled,
           locked: widget.locked,
           readOnly: true,

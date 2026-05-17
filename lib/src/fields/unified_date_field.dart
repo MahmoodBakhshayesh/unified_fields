@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../unified_date_picker_sheet.dart';
+import '../controllers/field_controller_sync.dart';
+import '../controllers/unified_date_field_controller.dart';
+import '../controllers/unified_date_range_field_controller.dart';
 import 'app_input_controller.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
@@ -42,6 +45,7 @@ class UnifiedDateField extends StatefulWidget {
     this.decoration,
     this.brightness,
     this.binding,
+    this.fieldController,
     this.value,
     this.controller,
     this.focusNode,
@@ -77,7 +81,10 @@ class UnifiedDateField extends StatefulWidget {
   /// Optional external state binding.
   final AppInputController<DateTime>? binding;
 
-  /// Direct value when not using [binding].
+  /// Preferred imperative handle (value, validate, [UnifiedDateFieldController.openPicker]).
+  final UnifiedDateFieldController? fieldController;
+
+  /// Direct value when not using [binding] or [fieldController].
   final DateTime? value;
 
   /// External [TextEditingController] for the displayed text.
@@ -158,6 +165,49 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
 
   TextEditingController get _effectiveController => widget.controller ?? _ownedController!;
 
+  String _sheetTitle(UnifiedInputDecoration d) {
+    final titleRaw = ((d.label ?? '').trim().isEmpty) ? (d.placeholder ?? d.label) : d.label;
+    return titleRaw ?? '';
+  }
+
+  void _syncFieldController(UnifiedInputDecoration d) {
+    final fc = widget.fieldController;
+    fc?.bindPickerTitle(_sheetTitle(d));
+    attachUnifiedFieldHandles(
+      opener: (context) => _pickBody(context, d),
+      focusNode: unifiedEffectiveFocusNode(
+        fieldController: widget.fieldController,
+        binding: widget.binding,
+        direct: widget.focusNode,
+      ),
+      binding: widget.binding,
+      fieldController: widget.fieldController,
+    );
+  }
+
+  void _applyPicked(DateTime? picked) {
+    if (picked == null) {
+      widget.onChanged?.call(null);
+      widget.binding?.value = null;
+      widget.fieldController?.value = null;
+      _effectiveController.text = '';
+      setState(() {});
+      return;
+    }
+    widget.onChanged?.call(picked);
+    final b = widget.binding;
+    if (b != null && b.value != picked) {
+      b.value = picked;
+    }
+    final fc = widget.fieldController;
+    if (fc != null && fc.value != picked) {
+      fc.value = picked;
+    }
+    _effectiveController.text =
+        formatUnifiedDateFieldText(picked, widget.valueFormat, granularity: widget.pickerGranularity);
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -166,11 +216,26 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
     }
     _syncTextFromValue();
     widget.binding?.addListener(_onBinding);
+    widget.fieldController?.addListener(_onBinding);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final d = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    _syncFieldController(d);
   }
 
   @override
   void didUpdateWidget(covariant UnifiedDateField oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.fieldController != widget.fieldController ||
+        oldWidget.binding != widget.binding) {
+      detachUnifiedFieldHandles(
+        binding: oldWidget.binding,
+        fieldController: oldWidget.fieldController,
+      );
+    }
     if (oldWidget.controller != widget.controller) {
       if (oldWidget.controller == null) {
         _ownedController?.dispose();
@@ -180,53 +245,68 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
         _ownedController = TextEditingController();
       }
     }
-    if (oldWidget.binding != widget.binding) {
+    if (oldWidget.binding != widget.binding || oldWidget.fieldController != widget.fieldController) {
       oldWidget.binding?.removeListener(_onBinding);
+      oldWidget.fieldController?.removeListener(_onBinding);
       widget.binding?.addListener(_onBinding);
+      widget.fieldController?.addListener(_onBinding);
     }
-    if (oldWidget.value != widget.value || oldWidget.binding?.value != widget.binding?.value) {
+    if (oldWidget.value != widget.value ||
+        oldWidget.binding?.value != widget.binding?.value ||
+        oldWidget.fieldController?.value != widget.fieldController?.value) {
       _syncTextFromValue();
     }
   }
 
-  void _onBinding() => setState(_syncTextFromValue);
+  void _onBinding() {
+    final fc = widget.fieldController;
+    if (fc != null) {
+      final picked = fc.value;
+      widget.onChanged?.call(picked);
+      final b = widget.binding;
+      if (b != null && b.value != picked) {
+        b.value = picked;
+      }
+    }
+    setState(_syncTextFromValue);
+  }
+
+  DateTime? get _effectiveValue => widget.fieldController?.value ?? widget.binding?.value ?? widget.value;
 
   void _syncTextFromValue() {
-    final dt = widget.binding?.value ?? widget.value;
+    final dt = _effectiveValue;
     _effectiveController.text = formatUnifiedDateFieldText(dt, widget.valueFormat, granularity: widget.pickerGranularity);
   }
 
   @override
   void dispose() {
+    detachUnifiedFieldHandles(
+      binding: widget.binding,
+      fieldController: widget.fieldController,
+    );
     widget.binding?.removeListener(_onBinding);
+    widget.fieldController?.removeListener(_onBinding);
     _ownedController?.dispose();
     super.dispose();
   }
 
-  Future<void> _pick(BuildContext context, UnifiedInputDecoration d) async {
-    if (widget.isDisabled || widget.locked) return;
-    final effectiveValue = widget.binding?.value ?? widget.value;
-    final titleRaw = ((d.label ?? '').trim().isEmpty) ? (d.placeholder ?? d.label) : d.label;
-    final title = titleRaw ?? '';
-
+  Future<void> _pickBody(BuildContext context, UnifiedInputDecoration d) async {
     final picked = await showUnifiedFieldsDatePicker(
       context: context,
-      initialDate: effectiveValue ?? DateTime.now(),
+      initialDate: _effectiveValue ?? DateTime.now(),
       firstDate: widget.min ?? DateTime(1900),
       lastDate: widget.max ?? DateTime(3000),
-      title: title,
+      title: _sheetTitle(d),
       showCalendarKindToggle: widget.showCalendarKindToggle,
       granularity: widget.pickerGranularity,
     );
-    if (!context.mounted || picked == null) return;
+    if (!context.mounted) return;
+    _applyPicked(picked);
+  }
 
-    widget.onChanged?.call(picked);
-    final b = widget.binding;
-    if (b != null && b.value != picked) {
-      b.value = picked;
-    }
-    _effectiveController.text = formatUnifiedDateFieldText(picked, widget.valueFormat, granularity: widget.pickerGranularity);
-    setState(() {});
+  Future<void> _pick(BuildContext context, UnifiedInputDecoration d) async {
+    if (widget.isDisabled || widget.locked) return;
+    await _pickBody(context, d);
   }
 
   @override
@@ -238,8 +318,13 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
     return GestureDetector(
       onTap: widget.isDisabled || widget.locked ? null : () => _pick(context, d),
       child: UnifiedBaseTextField(
-        focusNode: widget.focusNode,
+        focusNode: unifiedEffectiveFocusNode(
+          fieldController: widget.fieldController,
+          binding: widget.binding,
+          direct: widget.focusNode,
+        ),
         controller: _effectiveController,
+        errorText: widget.fieldController?.errorText,
         label:widget.label?? d.label,
         placeholder: widget.placeholder ?? d.placeholder ?? d.label,
         style: d.fieldStyle ?? const TextStyle(fontSize: 14),
@@ -262,6 +347,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
         validator: widget.validator,
         isDisabled: widget.isDisabled,
         locked: widget.locked,
+        interactionBlocked: true,
         readOnly: true,
         textAlign: widget.textAlign,
         autofocus: widget.autofocus,
@@ -279,6 +365,7 @@ class UnifiedDateRangeField extends StatefulWidget {
     this.decoration,
     this.brightness,
     this.binding,
+    this.fieldController,
     this.rangeValue,
     this.controller,
     this.validator,
@@ -303,7 +390,10 @@ class UnifiedDateRangeField extends StatefulWidget {
   /// Optional external state binding.
   final AppInputController<DateTimeRange>? binding;
 
-  /// Direct value when not using [binding].
+  /// Preferred imperative handle ([UnifiedDateRangeFieldController.openPicker], validate, focus).
+  final UnifiedDateRangeFieldController? fieldController;
+
+  /// Direct value when not using [binding] or [fieldController].
   final DateTimeRange? rangeValue;
 
   /// External [TextEditingController] for the displayed text.
@@ -354,13 +444,14 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
   @override
   void initState() {
     super.initState();
-    final initialText = formatUnifiedDateRangeFieldText(widget.binding?.value ?? widget.rangeValue);
+    final initialText = formatUnifiedDateRangeFieldText(_effectiveValue);
     if (widget.controller == null) {
       _ownedController = TextEditingController(text: initialText);
     } else {
       widget.controller!.text = initialText;
     }
     widget.binding?.addListener(_onBinding);
+    widget.fieldController?.addListener(_onBinding);
   }
 
   @override
@@ -372,43 +463,59 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
         _ownedController = null;
       }
       if (widget.controller == null && _ownedController == null) {
-        _ownedController = TextEditingController(text: formatUnifiedDateRangeFieldText(widget.binding?.value ?? widget.rangeValue));
+        _ownedController = TextEditingController(text: formatUnifiedDateRangeFieldText(_effectiveValue));
       }
     }
-    if (oldWidget.binding != widget.binding) {
+    if (oldWidget.binding != widget.binding || oldWidget.fieldController != widget.fieldController) {
       oldWidget.binding?.removeListener(_onBinding);
+      oldWidget.fieldController?.removeListener(_onBinding);
       widget.binding?.addListener(_onBinding);
+      widget.fieldController?.addListener(_onBinding);
     }
-    if (oldWidget.rangeValue != widget.rangeValue || oldWidget.binding?.value != widget.binding?.value) {
-      _effectiveController.text = formatUnifiedDateRangeFieldText(widget.binding?.value ?? widget.rangeValue);
+    if (oldWidget.rangeValue != widget.rangeValue ||
+        oldWidget.binding?.value != widget.binding?.value ||
+        oldWidget.fieldController?.value != widget.fieldController?.value) {
+      _effectiveController.text = formatUnifiedDateRangeFieldText(_effectiveValue);
     }
   }
 
+  DateTimeRange? get _effectiveValue => unifiedEffectiveValue(
+        fieldController: widget.fieldController,
+        binding: widget.binding,
+        direct: widget.rangeValue,
+      );
+
   void _onBinding() => setState(() {
-        _effectiveController.text = formatUnifiedDateRangeFieldText(widget.binding?.value ?? widget.rangeValue);
+        _effectiveController.text = formatUnifiedDateRangeFieldText(_effectiveValue);
       });
 
   @override
   void dispose() {
     widget.binding?.removeListener(_onBinding);
+    widget.fieldController?.removeListener(_onBinding);
     _ownedController?.dispose();
     super.dispose();
   }
 
   Future<void> _pick(BuildContext context, UnifiedInputDecoration d) async {
     if (widget.isDisabled || widget.locked) return;
-    final effective = widget.binding?.value ?? widget.rangeValue;
     final titleRaw = ((d.label ?? '').trim().isEmpty) ? (d.placeholder ?? d.label) : d.label;
     final title = titleRaw ?? '';
 
-    final picked = await showUnifiedFieldsDatePickerRange(
-      context: context,
-      initialRange: effective,
-      firstDate: widget.min ?? DateTime(1900),
-      lastDate: widget.max ?? DateTime(3000),
-      title: title,
-      showCalendarKindToggle: widget.showCalendarKindToggle,
-    );
+    final fc = widget.fieldController;
+    final DateTimeRange? picked;
+    if (fc != null) {
+      picked = await fc.openPicker(context, title: title, initialRange: _effectiveValue);
+    } else {
+      picked = await showUnifiedFieldsDatePickerRange(
+        context: context,
+        initialRange: _effectiveValue,
+        firstDate: widget.min ?? DateTime(1900),
+        lastDate: widget.max ?? DateTime(3000),
+        title: title,
+        showCalendarKindToggle: widget.showCalendarKindToggle,
+      );
+    }
     if (!context.mounted || picked == null) return;
 
     widget.onRangeChanged?.call(picked);
@@ -416,20 +523,27 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
     if (b != null && b.value != picked) {
       b.value = picked;
     }
+    if (fc != null && fc.value != picked) {
+      fc.value = picked;
+    }
     _effectiveController.text = formatUnifiedDateRangeFieldText(picked);
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+
     final d = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
     final bg = d.backgroundColor ?? Colors.black26;
     final headerBg = d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26;
 
     return GestureDetector(
+
       onTap: widget.isDisabled || widget.locked ? null : () => _pick(context, d),
       child: UnifiedBaseTextField(
         controller: _effectiveController,
+        focusNode: widget.fieldController?.focusNode,
+        errorText: widget.fieldController?.errorText,
         label: widget.label ?? d.label,
         placeholder: widget.placeholder ?? d.placeholder ?? d.label,
         style: d.fieldStyle ?? const TextStyle(fontSize: 14),
@@ -448,6 +562,7 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
         validator: widget.validator,
         isDisabled: widget.isDisabled,
         locked: widget.locked,
+        interactionBlocked: true,
         readOnly: true,
         textAlign: widget.textAlign,
       ),

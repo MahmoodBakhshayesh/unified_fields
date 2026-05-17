@@ -3,6 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../controllers/field_controller_sync.dart';
+import '../controllers/unified_picker_field_controller.dart';
+import '../controllers/unified_text_field_controller.dart';
 import 'app_input_controller.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
@@ -250,6 +253,7 @@ class UnifiedFormTextField extends StatefulWidget {
     this.decoration,
     this.brightness,
     this.controller,
+    this.fieldController,
     this.initialValue,
     this.resetValue,
     this.binding,
@@ -289,6 +293,10 @@ class UnifiedFormTextField extends StatefulWidget {
 
   /// When null, an internal [TextEditingController] is created and disposed here.
   final TextEditingController? controller;
+
+  /// Preferred imperative handle; when set, uses [UnifiedTextFieldController.textController]
+  /// instead of an internal controller and syncs with [binding] on change.
+  final UnifiedTextFieldController? fieldController;
 
   /// Initial text when [controller] is null.
   final String? initialValue;
@@ -405,43 +413,69 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
     setState(() => _formResetBaseline = t);
   }
 
-  @override
-  void initState() {
-    super.initState();
+  void _initEffectiveController() {
+    final fc = widget.fieldController;
+    if (fc != null) {
+      _effectiveController = fc.textController;
+      _ownsController = false;
+      return;
+    }
     _effectiveController = widget.controller ??
         TextEditingController(text: widget.initialValue ?? '');
     _ownsController = widget.controller == null;
-    final fromBinding = widget.binding?.value;
-    if (fromBinding != null && fromBinding.isNotEmpty) {
-      _effectiveController.text = fromBinding;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initEffectiveController();
+    final fromExternal = widget.fieldController?.value ?? widget.binding?.value;
+    if (fromExternal != null && fromExternal.isNotEmpty) {
+      _effectiveController.text = fromExternal;
     }
     _recomputeResetBaseline();
     widget.binding?.addListener(_onBindingChanged);
+    widget.fieldController?.addListener(_onFieldControllerChanged);
   }
 
   @override
   void didUpdateWidget(covariant UnifiedFormTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.controller != widget.controller) {
+    if (oldWidget.controller != widget.controller ||
+        oldWidget.fieldController != widget.fieldController) {
       if (_ownsController) _effectiveController.dispose();
-      _effectiveController = widget.controller ??
-          TextEditingController(text: widget.initialValue ?? '');
-      _ownsController = widget.controller == null;
+      _initEffectiveController();
       _formFieldKey.currentState?.didChange(_effectiveController.text);
     }
     if (oldWidget.binding != widget.binding) {
       oldWidget.binding?.removeListener(_onBindingChanged);
       widget.binding?.addListener(_onBindingChanged);
     }
+    if (oldWidget.fieldController != widget.fieldController) {
+      oldWidget.fieldController?.removeListener(_onFieldControllerChanged);
+      widget.fieldController?.addListener(_onFieldControllerChanged);
+    }
     if (widget.resetValue != oldWidget.resetValue ||
         widget.binding != oldWidget.binding ||
-        widget.controller != oldWidget.controller) {
+        widget.controller != oldWidget.controller ||
+        widget.fieldController != oldWidget.fieldController) {
       _recomputeResetBaseline();
     }
   }
 
   void _onBindingChanged() {
     final v = widget.binding?.value ?? '';
+    if (v == _effectiveController.text) return;
+    _effectiveController.text = v;
+    _formFieldKey.currentState?.didChange(v);
+    if (widget.resetValue == null) {
+      _formResetBaseline = v;
+    }
+    setState(() {});
+  }
+
+  void _onFieldControllerChanged() {
+    final v = widget.fieldController?.value ?? '';
     if (v == _effectiveController.text) return;
     _effectiveController.text = v;
     _formFieldKey.currentState?.didChange(v);
@@ -461,11 +495,19 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
     if (b != null && b.value != v) {
       b.value = v;
     }
+    final fc = widget.fieldController;
+    if (fc != null) {
+      final next = v.isEmpty ? null : v;
+      if (fc.value != next) {
+        fc.value = next;
+      }
+    }
   }
 
   @override
   void dispose() {
     widget.binding?.removeListener(_onBindingChanged);
+    widget.fieldController?.removeListener(_onFieldControllerChanged);
     if (_ownsController) _effectiveController.dispose();
     super.dispose();
   }
@@ -484,7 +526,12 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
       builder: (context, fieldState) {
         return UnifiedBaseTextField(
           controller: _effectiveController,
-          focusNode: widget.focusNode,
+          focusNode: unifiedEffectiveFocusNode(
+            fieldController: widget.fieldController,
+            binding: widget.binding,
+            direct: widget.focusNode,
+          ),
+          errorText: widget.fieldController?.errorText,
           label: widget.label ?? d.label,
           placeholder: widget.placeholder ?? d.placeholder ?? d.label,
           labelStyle: d.labelStyle,
@@ -521,6 +568,7 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
           showClearButton: widget.showClearButton,
           textCapitalization: widget.textCapitalization,
           textAlign: widget.textAlign,
+
           mustResolveTextDirectionByInput: widget.mustResolveTextDirectionByInput,
           initialValue: widget.controller != null ? null : widget.initialValue,
           onSubmit: widget.onSubmitted,
@@ -531,6 +579,13 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
             final b = widget.binding;
             if (b != null && b.value != s) {
               b.value = s;
+            }
+            final fc = widget.fieldController;
+            if (fc != null) {
+              final next = s.isEmpty ? null : s;
+              if (fc.value != next) {
+                fc.value = next;
+              }
             }
           },
         );
@@ -562,6 +617,7 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
     this.brightness,
     this.value,
     this.binding,
+    this.fieldController,
     this.resetValue,
     this.onChanged,
     this.valueToString,
@@ -603,6 +659,9 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
 
   /// Optional external state binding.
   final AppInputController<T>? binding;
+
+  /// Preferred imperative handle; syncs with [binding] and [FormField] on change.
+  final UnifiedPickerFieldController<T>? fieldController;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (`T Function()`).
   final UnifiedFormResetValue<T>? resetValue;
@@ -655,13 +714,19 @@ class _UnifiedFormSinglePickerFieldState<T> extends State<UnifiedFormSinglePicke
   late T? _echoInitialWhenNoReset;
   late T _cachedResetTarget;
 
+  T? _displayValue() => unifiedEffectiveValue(
+        fieldController: widget.fieldController,
+        binding: widget.binding,
+        direct: widget.value,
+      );
+
   void _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final resetFn = widget.resetValue;
       if (resetFn == null) return;
       final reset = resetFn();
-      final display = widget.value ?? widget.binding?.value;
+      final display = _displayValue();
       if (display != reset) {
         final s = _formFieldKey.currentState;
         if (s != null && s.value != display) {
@@ -674,24 +739,35 @@ class _UnifiedFormSinglePickerFieldState<T> extends State<UnifiedFormSinglePicke
   @override
   void initState() {
     super.initState();
-    _echoInitialWhenNoReset = widget.value ?? widget.binding?.value;
+    _echoInitialWhenNoReset = _displayValue();
     if (widget.resetValue != null) {
       _cachedResetTarget = widget.resetValue!();
       _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget();
     }
+    widget.binding?.addListener(_onBindingChanged);
+    widget.fieldController?.addListener(_onFieldControllerChanged);
   }
 
   @override
   void didUpdateWidget(covariant UnifiedFormSinglePickerField<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.binding != widget.binding) {
+      oldWidget.binding?.removeListener(_onBindingChanged);
+      widget.binding?.addListener(_onBindingChanged);
+    }
+    if (oldWidget.fieldController != widget.fieldController) {
+      oldWidget.fieldController?.removeListener(_onFieldControllerChanged);
+      widget.fieldController?.addListener(_onFieldControllerChanged);
+    }
     final resetChanged = widget.resetValue != oldWidget.resetValue;
     final bindingChanged = widget.binding != oldWidget.binding;
-    if (resetChanged || bindingChanged) {
+    final fieldControllerChanged = widget.fieldController != oldWidget.fieldController;
+    if (resetChanged || bindingChanged || fieldControllerChanged) {
       if (widget.resetValue != null) {
         _cachedResetTarget = widget.resetValue!();
         _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget();
       } else {
-        final display = widget.value ?? widget.binding?.value;
+        final display = _displayValue();
         if (_echoInitialWhenNoReset != display) {
           setState(() => _echoInitialWhenNoReset = display);
         }
@@ -701,8 +777,12 @@ class _UnifiedFormSinglePickerFieldState<T> extends State<UnifiedFormSinglePicke
         }
       }
     } else if (widget.resetValue == null) {
-      final display = widget.value ?? widget.binding?.value;
-      final oldDisplay = oldWidget.value ?? oldWidget.binding?.value;
+      final display = _displayValue();
+      final oldDisplay = unifiedEffectiveValue(
+        fieldController: oldWidget.fieldController,
+        binding: oldWidget.binding,
+        direct: oldWidget.value,
+      );
       if (display != oldDisplay) {
         if (_echoInitialWhenNoReset != display) {
           setState(() => _echoInitialWhenNoReset = display);
@@ -713,8 +793,12 @@ class _UnifiedFormSinglePickerFieldState<T> extends State<UnifiedFormSinglePicke
         }
       }
     } else {
-      final display = widget.value ?? widget.binding?.value;
-      final oldDisplay = oldWidget.value ?? oldWidget.binding?.value;
+      final display = _displayValue();
+      final oldDisplay = unifiedEffectiveValue(
+        fieldController: oldWidget.fieldController,
+        binding: oldWidget.binding,
+        direct: oldWidget.value,
+      );
       if (display != oldDisplay) {
         final s = _formFieldKey.currentState;
         if (s != null && s.value != display) {
@@ -724,13 +808,41 @@ class _UnifiedFormSinglePickerFieldState<T> extends State<UnifiedFormSinglePicke
     }
   }
 
-  void _syncBindingFromForm() {
-    final b = widget.binding;
-    if (b == null) return;
-    final v = _formFieldKey.currentState?.value;
-    if (b.value != v) {
-      b.value = v;
+  void _onBindingChanged() {
+    _applyExternalValue(widget.binding?.value);
+  }
+
+  void _onFieldControllerChanged() {
+    _applyExternalValue(widget.fieldController?.value);
+  }
+
+  void _applyExternalValue(T? display) {
+    syncFormFieldFromExternalValue(
+      formState: _formFieldKey.currentState,
+      value: display,
+      fieldController: widget.fieldController,
+    );
+    if (widget.resetValue == null && _echoInitialWhenNoReset != display) {
+      setState(() => _echoInitialWhenNoReset = display);
+    } else {
+      setState(() {});
     }
+  }
+
+  @override
+  void dispose() {
+    widget.binding?.removeListener(_onBindingChanged);
+    widget.fieldController?.removeListener(_onFieldControllerChanged);
+    super.dispose();
+  }
+
+  void _syncBindingFromForm() {
+    final v = _formFieldKey.currentState?.value;
+    syncUnifiedFieldValue(
+      value: v,
+      binding: widget.binding,
+      fieldController: widget.fieldController,
+    );
   }
 
   @override
@@ -750,18 +862,20 @@ class _UnifiedFormSinglePickerFieldState<T> extends State<UnifiedFormSinglePicke
           isRequired: widget.isRequired,
           decoration: widget.decoration,
           brightness: widget.brightness,
-          value: fieldState.value,
+          fieldController: widget.fieldController,
+          value: widget.fieldController == null ? fieldState.value : null,
           binding: null,
           onChanged: (v) {
             fieldState.didChange(v);
             if (widget.resetValue == null) {
               setState(() => _echoInitialWhenNoReset = v);
             }
-            widget.onChanged?.call(v);
-            final b = widget.binding;
-            if (b != null && b.value != v) {
-              b.value = v;
-            }
+            syncUnifiedFieldValue(
+              value: v,
+              onChanged: widget.onChanged,
+              binding: widget.binding,
+              fieldController: widget.fieldController,
+            );
           },
           valueToString: widget.valueToString,
           searchBuilder: widget.searchBuilder,

@@ -36,7 +36,9 @@ class _DemoHomePageState extends State<DemoHomePage> {
   final _formKey = GlobalKey<FormState>();
 
   final _name = AppInputController<String>(initialValue: '');
+  final _nameC = UnifiedTextFieldController();
   final _country = AppInputController<String>(initialValue: null);
+  final _countryController = UnifiedPickerFieldController<String>();
   final _flavors = AppInputController<List<String>>(initialValue: const []);
   final _date = AppInputController<DateTime>(initialValue: null);
   final _time = AppInputController<TimeOfDay>(initialValue: null);
@@ -117,13 +119,30 @@ class _DemoHomePageState extends State<DemoHomePage> {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) => Scaffold(
-                    appBar: AppBar(),
+                    appBar: AppBar(
+
+                    ),
                     body: const SafeArea(child: Padding(
                   padding: EdgeInsets.all(8.0),
                   child: UnifiedInputsShowcasePage(),
                 ))),
               ),
             ),
+          ),
+          IconButton(
+            tooltip: 'Open full showcase',
+            icon: const Icon(Icons.clear),
+
+            onPressed: () {
+              _nameC.requestFocus();
+              // _countryController.openPicker(context);
+
+              // _country.clear();
+              // _countryController.openPicker(context, items: [], label: "label");
+              // _countryController.clear();
+              // setState((){});
+
+            }
           ),
         ],
       ),
@@ -147,9 +166,20 @@ class _DemoHomePageState extends State<DemoHomePage> {
 
                   UnifiedFormTextField(
                     label: 'Full name',
+
+                    decoration: UnifiedInputDecoration(
+                      labelInRow: true,
+                      height: 40,
+                      // headerBackgroundColor: Colors.red,
+                      // backgroundColor: Colors.blue
+                      // borderRadius: BorderRadius.circular(5)
+                    ),
                     placeholder: 'e.g. Ada Lovelace',
                     isRequired: true,
                     binding: _name,
+                    fieldController: _nameC,
+                    // locked: true,
+                    // disabled: true,
                     resetValue: () => '',
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                   ),
@@ -157,9 +187,15 @@ class _DemoHomePageState extends State<DemoHomePage> {
 
                   UnifiedFormSinglePickerField<String>(
                     label: 'Country',
+                    decoration: UnifiedInputDecoration(
+                      height: 40,
+                      labelInRow: true
+                    ),
                     placeholder: 'Pick one',
                     isRequired: true,
                     items: _countries,
+                    fieldController:_countryController ,
+
                     binding: _country,
                     validator: (v) => v == null ? 'Pick a country' : null,
                   ),
@@ -180,6 +216,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     placeholder: 'Tap to pick',
                     isRequired: true,
                     binding: _date,
+
                     min: DateTime(2020),
                     max: DateTime(2035),
                     pickerGranularity: UnifiedFieldsDatePickerGranularity.year,

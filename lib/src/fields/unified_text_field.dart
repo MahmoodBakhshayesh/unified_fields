@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../controllers/field_controller_sync.dart';
+import '../controllers/unified_text_field_controller.dart';
 import 'app_input_controller.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
@@ -14,6 +16,7 @@ class UnifiedTextField extends StatefulWidget {
     this.decoration,
     this.brightness,
     this.controller,
+    this.fieldController,
     this.binding,
     this.focusNode,
     this.validator,
@@ -50,6 +53,10 @@ class UnifiedTextField extends StatefulWidget {
 
   /// External [TextEditingController]; if null one is created internally.
   final TextEditingController? controller;
+
+  /// Preferred imperative handle (value, validate, focus). When set, overrides
+  /// [controller] and [focusNode] and syncs with [binding] if present.
+  final UnifiedTextFieldController? fieldController;
 
   /// Two-way binding to a [String] value.
   final AppInputController<String>? binding;
@@ -137,29 +144,82 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
   late TextEditingController _effectiveController;
   bool _ownsController = false;
 
+  UnifiedTextFieldController? get _fc => widget.fieldController;
+
   @override
   void initState() {
     super.initState();
+    _initController();
+    _syncBindingFromExternal();
+    widget.binding?.addListener(_onBindingChanged);
+    _fc?.addListener(_onFieldControllerChanged);
+  }
+
+  void _initController() {
+    if (_fc != null) {
+      _effectiveController = _fc!.textController;
+      _ownsController = false;
+      if (widget.validator != null) {
+        _fc!.validator = (v) => widget.validator!(v ?? '');
+      }
+      return;
+    }
     _effectiveController = widget.controller ?? TextEditingController(text: widget.initialValue ?? '');
     _ownsController = widget.controller == null;
-    final bound = widget.binding?.value;
-    if (bound != null && bound.isNotEmpty) {
+  }
+
+  void _syncBindingFromExternal() {
+    final bound = widget.binding?.value ?? _fc?.value;
+    if (bound != null && bound.isNotEmpty && bound != _effectiveController.text) {
       _effectiveController.text = bound;
     }
-    widget.binding?.addListener(_onBindingChanged);
+  }
+
+  void _syncFocusTarget() {
+    attachUnifiedFieldHandles(
+      opener: null,
+      focusNode: unifiedEffectiveFocusNode(
+        fieldController: widget.fieldController,
+        binding: widget.binding,
+        direct: widget.focusNode,
+      ),
+      binding: widget.binding,
+      fieldController: widget.fieldController,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncFocusTarget();
   }
 
   @override
   void didUpdateWidget(covariant UnifiedTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.controller != widget.controller) {
+    if (oldWidget.fieldController != widget.fieldController ||
+        oldWidget.binding != widget.binding ||
+        oldWidget.focusNode != widget.focusNode) {
+      detachUnifiedFieldHandles(
+        binding: oldWidget.binding,
+        fieldController: oldWidget.fieldController,
+      );
+      _syncFocusTarget();
+    }
+    if (oldWidget.fieldController != widget.fieldController || oldWidget.controller != widget.controller) {
       if (_ownsController) _effectiveController.dispose();
-      _effectiveController = widget.controller ?? TextEditingController(text: widget.initialValue ?? '');
-      _ownsController = widget.controller == null;
+      _initController();
     }
     if (oldWidget.binding != widget.binding) {
       oldWidget.binding?.removeListener(_onBindingChanged);
       widget.binding?.addListener(_onBindingChanged);
+    }
+    if (oldWidget.fieldController != widget.fieldController) {
+      oldWidget.fieldController?.removeListener(_onFieldControllerChanged);
+      widget.fieldController?.addListener(_onFieldControllerChanged);
+    }
+    if (widget.validator != null && _fc != null) {
+      _fc!.validator = (v) => widget.validator!(v ?? '');
     }
   }
 
@@ -167,8 +227,11 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
     final v = widget.binding?.value ?? '';
     if (v == _effectiveController.text) return;
     _effectiveController.text = v;
+    _fc?.silentSetValue(v.isEmpty ? null : v);
     setState(() {});
   }
+
+  void _onFieldControllerChanged() => setState(() {});
 
   void _forwardChanged(String s) {
     widget.onChanged?.call(s);
@@ -176,11 +239,23 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
     if (b != null && b.value != s) {
       b.value = s;
     }
+    final fc = _fc;
+    if (fc != null) {
+      final next = s.isEmpty ? null : s;
+      if (fc.value != next) {
+        fc.value = next;
+      }
+    }
   }
 
   @override
   void dispose() {
+    detachUnifiedFieldHandles(
+      binding: widget.binding,
+      fieldController: widget.fieldController,
+    );
     widget.binding?.removeListener(_onBindingChanged);
+    _fc?.removeListener(_onFieldControllerChanged);
     if (_ownsController) _effectiveController.dispose();
     super.dispose();
   }
@@ -191,7 +266,12 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
 
     return UnifiedBaseTextField(
       controller: _effectiveController,
-      focusNode: widget.focusNode,
+      focusNode: unifiedEffectiveFocusNode(
+        fieldController: widget.fieldController,
+        binding: widget.binding,
+        direct: widget.focusNode,
+      ),
+      errorText: _fc?.errorText,
       label: widget.label??d.label,
       placeholder: widget.placeholder??d.placeholder ?? d.label,
       labelStyle: d.labelStyle,
@@ -211,7 +291,17 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       prefixIcon: d.prefixIcon,
       suffixIcon: d.suffixIcon,
       padding: d.contentPadding,
-      validator: widget.validator,
+      validator: _fc != null
+          ? (v) {
+              final err = _fc!.validator?.call(v.isEmpty ? null : v) ?? widget.validator?.call(v);
+              if (err != null && err.isNotEmpty) {
+                _fc!.setError(err);
+              } else {
+                _fc!.clearError();
+              }
+              return err;
+            }
+          : widget.validator,
       disabled: widget.disabled,
       isDisabled: widget.isDisabled,
       readOnly: widget.readOnly,

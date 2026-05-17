@@ -35,8 +35,15 @@ class UnifiedColors {
   /// Body text on light surfaces.
   static const textColor = Color(0xFF333333);
 
-  /// Body text on dark / tinted surfaces (also used by field labels).
+  /// Body text on dark / tinted surfaces (also used by field labels in dark mode).
   static const textColorDark = Color(0xFFE3DACF);
+
+  /// Default label / field text for [Brightness.light] (see [fieldTextFor]).
+  static Color fieldTextFor(Brightness brightness) =>
+      brightness == Brightness.dark ? textColorDark : textColor;
+
+  /// Same as [fieldTextFor] — semantic alias for labels.
+  static Color fieldLabelFor(Brightness brightness) => fieldTextFor(brightness);
 
   /// Disabled variant of [textColorDark].
   static const textColorDarkDisable = Color.fromRGBO(227, 218, 207, 0.16);

@@ -1,3 +1,13 @@
+## 0.1.3
+
+* **Field states on `UnifiedBaseTextField`:** `loading` shows a suffix spinner (no full-field overlay or muted disabled chrome); `interactionBlocked` blocks taps/focus without looking disabled (date, async pickers). `isDisabled` / `disabled` show placeholder and value together when both are set.
+* **`labelInRow`:** one outer rounded border around label + body with a straight vertical divider (no inner radius on the body side).
+* **Field controllers:** `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, async/date/time/duration/number variants, and `UnifiedFormController` for imperative `openPicker` / `requestFocus` that match tapping the bound field when mounted (`attachUnifiedFieldHandles` in `field_controller_sync.dart`).
+* **Form + binding sync:** `UnifiedForm…` picker/date/time/async fields listen to `binding` so `binding.clear()` updates the `FormField` UI; `syncFormFieldFromExternalValue` helpers for external writes.
+* **Date field:** uses `interactionBlocked` instead of `disabled: true` so the picker opens without disabled styling.
+* **Async pickers:** removed full-field loading overlay; loading uses the base field suffix spinner.
+* **Dartdoc:** documented remaining public controller APIs and `UnifiedDurationPickerSheet` fields; `public_member_api_docs` is clean for `lib/`.
+
 ## 0.1.2
 
 * Hoisted `isRequired` and `placeholder` to the root constructor of every field.

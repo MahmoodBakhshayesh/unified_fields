@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../unified_colors.dart';
+import 'unified_input_palette.dart';
+import 'unified_input_theme.dart';
 
 /// Lean Cupertino-styled field: label (column or row), editable area, optional inline error.
 ///
@@ -44,6 +46,8 @@ class UnifiedBaseTextField extends StatefulWidget {
     this.disabled = false,
     this.isDisabled = false,
     this.locked = false,
+    this.loading = false,
+    this.interactionBlocked = false,
     /// When [locked] becomes true, reset text to [initialValue] / empty.
     this.resetTextWhenLocked = true,
     this.autofocus = false,
@@ -142,6 +146,15 @@ class UnifiedBaseTextField extends StatefulWidget {
 
   /// When true, paints the field in "locked" style with a lock suffix icon.
   final bool locked;
+
+  /// When true, shows a small loading spinner in the suffix (instead of
+  /// [suffixIcon]) and blocks focus/edits without muted disabled chrome.
+  final bool loading;
+
+  /// When true, blocks focus and direct edits without changing colors or
+  /// suffix state icons. Use for pick-only fields (date, async picker) where
+  /// a parent [GestureDetector] opens the sheet.
+  final bool interactionBlocked;
 
   /// Whether to reset to [initialValue] when [locked] becomes true.
   final bool resetTextWhenLocked;
@@ -340,36 +353,44 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     return Border.fromBorderSide(side);
   }
 
-  bool get _nonInteractive => widget.disabled || widget.isDisabled || widget.locked;
+  bool get _visuallyDisabled => widget.isDisabled || widget.disabled;
 
-  Color get _labelColor {
-    if (widget.isDisabled || widget.disabled) {
-      return UnifiedColors.textColorDark.withValues(alpha: 0.45);
+  bool get _blocksInteraction =>
+      _visuallyDisabled || widget.locked || widget.loading || widget.interactionBlocked;
+
+  bool get _absorbInnerPointers =>
+      widget.interactionBlocked || widget.loading || _visuallyDisabled || widget.locked;
+
+  Color _labelColor(UnifiedInputPalette palette) {
+    final base = widget.labelStyle?.color ?? palette.labelColor;
+    if (_visuallyDisabled) {
+      return base.withValues(alpha: 0.45);
     }
     if (widget.locked) {
-      return UnifiedColors.textColorDark.withValues(alpha: 0.55);
+      return base.withValues(alpha: 0.55);
     }
-    return UnifiedColors.textColorDark;
+    return base;
   }
 
-  TextStyle _resolveLabelStyle() {
-    final base = widget.labelStyle ?? TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _labelColor);
-    return base.copyWith(color: _labelColor);
+  TextStyle _resolveLabelStyle(UnifiedInputPalette palette) {
+    final base = widget.labelStyle ?? TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: palette.labelColor);
+    return base.copyWith(color: _labelColor(palette));
   }
 
-  TextStyle _resolveFieldStyle() {
-    final base = widget.style ?? TextStyle(color: UnifiedColors.textColorDark);
-    if (widget.isDisabled || widget.disabled) {
-      return base.copyWith(color: UnifiedColors.textColorDark.withValues(alpha: 0.45));
+  TextStyle _resolveFieldStyle(UnifiedInputPalette palette) {
+    final base = widget.style ?? TextStyle(color: palette.fieldTextColor);
+    final textBase = base.color ?? palette.fieldTextColor;
+    if (_visuallyDisabled) {
+      return base.copyWith(color: textBase.withValues(alpha: 0.45));
     }
     if (widget.locked) {
-      return base.copyWith(color: UnifiedColors.textColorDark.withValues(alpha: 0.55));
+      return base.copyWith(color: textBase.withValues(alpha: 0.55));
     }
     return base;
   }
 
   Color get _effectiveBackgroundColor {
-    if (widget.isDisabled || widget.disabled) {
+    if (_visuallyDisabled) {
       return widget.backgroundColor.withValues(alpha: 0.55);
     }
     if (widget.locked) {
@@ -378,21 +399,38 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     return widget.backgroundColor;
   }
 
-  Widget _stateSuffixIcon(IconData icon) {
+  Widget _stateSuffixIcon(IconData icon, UnifiedInputPalette palette) {
     return ExcludeFocus(
       child: IconButton(
         style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints.tightFor(width: 32, height: 32),
         onPressed: null,
-        icon: Icon(icon, size: 18, color: UnifiedColors.textColorDark.withValues(alpha: 0.7)),
+        icon: Icon(icon, size: 18, color: palette.fieldTextColor.withValues(alpha: 0.7)),
       ),
     );
   }
 
-  Widget _labelBlock(String? errorText) {
+  Widget _loadingSuffix() {
+    final color = Theme.of(context).colorScheme.primary;
+    return ExcludeFocus(
+      child: SizedBox(
+        width: 32,
+        height: 32,
+        child: Center(
+          child: SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2, color: color),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _labelBlock(String? errorText, UnifiedInputPalette palette) {
     if (widget.label == null) return const SizedBox.shrink();
-    final defaultLabelStyle = _resolveLabelStyle();
+    final defaultLabelStyle = _resolveLabelStyle(palette);
     return Padding(
       padding: const EdgeInsets.only(bottom: 4, top: 8),
       child: IgnorePointer(
@@ -402,9 +440,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
             Expanded(child: Row(children: [
               Text(widget.label!, style: defaultLabelStyle),
               if (widget.requiredField)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 6,right: 4),
-                  child: Icon(Icons.star_rate_rounded, color: UnifiedColors.textColorDark, size: 8),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6, right: 4),
+                  child: Icon(Icons.star_rate_rounded, color: palette.labelColor, size: 8),
                 ),
             ],)),
             Text(errorText ?? '', style: TextStyle(color: widget.validationColor ?? Colors.red, fontSize: 12)),
@@ -415,13 +453,15 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     );
   }
 
-  Widget? _buildSuffixRow(bool hasText) {
+  Widget? _buildSuffixRow(bool hasText, UnifiedInputPalette palette) {
     final widgets = <Widget>[];
 
-    if (widget.isDisabled || widget.disabled) {
-      widgets.add(_stateSuffixIcon(Icons.not_interested_outlined));
+    if (_visuallyDisabled) {
+      widgets.add(_stateSuffixIcon(Icons.not_interested_outlined, palette));
     } else if (widget.locked) {
-      widgets.add(_stateSuffixIcon(Icons.lock_outline));
+      widgets.add(_stateSuffixIcon(Icons.lock_outline, palette));
+    } else if (widget.loading) {
+      widgets.add(_loadingSuffix());
     } else {
       if (widget.isPassword) {
         widgets.add(
@@ -430,8 +470,8 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
               style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-              onPressed: widget.disabled ? null : _toggleObscure,
-              icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, size: 18, color: UnifiedColors.textColorDark.withValues(alpha: 0.7)),
+              onPressed: _blocksInteraction ? null : _toggleObscure,
+              icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, size: 18, color: palette.fieldTextColor.withValues(alpha: 0.7)),
               tooltip: _obscure ? 'Show password' : 'Hide password',
             ),
           ),
@@ -440,7 +480,12 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         widgets.add(widget.suffixIcon!);
       }
 
-      if (widget.showClearButton && hasText && !widget.locked && !widget.isDisabled && !widget.disabled) {
+      if (widget.showClearButton &&
+          hasText &&
+          !widget.locked &&
+          !_visuallyDisabled &&
+          !widget.loading &&
+          !widget.interactionBlocked) {
         widgets.insert(
           0,
           ExcludeFocus(
@@ -449,7 +494,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
               tooltip: MaterialLocalizations.of(context).deleteButtonTooltip,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-              onPressed: widget.disabled ? null : () => _ctrl.clear(),
+              onPressed: _blocksInteraction ? null : () => _ctrl.clear(),
               icon: Icon(Icons.clear, size: 18, color: UnifiedColors.textColor.withValues(alpha: 0.7)),
             ),
           ),
@@ -464,16 +509,96 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     );
   }
 
-  Widget _cupertinoField() {
+  TextStyle _placeholderStyle(UnifiedInputPalette palette) {
+    final base = widget.style?.fontSize;
+    return TextStyle(
+      color: _visuallyDisabled ? palette.hintColor.withValues(alpha: 0.45) : palette.hintColor,
+      fontSize: base,
+    );
+  }
+
+  /// When [isDisabled] / [disabled], [CupertinoTextField] with `enabled: false` hides
+  /// placeholder or value. Render both hint and text explicitly instead.
+  Widget _disabledFieldContent(UnifiedInputPalette palette, bool hasText) {
+    final padding = widget.padding ?? const EdgeInsets.symmetric(horizontal: 12);
+    final placeholderStyle = _placeholderStyle(palette);
+    final valueStyle = _resolveFieldStyle(palette);
+    final hint = widget.placeholder?.trim();
+    final showHintAndValue = hasText && hint != null && hint.isNotEmpty;
+    final valueText = hasText
+        ? (widget.isPassword && _obscure ? '•' * _ctrl.text.length : _ctrl.text)
+        : '';
+
+    Widget textPart;
+    if (showHintAndValue) {
+      textPart = Row(
+        children: [
+          Flexible(
+            child: Text(
+              hint,
+              style: placeholderStyle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textDirection: _resolveTextDirection(),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 2,
+            child: Text(
+              valueText,
+              style: valueStyle,
+              maxLines: widget.maxLines == 0 ? null : widget.maxLines,
+              overflow: TextOverflow.ellipsis,
+              textAlign: widget.textAlign,
+              textDirection: _resolveTextDirection(),
+            ),
+          ),
+        ],
+      );
+    } else {
+      textPart = Text(
+        hasText ? valueText : (hint ?? ''),
+        style: hasText ? valueStyle : placeholderStyle,
+        maxLines: widget.maxLines == 0 ? null : widget.maxLines,
+        overflow: TextOverflow.ellipsis,
+        textAlign: widget.textAlign,
+        textDirection: _resolveTextDirection(),
+      );
+    }
+
+    final suffix = _buildSuffixRow(hasText, palette);
+    return Container(
+      alignment: Alignment.centerLeft,
+      padding: padding,
+      decoration: widget.labelInRow
+          ? BoxDecoration(color: _effectiveBackgroundColor)
+          : null,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ?widget.prefixIcon,
+          ?widget.prefix,
+          Expanded(child: textPart),
+          ?suffix,
+        ],
+      ),
+    );
+  }
+
+  Widget _cupertinoField(UnifiedInputPalette palette) {
     final hasText = _ctrl.text.isNotEmpty;
+    if (_visuallyDisabled) {
+      return AbsorbPointer(child: _disabledFieldContent(palette, hasText));
+    }
     final obscureOneLine = widget.isPassword && _obscure;
     final effectiveMaxLines = obscureOneLine ? 1 : (widget.maxLines == 0 ? null : widget.maxLines);
-    return CupertinoTextField(
+    final field = CupertinoTextField(
       controller: _ctrl,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
-      enabled: !_nonInteractive,
-      readOnly: widget.readOnly || _nonInteractive,
+      enabled: !widget.locked,
+      readOnly: widget.readOnly || _blocksInteraction,
       textInputAction: widget.textInputAction ?? TextInputAction.done,
       textAlignVertical: TextAlignVertical.center,
       padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 12),
@@ -486,42 +611,36 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       minLines: widget.minLines,
       maxLength: widget.maxLength,
       inputFormatters: widget.inputFormatters ?? const [],
-      style: _resolveFieldStyle(),
+      style: _resolveFieldStyle(palette),
       placeholder: widget.placeholder,
-      placeholderStyle: TextStyle(
-        color: widget.isDisabled || widget.disabled
-            ? UnifiedColors.hintColor.withValues(alpha: 0.45)
-            : UnifiedColors.hintColor,
-      ),
+      placeholderStyle: _placeholderStyle(palette),
       prefix: widget.prefixIcon ?? widget.prefix,
-      suffix: _buildSuffixRow(hasText),
+      suffix: _buildSuffixRow(hasText, palette),
       onSubmitted: widget.onSubmit,
-      decoration: widget.labelInRow
-          ? BoxDecoration(
-              color: _effectiveBackgroundColor,
-              borderRadius: widget.borderRadius,
-              border: _borderFromSide(widget.borderSide),
-            )
-          : const BoxDecoration(color: Colors.transparent),
+      decoration: const BoxDecoration(color: Colors.transparent),
     );
+    if (_absorbInnerPointers) {
+      return AbsorbPointer(child: field);
+    }
+    return field;
   }
 
-  Widget _bodyRow(String? errorText, bool hasError) {
+  Widget _bodyRow(String? errorText, bool hasError, UnifiedInputPalette palette) {
     final minH = widget.height ?? 56;
     return Container(
       constraints: BoxConstraints(minHeight: minH),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(child: _cupertinoField()),
+          Expanded(child: _cupertinoField(palette)),
           // if (hasError && widget.showError) Expanded(child: _errorStrip(errorText)),
         ],
       ),
     );
   }
 
-  Widget _labelRowCompact() {
-    final defaultLabelStyle = _resolveLabelStyle();
+  Widget _labelRowCompact(UnifiedInputPalette palette) {
+    final defaultLabelStyle = _resolveLabelStyle(palette);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
@@ -540,6 +659,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     return ValueListenableBuilder<int>(
         valueListenable: _tick,
         builder: (context, _, _) {
+          final palette = UnifiedInputThemeResolver.resolvePalette(context);
           final errorText = _resolvedError;
           final hasError = errorText != null && errorText.isNotEmpty;
           final radius = widget.borderRadius;
@@ -557,42 +677,51 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
           }
 
           if (widget.labelInRow) {
+
             final labelFlex = widget.rowLabelRatio.isNotEmpty ? widget.rowLabelRatio[0] : 12;
             final bodyFlex = widget.rowLabelRatio.length > 1 ? widget.rowLabelRatio[1] : 33;
             final h = widget.height ?? 56;
+            final divider = widget.borderSide ?? const BorderSide(color: Color(0xff58514C), width: 0.5);
+            final headerBg = widget.headerBackgroundColor ?? _effectiveBackgroundColor;
 
             return wrapInteraction(
-              ClipRRect(
-                borderRadius: radius,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      flex: labelFlex,
-                      child: Container(
-                        height: h,
-                        color: widget.headerBackgroundColor ?? _effectiveBackgroundColor,
-                        alignment: Alignment.center,
-                        child: widget.label == null
-                            ? const SizedBox.shrink()
-                            : Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                child: _labelRowCompact(),
-                              ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: bodyFlex,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: _effectiveBackgroundColor,
-                          borderRadius: BorderRadiusDirectional.horizontal(end: Radius.circular(radius.bottomRight.x)),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: radius,
+                  border: _borderFromSide(widget.borderSide, hasError),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: labelFlex,
+                        child: Container(
+                          constraints: BoxConstraints(minHeight: h),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: headerBg,
+                            border: BorderDirectional(end: divider),
+                          ),
+                          child: widget.label == null
+                              ? const SizedBox.shrink()
+                              : Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  child: _labelRowCompact(palette),
+                                ),
                         ),
-                        height: h,
-                        child: _bodyRow(errorText, hasError),
                       ),
-                    ),
-                  ],
+                      Expanded(
+                        flex: bodyFlex,
+                        child: Container(
+                          constraints: BoxConstraints(minHeight: h),
+                          color: _effectiveBackgroundColor,
+                          child: _bodyRow(errorText, hasError, palette),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -605,7 +734,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _labelBlock(errorText),
+                  _labelBlock(errorText, palette),
                   Container(
                     height: widget.height,
                     decoration: BoxDecoration(
@@ -613,7 +742,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                       borderRadius: radius,
                       border: _borderFromSide(widget.borderSide, hasError),
                     ),
-                    child: _bodyRow(errorText, hasError),
+                    child: _bodyRow(errorText, hasError, palette),
                   ),
                 ],
               ),

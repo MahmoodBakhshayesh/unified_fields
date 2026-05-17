@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../controllers/unified_number_field_controller.dart';
 import '../unified_colors.dart';
 import 'unified_base_text_field.dart';
 
@@ -36,6 +37,7 @@ class UnifiedNumericStepField extends StatefulWidget {
   const UnifiedNumericStepField({
     super.key,
     this.controller,
+    this.fieldController,
     this.focusNode,
     this.label,
     this.placeholder,
@@ -69,6 +71,9 @@ class UnifiedNumericStepField extends StatefulWidget {
 
   /// External [TextEditingController]; if null one is created internally.
   final TextEditingController? controller;
+
+  /// Preferred imperative handle (numeric value + text surface).
+  final UnifiedNumberFieldController? fieldController;
 
   /// External focus node.
   final FocusNode? focusNode;
@@ -179,24 +184,32 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   @override
   void initState() {
     super.initState();
-    _effectiveController = widget.controller ?? TextEditingController();
-    _ownsController = widget.controller == null;
-    _focusNode = widget.focusNode ?? FocusNode();
-    _ownsFocusNode = widget.focusNode == null;
+    _initControllers();
+    widget.fieldController?.addListener(_onFieldController);
+  }
+
+  void _initControllers() {
+    _effectiveController =
+        widget.fieldController?.text.textController ?? widget.controller ?? TextEditingController();
+    _ownsController = widget.fieldController == null && widget.controller == null;
+    _focusNode = widget.fieldController?.focusNode ?? widget.focusNode ?? FocusNode();
+    _ownsFocusNode = widget.fieldController == null && widget.focusNode == null;
     _focusNode.addListener(_onFocusChanged);
   }
+
+  void _onFieldController() => setState(() {});
 
   @override
   void didUpdateWidget(covariant UnifiedNumericStepField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.controller != widget.controller) {
-      if (_ownsController) {
-        _effectiveController.dispose();
-      }
-      _effectiveController = widget.controller ?? TextEditingController();
-      _ownsController = widget.controller == null;
-    }
-    if (oldWidget.focusNode != widget.focusNode) {
+    if (oldWidget.fieldController != widget.fieldController || oldWidget.controller != widget.controller) {
+      _focusNode.removeListener(_onFocusChanged);
+      if (_ownsFocusNode) _focusNode.dispose();
+      if (_ownsController) _effectiveController.dispose();
+      oldWidget.fieldController?.removeListener(_onFieldController);
+      widget.fieldController?.addListener(_onFieldController);
+      _initControllers();
+    } else if (oldWidget.focusNode != widget.focusNode) {
       _focusNode.removeListener(_onFocusChanged);
       if (_ownsFocusNode) {
         _focusNode.dispose();
@@ -210,6 +223,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   @override
   void dispose() {
     _endStepHold();
+    widget.fieldController?.removeListener(_onFieldController);
     _focusNode.removeListener(_onFocusChanged);
     if (_ownsFocusNode) {
       _focusNode.dispose();
@@ -327,6 +341,10 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       selection: TextSelection.collapsed(offset: formatted.length),
     );
     widget.onChanged?.call(next);
+    final fc = widget.fieldController;
+    if (fc != null && fc.value != next) {
+      fc.value = next;
+    }
   }
 
   String _formatCommitted(num value) {
@@ -393,6 +411,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       labelStyle: widget.labelStyle,
       focusNode: _focusNode,
       controller: _effectiveController,
+      errorText: widget.fieldController?.errorText,
       placeholder: placeholder,
       borderRadius: widget.borderRadius,
       backgroundColor: widget.backgroundColor,

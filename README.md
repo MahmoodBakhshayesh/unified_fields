@@ -15,10 +15,12 @@
 7. [Time](#time)  
 8. [Pickers](#pickers)  
 9. [Bindings with `AppInputController`](#bindings-with-appinputcontroller)  
-10. [Theming & layout](#theming--layout)  
-11. [Localization](#localization)  
-12. [Try the built-in demo](#try-the-built-in-demo)  
-13. [Dependencies](#dependencies)  
+10. [Field controllers](#field-controllers)  
+11. [Field states (`isDisabled`, `loading`, …)](#field-states-isdisabled-loading-)  
+12. [Theming & layout](#theming--layout)  
+13. [Localization](#localization)  
+14. [Try the built-in demo](#try-the-built-in-demo)  
+15. [Dependencies](#dependencies)  
 
 ---
 
@@ -28,7 +30,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.1.2
+  unified_fields: ^0.1.3
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -73,7 +75,8 @@ dependencies:
 | **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind` | Single date or range; day / month / year granularity; Gregorian vs Jalali toggle |
 | **Time** | `TimePickerUtils.show` | Wraps `showTimePicker` with sensible defaults |
 | **Chrome helpers** | `UnifiedBaseTextField`, `AppUnifiedFieldShell`, `UnifiedInputDecoration`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputTheme`, `UnifiedInputThemeScope` | Labels, errors, light/dark palettes, optional global theme scope |
-| **Utilities** | `AppInputController`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedFormErrorText`, `unifiedFormPickerOverride` | State binding, layout helpers, default colors, sheet actions |
+| **Controllers** | `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, `UnifiedAsyncPickerFieldController`, `UnifiedDateFieldController`, `UnifiedTimeOfDayFieldController`, `UnifiedDurationFieldController`, `UnifiedNumberFieldController`, `UnifiedFormController` | Listenable value + validation + imperative `openPicker` / `requestFocus` |
+| **Utilities** | `AppInputController`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, layout helpers, default colors, sheet actions, field ↔ controller wiring |
 | **Demo** | `UnifiedInputsShowcasePage` | Scrollable gallery of widgets + palette toggle |
 
 ---
@@ -228,6 +231,61 @@ Users can switch **Gregorian** vs **Jalali (Shamsi)** when **`showCalendarKindTo
 
 **`AppInputController<T>`** is a **`ChangeNotifier`** holding **`value`**, optional **`errorText`**, and helpers **`clear`**, **`setError`**, **`silentSetValue`**. Pass it as **`binding:`** on fields so UI and domain state stay in sync; form wrappers also write back on save/reset when configured.
 
+Form-aware pickers and date/time fields **listen to the binding**, so clearing from code updates the visible field:
+
+```dart
+final country = AppInputController<String?>();
+
+UnifiedFormSinglePickerField<String?>(
+  label: 'Country',
+  binding: country,
+  items: countries,
+);
+
+// Later — UI and FormField both clear:
+country.clear();
+```
+
+You can use **`binding`** and **`fieldController`** together: the binding holds app state; the typed controller adds picker-specific APIs (`openPicker`, `displayText`, sheet options).
+
+---
+
+## Field controllers
+
+**`BaseUnifiedFieldController<T>`** (and typed subclasses) mirror **`TextEditingController`** for pickers, dates, numbers, and duration. Pass **`fieldController:`** on the matching **`Unified…`** widget.
+
+| Controller | Field(s) |
+|------------|----------|
+| **`UnifiedPickerFieldController<T>`** | `UnifiedSinglePickerField`, `UnifiedAsyncPickerField` |
+| **`UnifiedMultiPickerFieldController<T>`** | `UnifiedMultiPickerField`, `UnifiedAsyncMultiPickerField` |
+| **`UnifiedDateFieldController`** | `UnifiedDateField` |
+| **`UnifiedDateRangeFieldController`** | `UnifiedDateRangeField` |
+| **`UnifiedTimeOfDayFieldController`** | `UnifiedTimeOfDayField` |
+| **`UnifiedDurationFieldController`** | `UnifiedDurationField` |
+| **`UnifiedNumberFieldController`** | `UnifiedNumberField`, `UnifiedNumericStepField` |
+
+When the field is **mounted**, **`openPicker(context)`** (and async **`openPickerAsync`**) use the same code path as a tap—no need to pass **`items`** / **`label`** again. Off-tree or tests: call **`bindPicker`** / **`bindPickerLabel`** first, or pass **`items`** and **`label`** explicitly.
+
+**`requestFocus()`** on the controller (or on a **`binding`** that shares the attached focus node) focuses the wired field.
+
+**`UnifiedFormController`** coordinates multiple controllers for validate/save/reset on a custom form layout.
+
+---
+
+## Field states (`isDisabled`, `loading`, …)
+
+Shared by **`UnifiedBaseTextField`** and every field built on it:
+
+| Parameter | Effect |
+|-----------|--------|
+| **`isDisabled` / `disabled`** | Read-only look; when both placeholder and value exist, **both** are shown (not hidden like a greyed empty field). |
+| **`locked`** | Blocks interaction; distinct from disabled styling. |
+| **`loading`** | Small **suffix spinner** (replaces dropdown/chevron); field does **not** use full-field overlay or muted disabled colors. |
+| **`interactionBlocked`** | Absorbs pointer events without disabled chrome—used for pick-only surfaces (date, async picker while idle). |
+| **`labelInRow`** | Label and body share **one** rounded border; a straight vertical divider separates them (no inner radius on the body edge). |
+
+Async pickers set **`loading: true`** while **`itemProvider`** runs; date fields use **`interactionBlocked: true`** so the platform picker still opens without **`disabled: true`**.
+
 ---
 
 ## Theming & layout
@@ -271,7 +329,7 @@ A runnable example app lives in **`example/`** — open it with `flutter run` fr
 | **`shamsi_date`** | Jalali calendar conversion |
 | **`collection`** | Used by the **vendored** scrollable list implementation |
 
-Loading indicators in async pickers use **`CircularProgressIndicator`** (no `flutter_spinkit`).
+Async pickers show loading via the field **suffix spinner** (`loading` on **`UnifiedBaseTextField`**), not a full-field overlay.
 
 ### Vendored code
 
@@ -299,7 +357,7 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.1.2`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.1.3`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
 
 ---
 

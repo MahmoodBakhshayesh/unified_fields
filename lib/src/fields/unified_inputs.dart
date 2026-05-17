@@ -1,4 +1,5 @@
 export 'app_input_controller.dart';
+export '../controllers/unified_field_controllers.dart';
 export 'unified_customizable_async_picker_field.dart';
 export 'unified_customizable_picker_controller.dart';
 export 'unified_cutomizable_picker_fields.dart';

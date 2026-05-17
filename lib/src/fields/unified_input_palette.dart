@@ -60,9 +60,9 @@ class UnifiedInputPalette {
     return UnifiedInputPalette(
       bodyBackground: Colors.black26,
       headerBackground: Colors.black26,
-      labelColor: UnifiedColors.textColorDark,
+      labelColor: UnifiedColors.textColor,
       hintColor: UnifiedColors.hintColor,
-      fieldTextColor: UnifiedColors.textColorDark,
+      fieldTextColor: UnifiedColors.textColor,
       borderColor: const Color(0xff58514C),
       defaultBorderSide: const BorderSide(color: Color(0xff58514C), width: 0.5),
       borderRadius: const BorderRadius.all(Radius.circular(18)),
