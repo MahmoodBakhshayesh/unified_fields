@@ -1,3 +1,13 @@
+## 0.3.0
+
+* **Wheel date picker:** `UnifiedFieldsDatePickerStyle.wheels` on `UnifiedDateField`, `UnifiedFormDateField`, and `showUnifiedFieldsDatePicker` — Cupertino-style year / month / day columns (columns depend on `UnifiedFieldsDatePickerGranularity`). Gregorian and Shamsi toggle matches the calendar picker. New `UnifiedFieldsStrings` keys: `dayLabel`, `monthLabel`.
+* **Wheel styling:** selection band (primary tint), top/bottom fade, column dividers, day-column background, magnifier zoom — tunable via `UnifiedFieldsDateWheelStyle` / `UnifiedFieldsDateWheelStyle.resolve`.
+
+## 0.2.0
+
+* **Breaking:** Renamed `AppInputController` → [`UnifiedInputPicker`](lib/src/fields/unified_input_picker.dart) and `AppUnifiedFieldShell` → [`UnifiedFieldShell`](lib/src/fields/unified_field_shell.dart). Deprecated typedefs remain for one release.
+* **Localization:** All package button/label strings (Cancel, Confirm, Clear, Done, Pick, Suggestion, date picker copy, time hour/minute labels, default duration title) live in [`UnifiedFieldsStrings`](lib/src/unified_fields_strings.dart). Set `UnifiedFieldsStrings.instance` before `runApp` to customize. `UnifiedDatePickerStrings` is deprecated and forwards to the same instance.
+
 ## 0.1.3
 
 * **Field states on `UnifiedBaseTextField`:** `loading` shows a suffix spinner (no full-field overlay or muted disabled chrome); `interactionBlocked` blocks taps/focus without looking disabled (date, async pickers). `isDisabled` / `disabled` show placeholder and value together when both are set.

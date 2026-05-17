@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import '../unified_date_picker_types.dart';
 import '../unified_date_picker_sheet.dart';
 import '../fields/unified_date_field.dart' show formatUnifiedDateFieldText;
 import 'base_unified_field_controller.dart';
@@ -19,6 +20,7 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
     this.max,
     this.showCalendarKindToggle = true,
     this.mode = DatePickerEntryMode.calendar,
+    this.pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
   })  : _calendarKind = calendarKind,
         super(initialValue: initialValue);
 
@@ -39,6 +41,9 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
 
   /// Forwarded to the platform date picker.
   final DatePickerEntryMode mode;
+
+  /// Calendar grid vs scroll-wheel picker UI.
+  final UnifiedFieldsDatePickerStyle pickerStyle;
 
   UnifiedFieldsCalendarKind _calendarKind;
 
@@ -87,6 +92,8 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
       title: title ?? _boundTitle,
       showCalendarKindToggle: showCalendarKindToggle,
       granularity: pickerGranularity,
+      pickerStyle: pickerStyle,
+      initialCalendarKind: calendarKind,
     );
     if (picked != null) {
       value = picked;

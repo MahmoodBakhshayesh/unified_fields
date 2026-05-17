@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_picker_field_controller.dart';
-import 'app_input_controller.dart';
+import 'unified_input_picker.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
@@ -55,7 +55,7 @@ class UnifiedSinglePickerField<T> extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<T>? binding;
+  final UnifiedInputPicker<T>? binding;
 
   /// Preferred imperative handle ([UnifiedPickerFieldController.openPicker], validate, focus).
   final UnifiedPickerFieldController<T>? fieldController;
@@ -361,7 +361,7 @@ class UnifiedMultiPickerField<T> extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<List<T>>? binding;
+  final UnifiedInputPicker<List<T>>? binding;
 
   /// Preferred imperative handle ([UnifiedMultiPickerFieldController.openPicker], validate, focus).
   final UnifiedMultiPickerFieldController<T>? fieldController;

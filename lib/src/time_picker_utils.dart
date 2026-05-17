@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Wraps [showTimePicker] without app-specific l10n (uses [MaterialLocalizations] + English fallbacks).
+import 'unified_fields_strings.dart';
+
+/// Wraps [showTimePicker] without app-specific l10n (uses [MaterialLocalizations] + [UnifiedFieldsStrings] fallbacks).
 class TimePickerUtils {
   /// Opens [showTimePicker] with the given [title] and returns the picked time
   /// (or null when cancelled).
@@ -18,8 +20,8 @@ class TimePickerUtils {
       confirmText: mat.okButtonLabel,
       cancelText: mat.cancelButtonLabel,
       initialEntryMode: timePickerEntryMode,
-      hourLabelText: 'Hour',
-      minuteLabelText: 'Minute',
+      hourLabelText: UnifiedFieldsStrings.instance.hourLabel,
+      minuteLabelText: UnifiedFieldsStrings.instance.minuteLabel,
     );
   }
 }

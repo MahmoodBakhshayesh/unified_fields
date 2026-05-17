@@ -9,7 +9,7 @@ import '../controllers/unified_number_field_controller.dart';
 import '../controllers/unified_picker_field_controller.dart';
 import '../controllers/unified_time_field_controller.dart';
 import '../unified_date_picker_sheet.dart';
-import 'app_input_controller.dart';
+import 'unified_input_picker.dart';
 import 'unified_async_picker_field.dart';
 import 'unified_date_field.dart';
 import 'unified_duration_field.dart';
@@ -84,7 +84,7 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<List<T>>? binding;
+  final UnifiedInputPicker<List<T>>? binding;
 
   /// Preferred imperative handle; syncs with [binding] and [FormField] on change.
   final UnifiedMultiPickerFieldController<T>? fieldController;
@@ -355,6 +355,8 @@ class UnifiedFormDateField extends StatefulWidget {
     this.textAlign = TextAlign.start,
     this.showCalendarKindToggle = true,
     this.pickerGranularity = UnifiedFieldsDatePickerGranularity.day,
+    this.pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
+    this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
     this.shakeOnError = false,
     this.placeholder,
     this.isRequired = false,
@@ -369,7 +371,7 @@ class UnifiedFormDateField extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<DateTime>? binding;
+  final UnifiedInputPicker<DateTime>? binding;
 
   /// Preferred imperative handle; syncs with [binding] and [FormField] on change.
   final UnifiedDateFieldController? fieldController;
@@ -451,6 +453,12 @@ class UnifiedFormDateField extends StatefulWidget {
 
   /// Precision for the picker sheet.
   final UnifiedFieldsDatePickerGranularity pickerGranularity;
+
+  /// Calendar grid vs scroll-wheel picker.
+  final UnifiedFieldsDatePickerStyle pickerStyle;
+
+  /// Starting calendar system (Gregorian / Shamsi).
+  final UnifiedFieldsCalendarKind initialCalendarKind;
 
   /// When true, shakes once when validation error appears on this field.
   final bool shakeOnError;
@@ -652,6 +660,8 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
           textAlign: widget.textAlign,
           showCalendarKindToggle: widget.showCalendarKindToggle,
           pickerGranularity: widget.pickerGranularity,
+          pickerStyle: widget.pickerStyle,
+          initialCalendarKind: widget.initialCalendarKind,
         );
       },
     );
@@ -692,7 +702,7 @@ class UnifiedFormDateRangeField extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<DateTimeRange>? binding;
+  final UnifiedInputPicker<DateTimeRange>? binding;
 
   /// Preferred imperative handle; syncs with [binding] and [FormField] on change.
   final UnifiedDateRangeFieldController? fieldController;
@@ -976,7 +986,7 @@ class UnifiedFormTimeOfDayField extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<TimeOfDay>? binding;
+  final UnifiedInputPicker<TimeOfDay>? binding;
 
   /// Preferred imperative handle; syncs with [binding] and [FormField] on change.
   final UnifiedTimeOfDayFieldController? fieldController;
@@ -1235,7 +1245,7 @@ class UnifiedFormDurationField extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<Duration>? binding;
+  final UnifiedInputPicker<Duration>? binding;
 
   /// Preferred imperative handle; syncs with [binding] and [FormField] on change.
   final UnifiedDurationFieldController? fieldController;
@@ -1511,7 +1521,7 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<T>? binding;
+  final UnifiedInputPicker<T>? binding;
 
   /// Preferred imperative handle; syncs with [binding] and [FormField] on change.
   final UnifiedAsyncPickerFieldController<T>? fieldController;
@@ -1804,7 +1814,7 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<List<T>>? binding;
+  final UnifiedInputPicker<List<T>>? binding;
 
   /// Preferred imperative handle; syncs with [binding] and [FormField] on change.
   final UnifiedAsyncMultiPickerFieldController<T>? fieldController;
@@ -2100,7 +2110,7 @@ class UnifiedFormNumberField extends StatefulWidget {
   final FocusNode? focusNode;
 
   /// Two-way binding for the displayed text.
-  final AppInputController<String>? binding;
+  final UnifiedInputPicker<String>? binding;
 
   /// Used when [controller] is null to seed the field.
   final String initialText;

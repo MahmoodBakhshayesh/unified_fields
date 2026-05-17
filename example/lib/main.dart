@@ -35,14 +35,14 @@ class DemoHomePage extends StatefulWidget {
 class _DemoHomePageState extends State<DemoHomePage> {
   final _formKey = GlobalKey<FormState>();
 
-  final _name = AppInputController<String>(initialValue: '');
+  final _name = UnifiedInputPicker<String>(initialValue: '');
   final _nameC = UnifiedTextFieldController();
-  final _country = AppInputController<String>(initialValue: null);
+  final _country = UnifiedInputPicker<String>(initialValue: null);
   final _countryController = UnifiedPickerFieldController<String>();
-  final _flavors = AppInputController<List<String>>(initialValue: const []);
-  final _date = AppInputController<DateTime>(initialValue: null);
-  final _time = AppInputController<TimeOfDay>(initialValue: null);
-  final _duration = AppInputController<Duration>(initialValue: const Duration(minutes: 5));
+  final _flavors = UnifiedInputPicker<List<String>>(initialValue: const []);
+  final _date = UnifiedInputPicker<DateTime>(initialValue: null);
+  final _time = UnifiedInputPicker<TimeOfDay>(initialValue: null);
+  final _duration = UnifiedInputPicker<Duration>(initialValue: const Duration(minutes: 5));
 
   late final CustomizableSinglePickerController<String> _customSingle;
   late final CustomizableMultiPickerController<String> _customMulti;

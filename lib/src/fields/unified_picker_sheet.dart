@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../unified_fields_context.dart';
+import '../unified_fields_strings.dart';
 import '../unified_sheet_button.dart';
 import '../scrollable_list/item_positions_listener.dart';
 import '../scrollable_list/scrollable_positioned_list.dart';
@@ -234,7 +235,7 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
                         child: Text(widget.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
-                    if (widget.hasClear) UnifiedSheetButton(label: "Clear", reverse: true, color: Colors.blueAccent, onPressed: () => Navigator.of(context).pop(Null)),
+                    if (widget.hasClear) UnifiedSheetButton(label: UnifiedFieldsStrings.instance.clear, reverse: true, color: Colors.blueAccent, onPressed: () => Navigator.of(context).pop(Null)),
                     const CloseButton(),
                   ],
                 ),
@@ -268,7 +269,7 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
                       child: Row(
                         children: [
                           Expanded(child: widget.itemToWidget?.call(s) ?? Text(s.toString())),
-                          Text("Suggestion", style: TextStyle(color: Colors.black45, fontSize: 10)),
+                          Text(UnifiedFieldsStrings.instance.suggestion, style: TextStyle(color: Colors.black45, fontSize: 10)),
                         ],
                       ),
                     ),

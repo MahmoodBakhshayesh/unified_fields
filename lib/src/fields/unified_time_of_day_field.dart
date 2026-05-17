@@ -5,7 +5,7 @@ import '../time_picker_utils.dart';
 import 'unified_base_text_field.dart';
 import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_time_field_controller.dart';
-import 'app_input_controller.dart';
+import 'unified_input_picker.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 
@@ -37,7 +37,7 @@ class UnifiedTimeOfDayField extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<TimeOfDay>? binding;
+  final UnifiedInputPicker<TimeOfDay>? binding;
 
   /// Preferred imperative handle ([UnifiedTimeOfDayFieldController.openPicker], validate, focus).
   final UnifiedTimeOfDayFieldController? fieldController;

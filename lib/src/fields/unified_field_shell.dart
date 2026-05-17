@@ -6,9 +6,9 @@ import 'unified_input_decoration.dart';
 /// Shared chrome: optional label (column or row), bordered body, optional inline validation panel.
 ///
 /// Use when the inner control is not [UnifiedBaseTextField] but should match its visual language.
-class AppUnifiedFieldShell extends StatelessWidget {
+class UnifiedFieldShell extends StatelessWidget {
   /// Creates a field shell.
-  const AppUnifiedFieldShell({
+  const UnifiedFieldShell({
     super.key,
     required this.decoration,
     required this.body,
@@ -118,6 +118,10 @@ class AppUnifiedFieldShell extends StatelessWidget {
     );
   }
 }
+
+/// @deprecated Renamed to [UnifiedFieldShell].
+@Deprecated('Use UnifiedFieldShell')
+typedef AppUnifiedFieldShell = UnifiedFieldShell;
 
 class _LabelRow extends StatelessWidget {
   const _LabelRow({required this.decoration});

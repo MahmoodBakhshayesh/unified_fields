@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../fields/unified_duration_field.dart';
+import '../unified_fields_strings.dart';
 import '../fields/unified_input_brightness.dart';
 import '../fields/unified_input_theme.dart';
 import 'base_unified_field_controller.dart';
@@ -30,7 +31,7 @@ class UnifiedDurationFieldController extends BaseUnifiedFieldController<Duration
   /// Optional brightness override for the sheet palette.
   final UnifiedInputBrightness? brightness;
 
-  String _boundTitle = 'Duration';
+  String _boundTitle = UnifiedFieldsStrings.instance.defaultDurationTitle;
 
   /// Sheet title from the bound field.
   void bindPickerTitle(String title) {

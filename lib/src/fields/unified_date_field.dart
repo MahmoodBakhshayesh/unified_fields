@@ -5,7 +5,7 @@ import '../unified_date_picker_sheet.dart';
 import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_date_field_controller.dart';
 import '../controllers/unified_date_range_field_controller.dart';
-import 'app_input_controller.dart';
+import 'unified_input_picker.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
@@ -70,6 +70,9 @@ class UnifiedDateField extends StatefulWidget {
     this.textAlign = TextAlign.start,
     this.showCalendarKindToggle = true,
     this.pickerGranularity = UnifiedFieldsDatePickerGranularity.day,
+    this.pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
+    this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
+    this.wheelStyle,
   });
 
   /// Visual chrome.
@@ -79,7 +82,7 @@ class UnifiedDateField extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<DateTime>? binding;
+  final UnifiedInputPicker<DateTime>? binding;
 
   /// Preferred imperative handle (value, validate, [UnifiedDateFieldController.openPicker]).
   final UnifiedDateFieldController? fieldController;
@@ -155,6 +158,15 @@ class UnifiedDateField extends StatefulWidget {
 
   /// Precision for [showUnifiedFieldsDatePicker] (single-date field only).
   final UnifiedFieldsDatePickerGranularity pickerGranularity;
+
+  /// [UnifiedFieldsDatePickerStyle.calendar] grid vs [UnifiedFieldsDatePickerStyle.wheels] scrollers.
+  final UnifiedFieldsDatePickerStyle pickerStyle;
+
+  /// Starting calendar when the picker opens (Gregorian / Shamsi).
+  final UnifiedFieldsCalendarKind initialCalendarKind;
+
+  /// Optional wheel chrome when [pickerStyle] is [UnifiedFieldsDatePickerStyle.wheels].
+  final UnifiedFieldsDateWheelStyle? wheelStyle;
 
   @override
   State<UnifiedDateField> createState() => _UnifiedDateFieldState();
@@ -291,6 +303,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
   }
 
   Future<void> _pickBody(BuildContext context, UnifiedInputDecoration d) async {
+    final fc = widget.fieldController;
     final picked = await showUnifiedFieldsDatePicker(
       context: context,
       initialDate: _effectiveValue ?? DateTime.now(),
@@ -299,6 +312,9 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
       title: _sheetTitle(d),
       showCalendarKindToggle: widget.showCalendarKindToggle,
       granularity: widget.pickerGranularity,
+      pickerStyle: fc?.pickerStyle ?? widget.pickerStyle,
+      initialCalendarKind: fc?.calendarKind ?? widget.initialCalendarKind,
+      wheelStyle: widget.wheelStyle,
     );
     if (!context.mounted) return;
     _applyPicked(picked);
@@ -388,7 +404,7 @@ class UnifiedDateRangeField extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<DateTimeRange>? binding;
+  final UnifiedInputPicker<DateTimeRange>? binding;
 
   /// Preferred imperative handle ([UnifiedDateRangeFieldController.openPicker], validate, focus).
   final UnifiedDateRangeFieldController? fieldController;

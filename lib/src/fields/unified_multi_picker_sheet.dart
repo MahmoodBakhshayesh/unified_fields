@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../unified_fields_context.dart';
 import '../unified_colors.dart';
+import '../unified_fields_strings.dart';
 import '../unified_sheet_button.dart';
 
 /// Bottom-sheet content used by [UnifiedMultiPickerField] for multi-selection.
@@ -141,9 +142,9 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text("Pick ${widget.label}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text(UnifiedFieldsStrings.instance.multiPickerTitle(widget.label), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
-                    if (widget.hasClear) UnifiedSheetButton(label: "Clear", reverse: true, color: Colors.blueAccent, onPressed: () => Navigator.of(context).pop(Null)),
+                    if (widget.hasClear) UnifiedSheetButton(label: UnifiedFieldsStrings.instance.clear, reverse: true, color: Colors.blueAccent, onPressed: () => Navigator.of(context).pop(Null)),
                     const CloseButton(),
                   ],
                 ),
@@ -172,7 +173,7 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                       child: Row(
                         children: [
                           Expanded(child: widget.itemToWidget?.call(s) ?? Text(s.toString())),
-                          Text("Suggestion", style: TextStyle(color: Colors.black45, fontSize: 10)),
+                          Text(UnifiedFieldsStrings.instance.suggestion, style: TextStyle(color: Colors.black45, fontSize: 10)),
                         ],
                       ),
                     ),
@@ -222,7 +223,7 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                   children: [
                     Expanded(
                       child: UnifiedSheetButton(
-                        label: "Cancel",
+                        label: UnifiedFieldsStrings.instance.cancel,
                         radius: 12,
                         color: UnifiedColors.headlineColor,
                         reverse: true,
@@ -235,7 +236,7 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                     ),
                     Expanded(
                       child: UnifiedSheetButton(
-                        label: "Confirm",
+                        label: UnifiedFieldsStrings.instance.confirm,
                         radius: 12,
                         onPressed: () {
                           Navigator.pop(context, selected);

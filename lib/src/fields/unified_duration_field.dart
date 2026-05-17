@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'unified_base_text_field.dart';
 import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_duration_field_controller.dart';
-import 'app_input_controller.dart';
+import 'unified_input_picker.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
+import '../unified_fields_strings.dart';
 import 'unified_input_palette.dart';
 import 'unified_input_theme.dart';
 
@@ -97,7 +98,7 @@ class UnifiedDurationField extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final AppInputController<Duration>? binding;
+  final UnifiedInputPicker<Duration>? binding;
 
   /// Preferred imperative handle ([UnifiedDurationFieldController.openPicker], validate, focus).
   final UnifiedDurationFieldController? fieldController;
@@ -246,7 +247,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
     if (widget.isDisabled || widget.locked) return;
     final fc = widget.fieldController;
     if (fc != null) {
-      final title = widget.placeholder ?? d.placeholder ?? widget.label ?? d.label ?? 'Duration';
+      final title = widget.placeholder ?? d.placeholder ?? widget.label ?? d.label ?? UnifiedFieldsStrings.instance.defaultDurationTitle;
       final picked = await fc.openPicker(context, title: title, initial: _effective);
       if (!context.mounted || picked == null) return;
       _txt.text = unifiedFormatDuration(picked, widget.granularity);
@@ -268,7 +269,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) {
         return UnifiedDurationPickerSheet(
-          title: widget.placeholder ?? d.placeholder ?? widget.label ?? d.label ?? 'Duration',
+          title: widget.placeholder ?? d.placeholder ?? widget.label ?? d.label ?? UnifiedFieldsStrings.instance.defaultDurationTitle,
           palette: palette,
           initial: _effective,
           min: widget.min ?? Duration.zero,
@@ -490,7 +491,7 @@ class _UnifiedDurationPickerSheetState extends State<UnifiedDurationPickerSheet>
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                  TextButton(onPressed: () => Navigator.pop(context), child: Text(UnifiedFieldsStrings.instance.cancel)),
                   Expanded(
                     child: Text(
                       widget.title,
@@ -503,7 +504,7 @@ class _UnifiedDurationPickerSheetState extends State<UnifiedDurationPickerSheet>
                       final composed = unifiedClampDuration(_compose(), minDur, maxDur);
                       Navigator.pop(context, composed);
                     },
-                    child: const Text('Done'),
+                    child: Text(UnifiedFieldsStrings.instance.done),
                   ),
                 ],
               ),

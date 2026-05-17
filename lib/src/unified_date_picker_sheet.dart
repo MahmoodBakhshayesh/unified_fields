@@ -5,33 +5,13 @@ import 'fields/unified_input_palette.dart';
 import 'fields/unified_numeric_step_field.dart';
 import 'persian_jalali_calendar.dart';
 import 'unified_fields_context.dart';
+import 'unified_date_picker_types.dart';
+import 'unified_date_wheel_picker_sheet.dart';
+import 'unified_fields_strings.dart';
 
-/// Default English strings for the date picker (host app can fork and localize).
-abstract final class UnifiedDatePickerStrings {
-  /// Title above the month/year jump controls.
-  static const String jumpToMonthYear = 'Jump to month / year';
-
-  /// Label for the year input in the jump controls.
-  static const String yearLabel = 'Year';
-
-  /// Generic "Date" label used in headers.
-  static const String date = 'Date';
-
-  /// Cancel action label.
-  static const String cancel = 'Cancel';
-
-  /// Hint shown when picking a range without start/end yet.
-  static const String pickDateRangeHint = 'Select start and end dates';
-
-  /// Label for the Gregorian calendar toggle.
-  static const String calendarGregorian = 'Gregorian';
-
-  /// Label for the Shamsi (Jalali) calendar toggle.
-  static const String calendarShamsi = 'Shamsi (Jalali)';
-
-  /// Confirm action label.
-  static const String confirm = 'Confirm';
-}
+export 'unified_date_picker_types.dart';
+export 'unified_date_wheel_picker_sheet.dart'
+    show UnifiedFieldsDateWheelPickerSheet, UnifiedFieldsDateWheelStyle;
 
 
 int _clampPageIndex(int page, int pageCount) {
@@ -39,27 +19,6 @@ int _clampPageIndex(int page, int pageCount) {
   if (page < 0) return 0;
   if (page >= pageCount) return pageCount - 1;
   return page;
-}
-
-/// Calendar systems supported by the unified date picker.
-enum UnifiedFieldsCalendarKind {
-  /// Gregorian calendar (default).
-  gregorian,
-
-  /// Shamsi (Jalali) calendar.
-  jalali,
-}
-
-/// How precise date selection is in [showUnifiedFieldsDatePicker] / [UnifiedFieldsDatePickerSheet].
-enum UnifiedFieldsDatePickerGranularity {
-  /// Full calendar (default).
-  day,
-
-  /// First day of a calendar month within [firstDate, lastDate].
-  month,
-
-  /// First day of a calendar year within [firstDate, lastDate].
-  year,
 }
 
 const int _kCalendarStaticRows = 6;
@@ -75,20 +34,37 @@ Future<DateTime?> showUnifiedFieldsDatePicker({
   bool barrierDismissible = true,
   bool showCalendarKindToggle = true,
   UnifiedFieldsDatePickerGranularity granularity = UnifiedFieldsDatePickerGranularity.day,
+  UnifiedFieldsDatePickerStyle pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
+  UnifiedFieldsCalendarKind initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
+  UnifiedFieldsDateWheelStyle? wheelStyle,
 }) {
   final first = DateUtils.dateOnly(firstDate);
   final last = DateUtils.dateOnly(lastDate);
   assert(!first.isAfter(last), 'firstDate must be on or before lastDate');
 
-  final sheet = UnifiedFieldsDatePickerSheet(
-    pickRange: false,
-    initialDate: initialDate,
-    firstDate: first,
-    lastDate: last,
-    title: title,
-    showCalendarKindToggle: showCalendarKindToggle,
-    granularity: granularity,
-  );
+  final Widget sheet;
+  if (pickerStyle == UnifiedFieldsDatePickerStyle.wheels) {
+    sheet = UnifiedFieldsDateWheelPickerSheet(
+      initialDate: initialDate,
+      firstDate: first,
+      lastDate: last,
+      title: title,
+      showCalendarKindToggle: showCalendarKindToggle,
+      initialCalendarKind: initialCalendarKind,
+      granularity: granularity,
+      wheelStyle: wheelStyle,
+    );
+  } else {
+    sheet = UnifiedFieldsDatePickerSheet(
+      pickRange: false,
+      initialDate: initialDate,
+      firstDate: first,
+      lastDate: last,
+      title: title,
+      showCalendarKindToggle: showCalendarKindToggle,
+      granularity: granularity,
+    );
+  }
 
   return _presentPicker<DateTime>(context: context, barrierDismissible: barrierDismissible, child: sheet);
 }
@@ -432,8 +408,8 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
               lastDate: widget.lastDate,
               initialYear: cur.year,
               initialMonth: cur.month,
-              title: UnifiedDatePickerStrings.jumpToMonthYear,
-              yearLabel: UnifiedDatePickerStrings.yearLabel,
+              title: UnifiedFieldsStrings.instance.jumpToMonthYear,
+              yearLabel: UnifiedFieldsStrings.instance.yearLabel,
             ),
           );
         },
@@ -462,8 +438,8 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
             lastDate: widget.lastDate,
             initialYear: cur.$1,
             initialMonth: cur.$2,
-            title: UnifiedDatePickerStrings.jumpToMonthYear,
-            yearLabel: UnifiedDatePickerStrings.yearLabel,
+            title: UnifiedFieldsStrings.instance.jumpToMonthYear,
+            yearLabel: UnifiedFieldsStrings.instance.yearLabel,
           ),
         );
       },
@@ -499,7 +475,7 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
               children: [
                 Expanded(
                   child: Text(
-                    titleText.isEmpty ? UnifiedDatePickerStrings.date : titleText,
+                    titleText.isEmpty ? UnifiedFieldsStrings.instance.date : titleText,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: palette.fieldTextColor,
                       fontWeight: FontWeight.w600,
@@ -507,7 +483,7 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                   ),
                 ),
                 IconButton(
-                  tooltip: UnifiedDatePickerStrings.cancel,
+                  tooltip: UnifiedFieldsStrings.instance.cancel,
                   icon: Icon(Icons.close_rounded, color: palette.fieldTextColor.withValues(alpha: 0.85)),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
@@ -518,7 +494,7 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
               child: Text(
-                UnifiedDatePickerStrings.pickDateRangeHint,
+                UnifiedFieldsStrings.instance.pickDateRangeHint,
                 style: theme.textTheme.bodySmall?.copyWith(color: palette.hintColor),
               ),
             ),
@@ -544,11 +520,11 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                 segments: [
                   ButtonSegment<UnifiedFieldsCalendarKind>(
                     value: UnifiedFieldsCalendarKind.gregorian,
-                    label: Text(UnifiedDatePickerStrings.calendarGregorian),
+                    label: Text(UnifiedFieldsStrings.instance.calendarGregorian),
                   ),
                   ButtonSegment<UnifiedFieldsCalendarKind>(
                     value: UnifiedFieldsCalendarKind.jalali,
-                    label: Text(UnifiedDatePickerStrings.calendarShamsi),
+                    label: Text(UnifiedFieldsStrings.instance.calendarShamsi),
                   ),
                 ],
                 selected: {_kind},
@@ -638,12 +614,12 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: Text(UnifiedDatePickerStrings.cancel),
+                  child: Text(UnifiedFieldsStrings.instance.cancel),
                 ),
                 const Spacer(),
                 FilledButton(
                   onPressed: _confirm,
-                  child: Text(UnifiedDatePickerStrings.confirm),
+                  child: Text(UnifiedFieldsStrings.instance.confirm),
                 ),
               ],
             ),

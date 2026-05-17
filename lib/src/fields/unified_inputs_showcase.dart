@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'app_input_controller.dart';
+import 'unified_input_picker.dart';
 import 'unified_async_picker_field.dart';
 import 'unified_customizable_async_picker_field.dart';
 import 'unified_customizable_picker_controller.dart';
@@ -11,6 +11,7 @@ import 'unified_input_decoration.dart';
 import 'unified_number_field.dart';
 import 'unified_picker_fields.dart';
 import 'unified_text_field.dart';
+import '../unified_date_picker_sheet.dart';
 import 'unified_date_field.dart';
 import 'unified_time_of_day_field.dart';
 
@@ -33,9 +34,9 @@ class _UnifiedInputsShowcasePageState extends State<UnifiedInputsShowcasePage> {
   UnifiedInputBrightness? _paletteMode;
 
   late final TextEditingController _numberCtrl;
-  late final AppInputController<String> _textBinding;
-  late final AppInputController<DateTime> _dateBinding;
-  late final AppInputController<DateTimeRange> _dateRangeBinding;
+  late final UnifiedInputPicker<String> _textBinding;
+  late final UnifiedInputPicker<DateTime> _dateBinding;
+  late final UnifiedInputPicker<DateTimeRange> _dateRangeBinding;
   late final CustomizableSinglePickerController<String> _customAsyncPick;
   late final CustomizableMultiPickerController<String> _customAsyncMultiPick;
 
@@ -55,9 +56,9 @@ class _UnifiedInputsShowcasePageState extends State<UnifiedInputsShowcasePage> {
   void initState() {
     super.initState();
     _numberCtrl = TextEditingController(text: '12');
-    _textBinding = AppInputController<String>(initialValue: 'Programmatic binding');
-    _dateBinding = AppInputController<DateTime>(initialValue: DateTime.now());
-    _dateRangeBinding = AppInputController<DateTimeRange>(
+    _textBinding = UnifiedInputPicker<String>(initialValue: 'Programmatic binding');
+    _dateBinding = UnifiedInputPicker<DateTime>(initialValue: DateTime.now());
+    _dateRangeBinding = UnifiedInputPicker<DateTimeRange>(
       initialValue: DateTimeRange(
         start: DateTime.now(),
         end: DateTime.now().add(const Duration(days: 7)),
@@ -162,7 +163,7 @@ class _UnifiedInputsShowcasePageState extends State<UnifiedInputsShowcasePage> {
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
-          _sectionTitle('AppUnifiedFieldShell (custom body + error strip)'),
+          _sectionTitle('UnifiedFieldShell (custom body + error strip)'),
           // Builder(
           //   builder: (ctx) {
           //     final dec = resolveUnifiedDecoration(ctx, brightness: _paletteMode).merge(
@@ -172,7 +173,7 @@ class _UnifiedInputsShowcasePageState extends State<UnifiedInputsShowcasePage> {
           //         requiredField: false,
           //       ),
           //     );
-          //     return AppUnifiedFieldShell(
+          //     return UnifiedFieldShell(
           //       decoration: dec,
           //       errorText: dec.showError ? 'Example validation message' : null,
           //       body: Center(
@@ -187,7 +188,7 @@ class _UnifiedInputsShowcasePageState extends State<UnifiedInputsShowcasePage> {
           //     );
           //   },
           // ),
-          _sectionTitle('UnifiedTextField (+ AppInputController binding)'),
+          _sectionTitle('UnifiedTextField (+ UnifiedInputPicker binding)'),
           UnifiedTextField(
             brightness: _paletteMode,
             decoration: const UnifiedInputDecoration(
@@ -231,6 +232,17 @@ class _UnifiedInputsShowcasePageState extends State<UnifiedInputsShowcasePage> {
             brightness: _paletteMode,
             decoration: const UnifiedInputDecoration(label: 'Roast date'),
             binding: _dateBinding,
+            min: DateTime(2020),
+            max: DateTime(2035),
+            onChanged: (d) => setState(() => _dateFallback = d),
+          ),
+          _sectionTitle('UnifiedDateField (wheel picker + Shamsi)'),
+          UnifiedDateField(
+            brightness: _paletteMode,
+            decoration: const UnifiedInputDecoration(label: 'Wheel date'),
+            value: _dateFallback,
+            pickerStyle: UnifiedFieldsDatePickerStyle.wheels,
+            initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
             min: DateTime(2020),
             max: DateTime(2035),
             onChanged: (d) => setState(() => _dateFallback = d),

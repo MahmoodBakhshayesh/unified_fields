@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
-import '../fields/app_input_controller.dart';
+import '../fields/unified_input_picker.dart';
 import 'base_unified_field_controller.dart';
 
 /// Focus node: [fieldController] → [binding] → [direct].
 FocusNode? unifiedEffectiveFocusNode<T>({
   BaseUnifiedFieldController<T>? fieldController,
-  AppInputController<T>? binding,
+  UnifiedInputPicker<T>? binding,
   FocusNode? direct,
 }) =>
     fieldController?.focusNode ?? binding?.focusNode ?? direct;
@@ -89,7 +89,7 @@ void syncFormFieldFromExternalList<T>({
 void syncUnifiedFieldValue<T>({
   required T? value,
   ValueChanged<T?>? onChanged,
-  AppInputController<T>? binding,
+  UnifiedInputPicker<T>? binding,
   BaseUnifiedFieldController<T>? fieldController,
 }) {
   onChanged?.call(value);
@@ -105,7 +105,7 @@ void syncUnifiedFieldValue<T>({
 void syncUnifiedFieldListValue<T>({
   required List<T> value,
   ValueChanged<List<T>>? onChanged,
-  AppInputController<List<T>>? binding,
+  UnifiedInputPicker<List<T>>? binding,
   BaseUnifiedFieldController<List<T>>? fieldController,
 }) {
   onChanged?.call(value);
@@ -120,7 +120,7 @@ void syncUnifiedFieldListValue<T>({
 /// Effective value: [fieldController] → [binding] → [direct].
 T? unifiedEffectiveValue<T>({
   BaseUnifiedFieldController<T>? fieldController,
-  AppInputController<T>? binding,
+  UnifiedInputPicker<T>? binding,
   T? direct,
 }) =>
     fieldController?.value ?? binding?.value ?? direct;
@@ -128,7 +128,7 @@ T? unifiedEffectiveValue<T>({
 /// Effective list value for multi-select fields.
 List<T> unifiedEffectiveListValue<T>({
   BaseUnifiedFieldController<List<T>>? fieldController,
-  AppInputController<List<T>>? binding,
+  UnifiedInputPicker<List<T>>? binding,
   List<T> direct = const [],
 }) =>
     fieldController?.value ?? binding?.value ?? direct;

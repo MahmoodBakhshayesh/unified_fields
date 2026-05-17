@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_picker_field_controller.dart';
 import '../controllers/unified_text_field_controller.dart';
-import 'app_input_controller.dart';
+import 'unified_input_picker.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
@@ -185,7 +185,7 @@ class UnifiedFormField<T> extends StatelessWidget {
   final FormFieldSetter<T>? onSaved;
 
   /// Called after [FormFieldState.reset] restores [initialValue]; use to sync
-  /// [TextEditingController]s or [AppInputController]s. See [FormField.onReset].
+  /// [TextEditingController]s or [UnifiedInputPicker]s. See [FormField.onReset].
   final VoidCallback? onReset;
 
   /// When true, shakes horizontally once when [FormFieldState.hasError] becomes true.
@@ -305,7 +305,7 @@ class UnifiedFormTextField extends StatefulWidget {
   final UnifiedFormResetValue<String>? resetValue;
 
   /// Two-way binding for the field value.
-  final AppInputController<String>? binding;
+  final UnifiedInputPicker<String>? binding;
 
   /// External focus node.
   final FocusNode? focusNode;
@@ -658,7 +658,7 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
   final T? value;
 
   /// Optional external state binding.
-  final AppInputController<T>? binding;
+  final UnifiedInputPicker<T>? binding;
 
   /// Preferred imperative handle; syncs with [binding] and [FormField] on change.
   final UnifiedPickerFieldController<T>? fieldController;

@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 
 import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_text_field_controller.dart';
-import 'app_input_controller.dart';
+import 'unified_input_picker.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 
-/// Text input using shared unified decoration + optional external [AppInputController] binding.
+/// Text input using shared unified decoration + optional external [UnifiedInputPicker] binding.
 class UnifiedTextField extends StatefulWidget {
   /// Creates a unified text input.
   const UnifiedTextField({
@@ -59,7 +59,7 @@ class UnifiedTextField extends StatefulWidget {
   final UnifiedTextFieldController? fieldController;
 
   /// Two-way binding to a [String] value.
-  final AppInputController<String>? binding;
+  final UnifiedInputPicker<String>? binding;
 
   /// External focus node; if null one is created by the inner widget.
   final FocusNode? focusNode;

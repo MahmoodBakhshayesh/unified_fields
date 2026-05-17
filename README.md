@@ -14,13 +14,14 @@
 6. [Date & calendar](#date--calendar)  
 7. [Time](#time)  
 8. [Pickers](#pickers)  
-9. [Bindings with `AppInputController`](#bindings-with-appinputcontroller)  
+9. [Bindings with `UnifiedInputPicker`](#bindings-with-unifiedinputpicker)  
 10. [Field controllers](#field-controllers)  
 11. [Field states (`isDisabled`, `loading`, …)](#field-states-isdisabled-loading-)  
-12. [Theming & layout](#theming--layout)  
-13. [Localization](#localization)  
-14. [Try the built-in demo](#try-the-built-in-demo)  
-15. [Dependencies](#dependencies)  
+12. [UI strings (`UnifiedFieldsStrings`)](#ui-strings-unifiedfieldsstrings)  
+13. [Theming & layout](#theming--layout)  
+14. [Localization](#localization)  
+15. [Try the built-in demo](#try-the-built-in-demo)  
+16. [Dependencies](#dependencies)  
 
 ---
 
@@ -30,7 +31,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.1.3
+  unified_fields: ^0.3.0
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -74,9 +75,9 @@ dependencies:
 | **Form scope** | `UnifiedFormFieldScope` | Shared `AutovalidateMode` for all unified form descendants |
 | **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind` | Single date or range; day / month / year granularity; Gregorian vs Jalali toggle |
 | **Time** | `TimePickerUtils.show` | Wraps `showTimePicker` with sensible defaults |
-| **Chrome helpers** | `UnifiedBaseTextField`, `AppUnifiedFieldShell`, `UnifiedInputDecoration`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputTheme`, `UnifiedInputThemeScope` | Labels, errors, light/dark palettes, optional global theme scope |
+| **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedInputDecoration`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputTheme`, `UnifiedInputThemeScope` | Labels, errors, light/dark palettes, optional global theme scope |
 | **Controllers** | `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, `UnifiedAsyncPickerFieldController`, `UnifiedDateFieldController`, `UnifiedTimeOfDayFieldController`, `UnifiedDurationFieldController`, `UnifiedNumberFieldController`, `UnifiedFormController` | Listenable value + validation + imperative `openPicker` / `requestFocus` |
-| **Utilities** | `AppInputController`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, layout helpers, default colors, sheet actions, field ↔ controller wiring |
+| **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, layout helpers, default colors, sheet actions |
 | **Demo** | `UnifiedInputsShowcasePage` | Scrollable gallery of widgets + palette toggle |
 
 ---
@@ -203,6 +204,51 @@ Users can switch **Gregorian** vs **Jalali (Shamsi)** when **`showCalendarKindTo
 - **`UnifiedDateField`** / **`UnifiedFormDateField`** — text field + tap to open picker.  
 - **`UnifiedDateRangeField`** / **`UnifiedFormDateRangeField`** — range in one field.
 
+### Picker style (`UnifiedFieldsDatePickerStyle`)
+
+| Style | UI |
+|-------|-----|
+| **`calendar`** (default) | Month grid (day granularity) or year/month lists |
+| **`wheels`** | Scroll wheels: day + month + year, month + year, or year only — per **`pickerGranularity`** |
+
+Both styles support **Gregorian / Shamsi** when `showCalendarKindToggle` is true.
+
+```dart
+UnifiedDateField(
+  label: 'Birth date',
+  pickerStyle: UnifiedFieldsDatePickerStyle.wheels,
+  initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
+  pickerGranularity: UnifiedFieldsDatePickerGranularity.day,
+)
+```
+
+Date **ranges** still use the calendar sheet (`showUnifiedFieldsDatePickerRange`).
+
+Wheel chrome is themed automatically; override with `wheelStyle`:
+
+```dart
+final base = UnifiedFieldsDateWheelStyle.resolve(
+  UnifiedInputPalette.light(),
+  Theme.of(context),
+);
+
+UnifiedDateField(
+  pickerStyle: UnifiedFieldsDatePickerStyle.wheels,
+  wheelStyle: UnifiedFieldsDateWheelStyle(
+    wheelBackground: base.wheelBackground,
+    dayColumnBackground: base.dayColumnBackground,
+    selectionFill: base.selectionFill,
+    selectionBorder: base.selectionBorder,
+    columnDivider: base.columnDivider,
+    headerDivider: base.headerDivider,
+    fadeColor: base.fadeColor,
+    headerTextColor: base.headerTextColor,
+    itemTextColor: base.itemTextColor,
+    magnification: 1.22,
+  ),
+)
+```
+
 ---
 
 ## Time
@@ -227,14 +273,14 @@ Users can switch **Gregorian** vs **Jalali (Shamsi)** when **`showCalendarKindTo
 
 ---
 
-## Bindings with `AppInputController`
+## Bindings with `UnifiedInputPicker`
 
-**`AppInputController<T>`** is a **`ChangeNotifier`** holding **`value`**, optional **`errorText`**, and helpers **`clear`**, **`setError`**, **`silentSetValue`**. Pass it as **`binding:`** on fields so UI and domain state stay in sync; form wrappers also write back on save/reset when configured.
+**`UnifiedInputPicker<T>`** is a **`ChangeNotifier`** holding **`value`**, optional **`errorText`**, and helpers **`clear`**, **`setError`**, **`silentSetValue`**. Pass it as **`binding:`** on fields so UI and domain state stay in sync; form wrappers also write back on save/reset when configured.
 
 Form-aware pickers and date/time fields **listen to the binding**, so clearing from code updates the visible field:
 
 ```dart
-final country = AppInputController<String?>();
+final country = UnifiedInputPicker<String?>();
 
 UnifiedFormSinglePickerField<String?>(
   label: 'Country',
@@ -247,6 +293,8 @@ country.clear();
 ```
 
 You can use **`binding`** and **`fieldController`** together: the binding holds app state; the typed controller adds picker-specific APIs (`openPicker`, `displayText`, sheet options).
+
+> `AppInputController` was renamed in **0.2.0**; a deprecated typedef points to **`UnifiedInputPicker`**.
 
 ---
 
@@ -288,6 +336,26 @@ Async pickers set **`loading: true`** while **`itemProvider`** runs; date fields
 
 ---
 
+## UI strings (`UnifiedFieldsStrings`)
+
+All built-in button and sheet copy (Cancel, Confirm, Clear, Done, Pick, Suggestion, date-picker labels, time hour/minute labels, default duration title) comes from **`UnifiedFieldsStrings.instance`**. Override once at startup:
+
+```dart
+void main() {
+  UnifiedFieldsStrings.instance = const UnifiedFieldsStrings(
+    cancel: 'لغو',
+    confirm: 'تأیید',
+    clear: 'پاک کردن',
+    pickPrefix: 'انتخاب',
+  );
+  runApp(const MyApp());
+}
+```
+
+Multi-picker titles use **`multiPickerTitle(label)`** (default `"Pick $label"`). **`UnifiedDatePickerStrings`** is deprecated and reads from the same instance.
+
+---
+
 ## Theming & layout
 
 - **`UnifiedColors`** — default static palette used by built-in styles (replace over time with your design tokens or override via **`UnifiedInputDecoration`** / **`Theme`**).  
@@ -299,9 +367,9 @@ Async pickers set **`loading: true`** while **`itemProvider`** runs; date fields
 
 ## Localization
 
-- **Date picker UI strings** live in **`UnifiedDatePickerStrings`** (`unified_date_picker_sheet.dart`). Defaults are **English**; copy or subclass and wire your own strings for production i18n.  
-- **Time picker** uses **`MaterialLocalizations`** where possible; hour/minute labels are English literals in **`TimePickerUtils`**.  
-- **Clear** tooltip on the base text field uses **`MaterialLocalizations.deleteButtonTooltip`**.
+- Set **`UnifiedFieldsStrings.instance`** for package-owned copy (pickers, date sheet, duration sheet, time picker hour/minute fallbacks).  
+- **Time picker** OK/Cancel use **`MaterialLocalizations`** when available.  
+- **Clear** tooltip on the base text field uses **`MaterialLocalizations.deleteButtonTooltip`** (platform).
 
 ---
 
@@ -357,7 +425,7 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.1.3`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.3.0`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
 
 ---
 

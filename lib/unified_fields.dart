@@ -4,6 +4,7 @@
 library;
 
 export 'src/unified_colors.dart';
+export 'src/unified_fields_strings.dart';
 export 'src/controllers/unified_field_controllers.dart';
 export 'src/unified_fields_context.dart';
 export 'src/unified_sheet_button.dart';
