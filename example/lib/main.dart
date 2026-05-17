@@ -14,10 +14,7 @@ class UnifiedFieldsDemoApp extends StatelessWidget {
     return MaterialApp(
       title: 'unified_fields demo',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff2A5CFF)),
-      ),
+      theme: ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff2A5CFF))),
       home: const DemoHomePage(),
     );
   }
@@ -55,14 +52,8 @@ class _DemoHomePageState extends State<DemoHomePage> {
   @override
   void initState() {
     super.initState();
-    _customSingle = CustomizableSinglePickerController<String>(
-      valueToString: (e) => e,
-      initialKind: CustomizablePickerInputKind.typed,
-      initialTyped: '',
-    );
-    _customMulti = CustomizableMultiPickerController<String>(
-      valueToString: (e) => e,
-    );
+    _customSingle = CustomizableSinglePickerController<String>(valueToString: (e) => e, initialKind: CustomizablePickerInputKind.typed, initialTyped: '');
+    _customMulti = CustomizableMultiPickerController<String>(valueToString: (e) => e);
   }
 
   @override
@@ -119,13 +110,11 @@ class _DemoHomePageState extends State<DemoHomePage> {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) => Scaffold(
-                    appBar: AppBar(
-
-                    ),
-                    body: const SafeArea(child: Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: UnifiedInputsShowcasePage(),
-                ))),
+                  appBar: AppBar(),
+                  body: const SafeArea(
+                    child: Padding(padding: EdgeInsets.all(8.0), child: UnifiedInputsShowcasePage()),
+                  ),
+                ),
               ),
             ),
           ),
@@ -141,8 +130,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
               // _countryController.openPicker(context, items: [], label: "label");
               // _countryController.clear();
               // setState((){});
-
-            }
+            },
           ),
         ],
       ),
@@ -187,68 +175,79 @@ class _DemoHomePageState extends State<DemoHomePage> {
 
                   UnifiedFormSinglePickerField<String>(
                     label: 'Country',
-                    decoration: UnifiedInputDecoration(
-                      height: 40,
-                      labelInRow: true
-                    ),
+                    decoration: UnifiedInputDecoration(height: 40, labelInRow: true),
                     placeholder: 'Pick one',
                     isRequired: true,
                     items: _countries,
-                    fieldController:_countryController ,
+                    fieldController: _countryController,
 
                     binding: _country,
                     validator: (v) => v == null ? 'Pick a country' : null,
                   ),
                   const SizedBox(height: 12),
 
-                  UnifiedFormMultiPickerField<String>(
-                    label: 'Flavors',
-                    placeholder: 'Add some',
-                    items: _flavorChoices,
-                    values: _flavors.value ?? const [],
-                    binding: _flavors,
-                    resetValue: () => const <String>[],
-                  ),
+                  UnifiedFormMultiPickerField<String>(label: 'Flavors', placeholder: 'Add some', items: _flavorChoices, values: _flavors.value ?? const [], binding: _flavors, resetValue: () => const <String>[]),
                   const SizedBox(height: 12),
 
                   UnifiedFormDateField(
+                    label: 'Date (form, wheels)',
+                    placeholder: 'Tap to pick',
+                    isRequired: true,
+                    binding: _date,
+                    min: DateTime(2020),
+                    max: DateTime(2035),
+                    pickerStyle: UnifiedFieldsDatePickerStyle.wheels,
+                    initialCalendarKind: UnifiedFieldsCalendarKind.gregorian,
+                    pickerGranularity: UnifiedFieldsDatePickerGranularity.day,
+                    resetValue: () => null,
+                    validator: (v) => v == null ? 'Pick a date' : null,
+                  ),
+                  const SizedBox(height: 12),
+
+                  UnifiedDateField(
                     label: 'Date',
                     placeholder: 'Tap to pick',
                     isRequired: true,
                     binding: _date,
 
                     min: DateTime(2020),
+                    showCalendarKindToggle: false,
+
+                    initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
+
+
+
                     max: DateTime(2035),
-                    pickerGranularity: UnifiedFieldsDatePickerGranularity.year,
-                    resetValue: () => null,
+                    // pickerGranularity: UnifiedFieldsDatePickerGranularity.year,
                     validator: (v) => v == null ? 'Pick a date' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  UnifiedTimeOfDayField(
+                    pickerStyle: UnifiedFieldsTimePickerStyle.wheels,
+                    pickerGranularity: UnifiedFieldsTimeGranularity.hoursMinutesSeconds, // or .hours / .hoursMinutes
+                    initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
 
+                    showCalendarKindToggle: true,
+                    value: TimeOfDay(hour: 14, minute: 30),
+                  ),
+                  const SizedBox(height: 12),
+                  UnifiedDurationField(
+                    showCalendarKindToggle: false,
+                    // pickerStyle: UnifiedFieldsDurationPickerStyle.wheels, // default
+                    // granularity: UnifiedDurationGranularity.hoursMinutesSeconds, // or .hours / .hoursMinutesSeconds
+                    // initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
+                    // value: const Duration(hours: 1, minutes: 30),
+                    pickerColumns: [UnifiedFieldsDurationColumn.year,UnifiedFieldsDurationColumn.month,UnifiedFieldsDurationColumn.week],
                   ),
                   const SizedBox(height: 12),
 
-                  UnifiedFormTimeOfDayField(
-                    label: 'Time',
-                    placeholder: 'Tap to pick',
-
-                    binding: _time,
-                    resetValue: () => null,
-                  ),
+                  UnifiedFormTimeOfDayField(label: 'Time', placeholder: 'Tap to pick', binding: _time, resetValue: () => null),
                   const SizedBox(height: 12),
 
-                  UnifiedFormDurationField(
-                    label: 'Duration',
-                    placeholder: 'Tap to edit',
-                    binding: _duration,
-                    granularity: UnifiedDurationGranularity.hoursMinutesSeconds,
-                    resetValue: () => Duration.zero,
-                  ),
+                  UnifiedFormDurationField(label: 'Duration', placeholder: 'Tap to edit', binding: _duration, granularity: UnifiedDurationGranularity.hoursMinutesSeconds, resetValue: () => Duration.zero),
                   const SizedBox(height: 12),
 
-                  UnifiedFormAsyncPickerField<String>(
-                    label: 'Country (async)',
-                    placeholder: 'Loads on tap',
-                    itemProvider: _loadAsyncCountries,
-                  ),
+                  UnifiedFormAsyncPickerField<String>(label: 'Country (async)', placeholder: 'Loads on tap', itemProvider: _loadAsyncCountries),
                   const SizedBox(height: 12),
 
                   UnifiedFormCustomizablePickerField<String>(
@@ -273,17 +272,11 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   Row(
                     children: [
                       Expanded(
-                        child: FilledButton(
-                          onPressed: _onValidate,
-                          child: const Text('Validate + Save'),
-                        ),
+                        child: FilledButton(onPressed: _onValidate, child: const Text('Validate + Save')),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: OutlinedButton(
-                          onPressed: _onReset,
-                          child: const Text('Reset'),
-                        ),
+                        child: OutlinedButton(onPressed: _onReset, child: const Text('Reset')),
                       ),
                     ],
                   ),
@@ -292,14 +285,8 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        _savedSummary,
-                        style: const TextStyle(fontFamily: 'monospace'),
-                      ),
+                      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
+                      child: Text(_savedSummary, style: const TextStyle(fontFamily: 'monospace')),
                     ),
                   ],
                   const SizedBox(height: 32),

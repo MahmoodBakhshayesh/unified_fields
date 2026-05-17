@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -9,6 +9,7 @@ import 'persian_jalali_calendar.dart';
 import 'unified_date_picker_types.dart';
 import 'unified_date_wheel_style.dart';
 import 'unified_fields_strings.dart';
+import 'unified_fields_typography.dart';
 
 export 'unified_date_wheel_style.dart';
 
@@ -25,6 +26,8 @@ class UnifiedFieldsDateWheelPickerSheet extends StatefulWidget {
     this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
     this.granularity = UnifiedFieldsDatePickerGranularity.day,
     this.wheelStyle,
+    this.showWeekdayInWheel = true,
+    this.onConfirmedCalendarKind,
   });
 
   /// Earliest selectable date (inclusive).
@@ -51,11 +54,36 @@ class UnifiedFieldsDateWheelPickerSheet extends StatefulWidget {
   /// Optional wheel chrome; defaults from theme + [UnifiedInputPalette].
   final UnifiedFieldsDateWheelStyle? wheelStyle;
 
+  /// When true (default), the day wheel shows weekday names beside the day numeral.
+  final bool showWeekdayInWheel;
+
+  /// Called with the active calendar kind when the user confirms.
+  final ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind;
+
   @override
   State<UnifiedFieldsDateWheelPickerSheet> createState() => _UnifiedFieldsDateWheelPickerSheetState();
 }
 
+/// Day row in the wheel picker (fixed-width layout when [weekday] is set).
+@immutable
+class UnifiedWheelDayRow {
+  /// Creates a day wheel row.
+  const UnifiedWheelDayRow({required this.day, this.weekday});
+
+  /// Day of month (1–31).
+  final int day;
+
+  /// Weekday label, or null when hidden.
+  final String? weekday;
+}
+
 class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWheelPickerSheet> {
+  String _digitText(String text) =>
+      UnifiedFieldsTypography.instance.localizeDigits(text, calendarKind: _kind);
+
+  TextStyle _digitStyle(TextStyle style) =>
+      UnifiedFieldsTypography.instance.mergeDigitStyle(style, calendarKind: _kind);
+
   late DateTime _first;
   late DateTime _last;
   late DateTime _selected;
@@ -286,13 +314,16 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
     });
   }
 
-  String _dayLabel(int day) {
+  UnifiedWheelDayRow _dayRow(int day) {
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
       final dt = DateTime(_currentYear(), _currentMonth(), day);
-      return DateFormat('d EEEE').format(dt);
+      final weekday = widget.showWeekdayInWheel ? DateFormat('EEEE').format(dt) : null;
+      return UnifiedWheelDayRow(day: dt.day, weekday: weekday);
     }
-    final dt = PersianJalaliCalendar.toGregorianDate(_currentYear(), _currentMonth(), day);
-    return DateFormat('d EEEE').format(dt);
+    final weekday = widget.showWeekdayInWheel
+        ? PersianJalaliCalendar.persianWeekdayName(_currentYear(), _currentMonth(), day)
+        : null;
+    return UnifiedWheelDayRow(day: day, weekday: weekday);
   }
 
   String _monthLabel(int month) {
@@ -307,52 +338,30 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
         b == Brightness.dark ? UnifiedInputBrightness.dark : UnifiedInputBrightness.light,
       );
 
-  Widget _columnHeader(String label, UnifiedFieldsDateWheelStyle style) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 10, 4, 8),
-      child: Text(
-        label,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 12,
-          letterSpacing: 0.2,
-          color: style.headerTextColor,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
+  static const double _kHeaderHeight = 36;
+
+  int _flexForYear() {
+    if (!_showMonth && !_showDay) return 1;
+    return 2;
   }
 
-  Widget _wheel({
-    required FixedExtentScrollController controller,
-    required int count,
-    required String Function(int index) labelOf,
-    required ValueChanged<int> onSelected,
-    required UnifiedFieldsDateWheelStyle style,
-  }) {
-    return CupertinoPicker(
-      scrollController: controller,
-      itemExtent: style.itemExtent,
-      magnification: style.magnification,
-      squeeze: style.squeeze,
-      diameterRatio: style.diameterRatio,
-      useMagnifier: true,
-      selectionOverlay: const SizedBox.shrink(),
-      onSelectedItemChanged: onSelected,
-      children: List.generate(
-        count,
-        (i) => Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: Text(
-              labelOf(i),
-              style: TextStyle(
-                fontSize: 17,
-                height: 1.15,
-                color: style.itemTextColor,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+  int _flexForMonth() => widget.granularity == UnifiedFieldsDatePickerGranularity.year ? 0 : 3;
+
+  int _flexForDay() => _showDay ? 4 : 0;
+
+  Widget _columnHeader(String label, UnifiedFieldsDateWheelStyle style) {
+    return SizedBox(
+      height: _kHeaderHeight,
+      child: Center(
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: _digitStyle(
+            TextStyle(
+              fontSize: 12,
+              letterSpacing: 0.2,
+              color: style.headerTextColor!,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -360,44 +369,187 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
     );
   }
 
-  Widget _wheelColumn({
-    required String header,
-    required FixedExtentScrollController? controller,
+  Widget _wheelListChild({
+    required String label,
+    required double itemExtent,
+    required Color color,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: itemExtent,
+      child: Center(
+        child: Text(
+          _digitText(label),
+          textAlign: TextAlign.center,
+          style: _digitStyle(
+            TextStyle(
+              fontSize: 17,
+              height: 1.0,
+              color: color,
+            ),
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+
+  Widget _wheelDayListChild({
+    required UnifiedWheelDayRow row,
+    required double itemExtent,
+    required Color color,
+    required double dayNumberWidth,
+    required double weekdayWidth,
+  }) {
+    final textStyle = _digitStyle(TextStyle(fontSize: 17, height: 1.0, color: color));
+    if (row.weekday == null) {
+      return SizedBox(
+        width: double.infinity,
+        height: itemExtent,
+        child: Center(child: Text(_digitText('${row.day}'), style: textStyle)),
+      );
+    }
+    return SizedBox(
+      width: double.infinity,
+      height: itemExtent,
+      child: Center(
+        child: SizedBox(
+          width: dayNumberWidth + 6 + weekdayWidth,
+          child: Row(
+            children: [
+              SizedBox(
+                width: dayNumberWidth,
+                child: Text(
+                  _digitText('${row.day}'),
+                  textAlign: TextAlign.end,
+                  style: textStyle.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(width: 6),
+              SizedBox(
+                width: weekdayWidth,
+                child: Text(
+                  row.weekday!,
+                  textAlign: TextAlign.start,
+                  style: textStyle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _wheel({
+    required BuildContext context,
+    required FixedExtentScrollController controller,
     required int count,
-    required String Function(int index) labelOf,
     required ValueChanged<int> onSelected,
     required UnifiedFieldsDateWheelStyle style,
-    required bool isDayColumn,
-    required bool showTrailingDivider,
+    String Function(int index)? labelOf,
+    UnifiedWheelDayRow Function(int index)? dayRowOf,
   }) {
-    if (controller == null || count == 0) return const SizedBox.shrink();
+    if (count <= 0) return const SizedBox.shrink();
+    return ScrollConfiguration(
+      behavior: _UnifiedDateWheelScrollBehavior.of(context),
+      child: ListWheelScrollView.useDelegate(
+        controller: controller,
+        itemExtent: style.itemExtent!,
+        diameterRatio: style.diameterRatio!,
+        magnification: style.magnification!,
+        squeeze: style.squeeze!,
+        useMagnifier: true,
+        physics: const FixedExtentScrollPhysics(),
+        onSelectedItemChanged: onSelected,
+        childDelegate: ListWheelChildBuilderDelegate(
+          childCount: count,
+          builder: (context, index) {
+            if (index < 0 || index >= count) return null;
+            if (dayRowOf != null) {
+              return _wheelDayListChild(
+                row: dayRowOf(index),
+                itemExtent: style.itemExtent!,
+                color: style.itemTextColor!,
+                dayNumberWidth: style.wheelDayNumberWidth!,
+                weekdayWidth: style.wheelWeekdayWidth!,
+              );
+            }
+            return _wheelListChild(
+              label: labelOf!(index),
+              itemExtent: style.itemExtent!,
+              color: style.itemTextColor!,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget? _wheelOnly({
+    required BuildContext context,
+    required FixedExtentScrollController? controller,
+    required int count,
+    required ValueChanged<int> onSelected,
+    required UnifiedFieldsDateWheelStyle style,
+    String Function(int index)? labelOf,
+    UnifiedWheelDayRow Function(int index)? dayRowOf,
+  }) {
+    if (controller == null || count == 0) return null;
+    return _wheel(
+      context: context,
+      controller: controller,
+      count: count,
+      labelOf: labelOf,
+      dayRowOf: dayRowOf,
+      onSelected: onSelected,
+      style: style,
+    );
+  }
+
+  Widget _headerCell({
+    required String label,
+    required int flex,
+    required UnifiedFieldsDateWheelStyle style,
+    required bool showTrailingDivider,
+    Color? columnBackground,
+  }) {
+    if (flex <= 0) return const SizedBox.shrink();
     return Expanded(
+      flex: flex,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: isDayColumn ? style.dayColumnBackground : null,
+          color: columnBackground,
           border: showTrailingDivider
-              ? BorderDirectional(end: BorderSide(color: style.columnDivider, width: 1))
+              ? BorderDirectional(end: BorderSide(color: style.columnDivider!, width: 1))
               : null,
         ),
-        child: Column(
-          children: [
-            DecoratedBox(
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: style.headerDivider, width: 1)),
-              ),
-              child: _columnHeader(header, style),
-            ),
-            Expanded(
-              child: _wheel(
-                controller: controller,
-                count: count,
-                labelOf: labelOf,
-                onSelected: onSelected,
-                style: style,
-              ),
-            ),
-          ],
+        child: _columnHeader(label, style),
+      ),
+    );
+  }
+
+  Widget _wheelCell({
+    required int flex,
+    required UnifiedFieldsDateWheelStyle style,
+    required bool showTrailingDivider,
+    Color? columnBackground,
+    required Widget? wheel,
+  }) {
+    if (flex <= 0 || wheel == null) return const SizedBox.shrink();
+    return Expanded(
+      flex: flex,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: columnBackground,
+          border: showTrailingDivider
+              ? BorderDirectional(end: BorderSide(color: style.columnDivider!, width: 1))
+              : null,
         ),
+        child: wheel,
       ),
     );
   }
@@ -413,8 +565,8 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
             begin: top ? Alignment.topCenter : Alignment.bottomCenter,
             end: top ? Alignment.bottomCenter : Alignment.topCenter,
             colors: [
-              style.fadeColor,
-              style.fadeColor.withValues(alpha: 0),
+              style.fadeColor!,
+              style.fadeColor!.withValues(alpha: 0),
             ],
             stops: const [0.0, 1.0],
           ),
@@ -424,112 +576,166 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
   }
 
   Widget _styledWheelPanel({
+    required BuildContext context,
     required UnifiedFieldsDateWheelStyle style,
     required UnifiedFieldsStrings strings,
   }) {
-    final columns = <Widget>[];
-    if (_showDay) {
-      columns.add(
-        _wheelColumn(
-          header: strings.dayLabel,
-          controller: _dayCtrl,
-          count: _days.length,
-          labelOf: (i) => _dayLabel(_days[i]),
-          onSelected: _onDay,
-          style: style,
-          isDayColumn: true,
-          showTrailingDivider: _showMonth || _years.isNotEmpty,
-        ),
-      );
-    }
-    if (_showMonth) {
-      columns.add(
-        _wheelColumn(
-          header: strings.monthLabel,
-          controller: _monthCtrl,
-          count: _months.length,
-          labelOf: (i) => _monthLabel(_months[i]),
-          onSelected: _onMonth,
-          style: style,
-          isDayColumn: false,
-          showTrailingDivider: _years.isNotEmpty,
-        ),
-      );
-    }
-    columns.add(
-      _wheelColumn(
-        header: strings.yearLabel,
-        controller: _yearCtrl,
-        count: _years.length,
-        labelOf: (i) => '${_years[i]}',
-        onSelected: _onYear,
-        style: style,
-        isDayColumn: false,
-        showTrailingDivider: false,
-      ),
-    );
+    final yearFlex = _flexForYear();
+    final monthFlex = _flexForMonth();
+    final dayFlex = _flexForDay();
+    final bandHeight = style.itemExtent!;
+    final wheelsHeight = style.wheelHeight! - _kHeaderHeight;
 
-    final bandHeight = style.itemExtent;
+    final yearWheel = _wheelOnly(
+      context: context,
+      controller: _yearCtrl,
+      count: _years.length,
+      labelOf: (i) => '${_years[i]}',
+      onSelected: _onYear,
+      style: style,
+    );
+    final monthWheel = _showMonth
+        ? _wheelOnly(
+            context: context,
+            controller: _monthCtrl,
+            count: _months.length,
+            labelOf: (i) => _monthLabel(_months[i]),
+            onSelected: _onMonth,
+            style: style,
+          )
+        : null;
+    final dayWheel = _showDay
+        ? _wheelOnly(
+            context: context,
+            controller: _dayCtrl,
+            count: _days.length,
+            dayRowOf: (i) => _dayRow(_days[i]),
+            onSelected: _onDay,
+            style: style,
+          )
+        : null;
+
+    final yearDivider = monthFlex > 0 || dayFlex > 0;
+    final monthDivider = dayFlex > 0;
+    final dayColumnBg = style.dayColumnBackground;
+    final columnHeaders = strings.wheelColumnHeaders(_kind);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: style.wheelBackground,
-          borderRadius: BorderRadius.circular(style.cornerRadius),
-          border: Border.all(color: style.columnDivider, width: 1),
+          color: style.wheelBackground!,
+          borderRadius: BorderRadius.circular(style.cornerRadius!),
+          border: Border.all(color: style.columnDivider!, width: 1),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(style.cornerRadius),
+          borderRadius: BorderRadius.circular(style.cornerRadius!),
           child: SizedBox(
-            height: style.wheelHeight,
-            child: Stack(
-              alignment: Alignment.center,
+            height: style.wheelHeight!,
+            child: Column(
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: columns,
-                ),
-                IgnorePointer(
-                  child: Center(
-                    child: Container(
-                      height: bandHeight,
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      decoration: BoxDecoration(
-                        color: style.selectionFill,
-                        borderRadius: BorderRadius.circular(style.selectionRadius),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: style.headerDivider!, width: 1)),
+                  ),
+                  child: Row(
+                    children: [
+                      _headerCell(
+                        label: columnHeaders.year,
+                        flex: yearFlex,
+                        style: style,
+                        showTrailingDivider: yearDivider,
                       ),
-                    ),
+                      _headerCell(
+                        label: columnHeaders.month,
+                        flex: monthFlex,
+                        style: style,
+                        showTrailingDivider: monthDivider,
+                      ),
+                      _headerCell(
+                        label: columnHeaders.day,
+                        flex: dayFlex,
+                        style: style,
+                        showTrailingDivider: false,
+                        columnBackground: dayColumnBg,
+                      ),
+                    ],
                   ),
                 ),
-                IgnorePointer(
-                  child: Center(
-                    child: SizedBox(
-                      height: bandHeight,
-                      width: double.infinity,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                SizedBox(
+                  height: wheelsHeight,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Container(height: 1.5, color: style.selectionBorder),
-                          Container(height: 1.5, color: style.selectionBorder),
+                          _wheelCell(
+                            flex: yearFlex,
+                            style: style,
+                            showTrailingDivider: yearDivider,
+                            wheel: yearWheel,
+                          ),
+                          _wheelCell(
+                            flex: monthFlex,
+                            style: style,
+                            showTrailingDivider: monthDivider,
+                            wheel: monthWheel,
+                          ),
+                          _wheelCell(
+                            flex: dayFlex,
+                            style: style,
+                            showTrailingDivider: false,
+                            columnBackground: dayColumnBg,
+                            wheel: dayWheel,
+                          ),
                         ],
                       ),
-                    ),
+                      IgnorePointer(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Container(
+                            height: bandHeight,
+                            margin: const EdgeInsets.symmetric(horizontal: 6),
+                            decoration: BoxDecoration(
+                              color: style.selectionFill!,
+                              borderRadius: BorderRadius.circular(style.selectionRadius!),
+                            ),
+                          ),
+                        ),
+                      ),
+                      IgnorePointer(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: SizedBox(
+                            height: bandHeight,
+                            width: double.infinity,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(height: 1.5, color: style.selectionBorder!),
+                                Container(height: 1.5, color: style.selectionBorder!),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: wheelsHeight * 0.34,
+                        child: _wheelFade(style: style, top: true),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: wheelsHeight * 0.34,
+                        child: _wheelFade(style: style, top: false),
+                      ),
+                    ],
                   ),
-                ),
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: style.wheelHeight * 0.34,
-                  child: _wheelFade(style: style, top: true),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: style.wheelHeight * 0.34,
-                  child: _wheelFade(style: style, top: false),
                 ),
               ],
             ),
@@ -544,7 +750,7 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
     final theme = Theme.of(context);
     final palette = _palette(theme.brightness);
     final strings = UnifiedFieldsStrings.instance;
-    final wheelStyle = widget.wheelStyle ?? UnifiedFieldsDateWheelStyle.resolve(palette, theme);
+    final wheelStyle = UnifiedFieldsDateWheelStyle.forPicker(palette, theme, widget.wheelStyle);
     final titleText = (widget.title ?? '').trim();
     final hasJalali = PersianJalaliCalendar.enumerateMonthsBetween(_first, _last).isNotEmpty;
 
@@ -608,7 +814,7 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
                 onSelectionChanged: (s) => _onKindChanged(s.first),
               ),
             ),
-          _styledWheelPanel(style: wheelStyle, strings: strings),
+          _styledWheelPanel(context: context, style: wheelStyle, strings: strings),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Row(
@@ -619,7 +825,10 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
                 ),
                 const Spacer(),
                 FilledButton(
-                  onPressed: () => Navigator.of(context).pop(_selected),
+                  onPressed: () {
+                    widget.onConfirmedCalendarKind?.call(_kind);
+                    Navigator.of(context).pop(_selected);
+                  },
                   child: Text(strings.confirm),
                 ),
               ],
@@ -629,4 +838,20 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
       ),
     );
   }
+}
+
+/// Mouse / trackpad drag + wheel scrolling on desktop (CupertinoPicker omits mouse by default).
+class _UnifiedDateWheelScrollBehavior extends MaterialScrollBehavior {
+  const _UnifiedDateWheelScrollBehavior();
+
+  static ScrollBehavior of(BuildContext context) => const _UnifiedDateWheelScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.unknown,
+      };
 }

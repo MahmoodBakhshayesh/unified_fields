@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../time_of_day_extension.dart';
 import '../time_picker_utils.dart';
+import '../unified_date_picker_types.dart';
+import '../unified_date_wheel_style.dart';
+import '../unified_time_format.dart';
+import '../unified_time_picker_types.dart';
 import 'unified_base_text_field.dart';
 import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_time_field_controller.dart';
@@ -9,7 +12,7 @@ import 'unified_input_picker.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 
-/// Time-of-day picker using unified chrome + [TimePickerUtils].
+/// Time-of-day picker using unified chrome + dial or wheel picker.
 class UnifiedTimeOfDayField extends StatefulWidget {
   /// Creates a time-of-day field.
   const UnifiedTimeOfDayField({
@@ -25,6 +28,11 @@ class UnifiedTimeOfDayField extends StatefulWidget {
     this.locked = false,
     this.isDisabled = false,
     this.timePickerEntryMode = TimePickerEntryMode.dial,
+    this.pickerStyle = UnifiedFieldsTimePickerStyle.dial,
+    this.pickerGranularity = UnifiedFieldsTimeGranularity.hoursMinutes,
+    this.showCalendarKindToggle = true,
+    this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
+    this.wheelStyle,
     this.label,
     this.placeholder,
     this.isRequired = false,
@@ -60,8 +68,23 @@ class UnifiedTimeOfDayField extends StatefulWidget {
   /// When true, greys out the label and shows a forbid suffix icon.
   final bool isDisabled;
 
-  /// Forwarded to [showTimePicker].
+  /// Forwarded to platform dial [showTimePicker] when [pickerStyle] is [UnifiedFieldsTimePickerStyle.dial].
   final TimePickerEntryMode timePickerEntryMode;
+
+  /// Dial vs unified scroll wheels.
+  final UnifiedFieldsTimePickerStyle pickerStyle;
+
+  /// Wheel columns: hour, hour+minute, or hour+minute+second.
+  final UnifiedFieldsTimeGranularity pickerGranularity;
+
+  /// When false, hides Gregorian / Shamsi toggle on wheel picker.
+  final bool showCalendarKindToggle;
+
+  /// Starting digit / label mode for wheels and field display.
+  final UnifiedFieldsCalendarKind initialCalendarKind;
+
+  /// Optional wheel chrome when [pickerStyle] is [UnifiedFieldsTimePickerStyle.wheels].
+  final UnifiedFieldsDateWheelStyle? wheelStyle;
 
   /// Field label. Overrides [UnifiedInputDecoration.label] when set.
   final String? label;
@@ -78,12 +101,22 @@ class UnifiedTimeOfDayField extends StatefulWidget {
 
 class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
   late final TextEditingController _txt = TextEditingController();
+  late UnifiedFieldsCalendarKind _calendarKind;
+  int _second = 0;
+
+  UnifiedFieldsCalendarKind get _effectiveCalendarKind =>
+      widget.fieldController?.calendarKind ?? _calendarKind;
+
+  UnifiedFieldsTimeGranularity get _granularity =>
+      widget.fieldController?.granularity ?? widget.pickerGranularity;
+
+  int get _effectiveSecond => widget.fieldController?.second ?? _second;
 
   void _syncFieldController(BuildContext context) {
     final d = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
     widget.fieldController?.bindPickerTitle(widget.label ?? d.label ?? '');
     attachUnifiedFieldHandles(
-      opener: (ctx) => _pick(ctx),
+      opener: (context) => _pick(context),
       focusNode: unifiedEffectiveFocusNode(
         fieldController: widget.fieldController,
         binding: widget.binding,
@@ -96,6 +129,8 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
   @override
   void initState() {
     super.initState();
+    _calendarKind = widget.fieldController?.calendarKind ?? widget.initialCalendarKind;
+    _second = widget.fieldController?.second ?? 0;
     _syncText();
     widget.binding?.addListener(_onBinding);
     widget.fieldController?.addListener(_onBinding);
@@ -123,6 +158,9 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
       widget.binding?.addListener(_onBinding);
       widget.fieldController?.addListener(_onBinding);
     }
+    if (oldWidget.initialCalendarKind != widget.initialCalendarKind && widget.fieldController == null) {
+      _calendarKind = widget.initialCalendarKind;
+    }
     if (oldWidget.value != widget.value ||
         oldWidget.binding?.value != widget.binding?.value ||
         oldWidget.fieldController?.value != widget.fieldController?.value) {
@@ -141,7 +179,20 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
       binding: widget.binding,
       direct: widget.value,
     );
-    _txt.text = t?.toJson ?? '';
+    _txt.text = formatUnifiedTimeOfDayText(
+      t,
+      granularity: _granularity,
+      second: _effectiveSecond,
+      calendarKind: _effectiveCalendarKind,
+    );
+  }
+
+  void _onPickerConfirmedCalendarKind(UnifiedFieldsCalendarKind kind) {
+    widget.fieldController?.calendarKind = kind;
+    if (widget.fieldController == null && _calendarKind != kind) {
+      setState(() => _calendarKind = kind);
+    }
+    _syncText();
   }
 
   @override
@@ -158,17 +209,39 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
 
   Future<void> _pick(BuildContext context) async {
     if (widget.isDisabled || widget.locked) return;
+    final fc = widget.fieldController;
     final initial = _effective ?? TimeOfDay.now();
     final picked = await TimePickerUtils.show(
       context,
       title: widget.label ?? widget.decoration?.label,
       initialTime: initial,
-      timePickerEntryMode: widget.fieldController?.timePickerEntryMode ?? widget.timePickerEntryMode,
+      initialSecond: _effectiveSecond,
+      timePickerEntryMode: fc?.timePickerEntryMode ?? widget.timePickerEntryMode,
+      pickerStyle: fc?.pickerStyle ?? widget.pickerStyle,
+      granularity: _granularity,
+      showCalendarKindToggle: widget.showCalendarKindToggle,
+      initialCalendarKind: _effectiveCalendarKind,
+      wheelStyle: fc?.wheelStyle ?? widget.wheelStyle,
+      onConfirmedCalendarKind: (kind) {
+        _onPickerConfirmedCalendarKind(kind);
+        if (fc != null && _granularity == UnifiedFieldsTimeGranularity.hoursMinutesSeconds) {
+          // second updated when pick completes
+        }
+      },
     );
     if (!context.mounted || picked == null) return;
-    _txt.text = picked.toJson ?? '';
+    if (fc != null) {
+      fc.second = picked.second;
+    } else {
+      _second = picked.second;
+    }
+    _txt.text = formatUnifiedPickedTimeText(
+      picked,
+      granularity: _granularity,
+      calendarKind: _effectiveCalendarKind,
+    );
     syncUnifiedFieldValue(
-      value: picked,
+      value: picked.toTimeOfDay(),
       onChanged: widget.onChanged,
       binding: widget.binding,
       fieldController: widget.fieldController,

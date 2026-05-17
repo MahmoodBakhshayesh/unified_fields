@@ -6,12 +6,14 @@ import 'unified_customizable_async_picker_field.dart';
 import 'unified_customizable_picker_controller.dart';
 import 'unified_duration_field.dart';
 import 'unified_form_fields.dart';
+import 'unified_form_more_fields.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 import 'unified_number_field.dart';
 import 'unified_picker_fields.dart';
 import 'unified_text_field.dart';
 import '../unified_date_picker_sheet.dart';
+import '../unified_time_picker_types.dart';
 import 'unified_date_field.dart';
 import 'unified_time_of_day_field.dart';
 
@@ -271,24 +273,38 @@ class _UnifiedInputsShowcasePageState extends State<UnifiedInputsShowcasePage> {
             'Range binding: ${_rangeSummary(_dateRangeBinding.value)}',
             style: Theme.of(context).textTheme.bodySmall,
           ),
-          _sectionTitle('UnifiedTimeOfDayField'),
+          _sectionTitle('UnifiedTimeOfDayField (wheel, Shamsi)'),
           UnifiedTimeOfDayField(
             brightness: _paletteMode,
             decoration: const UnifiedInputDecoration(label: 'Reminder time'),
             value: _time,
+            pickerStyle: UnifiedFieldsTimePickerStyle.wheels,
+            pickerGranularity: UnifiedFieldsTimeGranularity.hoursMinutesSeconds,
+            initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
             locked: false,
             onChanged: (t) => setState(() => _time = t),
           ),
-          _sectionTitle('UnifiedDurationField (H:M:S)'),
+          _sectionTitle('UnifiedDurationField (wheel H:M:S, Shamsi)'),
           UnifiedDurationField(
             brightness: _paletteMode,
             decoration: const UnifiedInputDecoration(label: 'Bloom duration'),
             granularity: UnifiedDurationGranularity.hoursMinutesSeconds,
+            pickerStyle: UnifiedFieldsDurationPickerStyle.wheels,
+            initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
             value: _duration,
             min: Duration.zero,
             max: const Duration(hours: 2),
             onChanged: (d) => setState(() => _duration = d),
             validator: (v) => v.isEmpty ? 'Pick a duration' : null,
+          ),
+          _sectionTitle('UnifiedDurationField (custom: year · week · day · hour)'),
+          UnifiedDurationField(
+            brightness: _paletteMode,
+            decoration: const UnifiedInputDecoration(label: 'Age / tenure'),
+            pickerColumns: UnifiedFieldsDurationColumnPresets.yearsWeeksDaysHours,
+            initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
+            value: const Duration(days: 400, hours: 5),
+            max: const Duration(days: 365 * 10),
           ),
           _sectionTitle('UnifiedDurationField (M:S)'),
           UnifiedDurationField(
@@ -392,6 +408,15 @@ class _UnifiedInputsShowcasePageState extends State<UnifiedInputsShowcasePage> {
                     label: 'Required name',
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
                     onSaved: (v) => setState(() => _formDemoLastSaved = v?.trim() ?? ''),
+                  ),
+                  const SizedBox(height: 12),
+                  UnifiedFormDateField(
+                    brightness: _paletteMode,
+                    label: 'Form date (wheels)',
+                    pickerStyle: UnifiedFieldsDatePickerStyle.wheels,
+                    min: DateTime(2020),
+                    max: DateTime(2035),
+                    validator: (v) => v == null ? 'Pick a date' : null,
                   ),
                   if (_formDemoLastSaved.isNotEmpty)
                     Padding(

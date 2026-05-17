@@ -357,6 +357,8 @@ class UnifiedFormDateField extends StatefulWidget {
     this.pickerGranularity = UnifiedFieldsDatePickerGranularity.day,
     this.pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
     this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
+    this.wheelStyle,
+    this.showWeekdayInWheel = true,
     this.shakeOnError = false,
     this.placeholder,
     this.isRequired = false,
@@ -459,6 +461,12 @@ class UnifiedFormDateField extends StatefulWidget {
 
   /// Starting calendar system (Gregorian / Shamsi).
   final UnifiedFieldsCalendarKind initialCalendarKind;
+
+  /// Optional wheel chrome when [pickerStyle] is [UnifiedFieldsDatePickerStyle.wheels].
+  final UnifiedFieldsDateWheelStyle? wheelStyle;
+
+  /// When [pickerStyle] is wheels, show weekday names in the day column.
+  final bool showWeekdayInWheel;
 
   /// When true, shakes once when validation error appears on this field.
   final bool shakeOnError;
@@ -603,7 +611,12 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
     );
     final c = widget.controller;
     if (c != null) {
-      final text = formatUnifiedDateFieldText(dt, widget.valueFormat, granularity: widget.pickerGranularity);
+      final text = formatUnifiedDateFieldText(
+        dt,
+        widget.valueFormat,
+        granularity: widget.pickerGranularity,
+        calendarKind: widget.fieldController?.calendarKind ?? widget.initialCalendarKind,
+      );
       if (c.text != text) {
         c.text = text;
       }
@@ -646,10 +659,10 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
             );
           },
           onSubmit: widget.onSubmit,
-          min: widget.min,
-          max: widget.max,
-          valueFormat: widget.valueFormat,
-          mode: widget.mode,
+          min: widget.min ?? widget.fieldController?.min,
+          max: widget.max ?? widget.fieldController?.max,
+          valueFormat: widget.valueFormat ?? widget.fieldController?.valueFormat,
+          mode: widget.fieldController?.mode ?? widget.mode,
           suffixIcon: widget.suffixIcon,
           prefix: widget.prefix,
           prefixIcon: widget.prefixIcon,
@@ -658,10 +671,14 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
           readOnly: widget.readOnly,
           autofocus: widget.autofocus,
           textAlign: widget.textAlign,
-          showCalendarKindToggle: widget.showCalendarKindToggle,
-          pickerGranularity: widget.pickerGranularity,
-          pickerStyle: widget.pickerStyle,
-          initialCalendarKind: widget.initialCalendarKind,
+          showCalendarKindToggle:
+              widget.fieldController?.showCalendarKindToggle ?? widget.showCalendarKindToggle,
+          pickerGranularity: widget.fieldController?.pickerGranularity ?? widget.pickerGranularity,
+          pickerStyle: widget.fieldController?.pickerStyle ?? widget.pickerStyle,
+          initialCalendarKind: widget.fieldController?.calendarKind ?? widget.initialCalendarKind,
+          wheelStyle: widget.fieldController?.wheelStyle ?? widget.wheelStyle,
+          showWeekdayInWheel:
+              widget.fieldController?.showWeekdayInWheel ?? widget.showWeekdayInWheel,
         );
       },
     );
@@ -1218,6 +1235,10 @@ class UnifiedFormDurationField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.granularity = UnifiedDurationGranularity.hoursMinutesSeconds,
+    this.pickerColumns,
+    this.pickerStyle = UnifiedFieldsDurationPickerStyle.wheels,
+    this.showCalendarKindToggle = true,
+    this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
     this.min,
     this.max,
     this.locked = false,
@@ -1268,8 +1289,20 @@ class UnifiedFormDurationField extends StatefulWidget {
   /// Forwarded to the inner submit.
   final ValueChanged<String>? onSubmitted;
 
-  /// Granularity of the duration picker.
+  /// Granularity of the duration picker when [pickerColumns] is null.
   final UnifiedDurationGranularity granularity;
+
+  /// Custom wheel columns (largest unit first); overrides [granularity] when set.
+  final List<UnifiedFieldsDurationColumn>? pickerColumns;
+
+  /// Cupertino vs unified styled wheels.
+  final UnifiedFieldsDurationPickerStyle pickerStyle;
+
+  /// When false, hides the Gregorian / Shamsi digit toggle on wheel pickers.
+  final bool showCalendarKindToggle;
+
+  /// Starting digit / label mode for wheel pickers.
+  final UnifiedFieldsCalendarKind initialCalendarKind;
 
   /// Minimum allowed duration.
   final Duration? min;
@@ -1461,6 +1494,10 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
           },
           onSubmitted: widget.onSubmitted,
           granularity: widget.granularity,
+          pickerColumns: widget.pickerColumns,
+          pickerStyle: widget.pickerStyle,
+          showCalendarKindToggle: widget.showCalendarKindToggle,
+          initialCalendarKind: widget.initialCalendarKind,
           min: widget.min,
           max: widget.max,
           locked: widget.locked,

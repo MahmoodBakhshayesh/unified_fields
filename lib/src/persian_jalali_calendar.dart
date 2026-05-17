@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shamsi_date/shamsi_date.dart';
 
+import 'unified_date_picker_types.dart';
+
 /// Jalali / Persian solar (Shamsi) calendar helpers for date-picker grids.
 abstract final class PersianJalaliCalendar {
   /// Number of days in the given Jalali year/month.
@@ -41,5 +43,31 @@ abstract final class PersianJalaliCalendar {
   /// Persian month names (matches [JalaliFormatter.mN]); [month] is 1…12.
   static String persianMonthName(int month) {
     return JalaliFormatter(Jalali(1400, month, 1)).mN;
+  }
+
+  /// Persian weekday name (شنبه … جمعه) for a Jalali date.
+  static String persianWeekdayName(int jalaliYear, int jalaliMonth, int jalaliDay) {
+    return JalaliFormatter(Jalali(jalaliYear, jalaliMonth, jalaliDay)).wN;
+  }
+
+  /// Day column label for wheel picker: `"$day $weekday"` in Farsi.
+  static String jalaliDayWheelLabel(int jalaliYear, int jalaliMonth, int jalaliDay) {
+    return '$jalaliDay ${persianWeekdayName(jalaliYear, jalaliMonth, jalaliDay)}';
+  }
+
+  /// Formats a Gregorian [dateTime] for display in Shamsi mode (mirrors default Gregorian patterns).
+  static String formatFieldText(
+    DateTime dateTime, {
+    UnifiedFieldsDatePickerGranularity granularity = UnifiedFieldsDatePickerGranularity.day,
+  }) {
+    final j = fromGregorian(DateUtils.dateOnly(dateTime));
+    switch (granularity) {
+      case UnifiedFieldsDatePickerGranularity.year:
+        return '${j.year}';
+      case UnifiedFieldsDatePickerGranularity.month:
+        return '${persianMonthName(j.month)} ${j.year}';
+      case UnifiedFieldsDatePickerGranularity.day:
+        return '${j.day},${persianMonthName(j.month)} ${j.year}';
+    }
   }
 }

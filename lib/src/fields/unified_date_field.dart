@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../persian_jalali_calendar.dart';
 import '../unified_date_picker_sheet.dart';
+import '../unified_fields_typography.dart';
 import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_date_field_controller.dart';
 import '../controllers/unified_date_range_field_controller.dart';
@@ -18,23 +20,44 @@ String formatUnifiedDateFieldText(
   DateTime? dt,
   Object? valueFormat, {
   UnifiedFieldsDatePickerGranularity granularity = UnifiedFieldsDatePickerGranularity.day,
+  UnifiedFieldsCalendarKind? calendarKind,
 }) {
   if (dt == null) return '';
-  if (valueFormat is DateFormat) return valueFormat.format(dt);
-  if (granularity == UnifiedFieldsDatePickerGranularity.year) {
-    return DateFormat('yyyy').format(dt);
+  final String raw;
+  if (valueFormat is DateFormat) {
+    raw = valueFormat.format(dt);
+  } else if (calendarKind == UnifiedFieldsCalendarKind.jalali) {
+    raw = PersianJalaliCalendar.formatFieldText(dt, granularity: granularity);
+  } else {
+    raw = granularity == UnifiedFieldsDatePickerGranularity.year
+        ? DateFormat('yyyy').format(dt)
+        : granularity == UnifiedFieldsDatePickerGranularity.month
+            ? DateFormat('MMM yyyy').format(dt)
+            : DateFormat('dd,MMM yyyy').format(dt);
   }
-  if (granularity == UnifiedFieldsDatePickerGranularity.month) {
-    return DateFormat('MMM yyyy').format(dt);
-  }
-  return DateFormat('dd,MMM yyyy').format(dt);
+  return UnifiedFieldsTypography.instance.localizeDigits(raw, calendarKind: calendarKind);
 }
 
-/// Formats a [DateTimeRange] as `dd,MMM yyyy – dd,MMM yyyy`.
-String formatUnifiedDateRangeFieldText(DateTimeRange? r) {
+/// Formats a [DateTimeRange] as `dd,MMM yyyy – dd,MMM yyyy` (or Shamsi equivalents).
+String formatUnifiedDateRangeFieldText(
+  DateTimeRange? r, {
+  UnifiedFieldsCalendarKind? calendarKind,
+  UnifiedFieldsDatePickerGranularity granularity = UnifiedFieldsDatePickerGranularity.day,
+}) {
   if (r == null) return '';
-  final f = DateFormat('dd,MMM yyyy');
-  return '${f.format(r.start)} – ${f.format(r.end)}';
+  final start = formatUnifiedDateFieldText(
+    r.start,
+    null,
+    granularity: granularity,
+    calendarKind: calendarKind,
+  );
+  final end = formatUnifiedDateFieldText(
+    r.end,
+    null,
+    granularity: granularity,
+    calendarKind: calendarKind,
+  );
+  return '$start – $end';
 }
 
 /// Single date using [UnifiedBaseTextField] + [showUnifiedFieldsDatePicker] (no legacy `App*` wrapper).
@@ -73,6 +96,7 @@ class UnifiedDateField extends StatefulWidget {
     this.pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
     this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
     this.wheelStyle,
+    this.showWeekdayInWheel = true,
   });
 
   /// Visual chrome.
@@ -168,14 +192,21 @@ class UnifiedDateField extends StatefulWidget {
   /// Optional wheel chrome when [pickerStyle] is [UnifiedFieldsDatePickerStyle.wheels].
   final UnifiedFieldsDateWheelStyle? wheelStyle;
 
+  /// When [pickerStyle] is wheels, show weekday names in the day column.
+  final bool showWeekdayInWheel;
+
   @override
   State<UnifiedDateField> createState() => _UnifiedDateFieldState();
 }
 
 class _UnifiedDateFieldState extends State<UnifiedDateField> {
   TextEditingController? _ownedController;
+  late UnifiedFieldsCalendarKind _calendarKind;
 
   TextEditingController get _effectiveController => widget.controller ?? _ownedController!;
+
+  UnifiedFieldsCalendarKind get _effectiveCalendarKind =>
+      widget.fieldController?.calendarKind ?? _calendarKind;
 
   String _sheetTitle(UnifiedInputDecoration d) {
     final titleRaw = ((d.label ?? '').trim().isEmpty) ? (d.placeholder ?? d.label) : d.label;
@@ -215,14 +246,19 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
     if (fc != null && fc.value != picked) {
       fc.value = picked;
     }
-    _effectiveController.text =
-        formatUnifiedDateFieldText(picked, widget.valueFormat, granularity: widget.pickerGranularity);
+    _effectiveController.text = formatUnifiedDateFieldText(
+      picked,
+      widget.valueFormat,
+      granularity: widget.pickerGranularity,
+      calendarKind: _effectiveCalendarKind,
+    );
     setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
+    _calendarKind = widget.fieldController?.calendarKind ?? widget.initialCalendarKind;
     if (widget.controller == null) {
       _ownedController = TextEditingController();
     }
@@ -263,9 +299,14 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
       widget.binding?.addListener(_onBinding);
       widget.fieldController?.addListener(_onBinding);
     }
+    if (oldWidget.initialCalendarKind != widget.initialCalendarKind &&
+        widget.fieldController == null) {
+      _calendarKind = widget.initialCalendarKind;
+    }
     if (oldWidget.value != widget.value ||
         oldWidget.binding?.value != widget.binding?.value ||
-        oldWidget.fieldController?.value != widget.fieldController?.value) {
+        oldWidget.fieldController?.value != widget.fieldController?.value ||
+        oldWidget.initialCalendarKind != widget.initialCalendarKind) {
       _syncTextFromValue();
     }
   }
@@ -287,7 +328,33 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
 
   void _syncTextFromValue() {
     final dt = _effectiveValue;
-    _effectiveController.text = formatUnifiedDateFieldText(dt, widget.valueFormat, granularity: widget.pickerGranularity);
+    _effectiveController.text = formatUnifiedDateFieldText(
+      dt,
+      widget.valueFormat,
+      granularity: widget.pickerGranularity,
+      calendarKind: _effectiveCalendarKind,
+    );
+  }
+
+  void _onPickerConfirmedCalendarKind(UnifiedFieldsCalendarKind kind) {
+    final fc = widget.fieldController;
+    if (fc != null) {
+      fc.calendarKind = kind;
+      return;
+    }
+    if (_calendarKind == kind) return;
+    setState(() {
+      _calendarKind = kind;
+      final dt = _effectiveValue;
+      if (dt != null) {
+        _effectiveController.text = formatUnifiedDateFieldText(
+          dt,
+          widget.valueFormat,
+          granularity: widget.pickerGranularity,
+          calendarKind: kind,
+        );
+      }
+    });
   }
 
   @override
@@ -313,8 +380,10 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
       showCalendarKindToggle: widget.showCalendarKindToggle,
       granularity: widget.pickerGranularity,
       pickerStyle: fc?.pickerStyle ?? widget.pickerStyle,
-      initialCalendarKind: fc?.calendarKind ?? widget.initialCalendarKind,
-      wheelStyle: widget.wheelStyle,
+      initialCalendarKind: _effectiveCalendarKind,
+      wheelStyle: fc?.wheelStyle ?? widget.wheelStyle,
+      showWeekdayInWheel: fc?.showWeekdayInWheel ?? widget.showWeekdayInWheel,
+      onConfirmedCalendarKind: _onPickerConfirmedCalendarKind,
     );
     if (!context.mounted) return;
     _applyPicked(picked);
@@ -343,7 +412,10 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
         errorText: widget.fieldController?.errorText,
         label:widget.label?? d.label,
         placeholder: widget.placeholder ?? d.placeholder ?? d.label,
-        style: d.fieldStyle ?? const TextStyle(fontSize: 14),
+        style: UnifiedFieldsTypography.instance.mergeDigitStyle(
+          d.fieldStyle ?? const TextStyle(fontSize: 14),
+          calendarKind: _effectiveCalendarKind,
+        ),
         backgroundColor: bg,
         headerBackgroundColor: headerBg,
         borderRadius: d.borderRadius ?? const BorderRadius.all(Radius.circular(16)),

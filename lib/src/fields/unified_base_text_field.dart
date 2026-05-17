@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../unified_colors.dart';
+import '../unified_fields_typography.dart';
 import 'unified_input_palette.dart';
 import 'unified_input_theme.dart';
 
@@ -380,13 +381,15 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   TextStyle _resolveFieldStyle(UnifiedInputPalette palette) {
     final base = widget.style ?? TextStyle(color: palette.fieldTextColor);
     final textBase = base.color ?? palette.fieldTextColor;
+    TextStyle resolved;
     if (_visuallyDisabled) {
-      return base.copyWith(color: textBase.withValues(alpha: 0.45));
+      resolved = base.copyWith(color: textBase.withValues(alpha: 0.45));
+    } else if (widget.locked) {
+      resolved = base.copyWith(color: textBase.withValues(alpha: 0.55));
+    } else {
+      resolved = base;
     }
-    if (widget.locked) {
-      return base.copyWith(color: textBase.withValues(alpha: 0.55));
-    }
-    return base;
+    return UnifiedFieldsTypography.instance.mergeDigitStyle(resolved);
   }
 
   Color get _effectiveBackgroundColor {

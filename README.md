@@ -13,15 +13,17 @@
 5. [Shake on validation error](#shake-on-validation-error)  
 6. [Date & calendar](#date--calendar)  
 7. [Time](#time)  
-8. [Pickers](#pickers)  
-9. [Bindings with `UnifiedInputPicker`](#bindings-with-unifiedinputpicker)  
-10. [Field controllers](#field-controllers)  
-11. [Field states (`isDisabled`, `loading`, …)](#field-states-isdisabled-loading-)  
-12. [UI strings (`UnifiedFieldsStrings`)](#ui-strings-unifiedfieldsstrings)  
-13. [Theming & layout](#theming--layout)  
-14. [Localization](#localization)  
-15. [Try the built-in demo](#try-the-built-in-demo)  
-16. [Dependencies](#dependencies)  
+8. [Duration](#duration)  
+9. [Pickers](#pickers)  
+10. [Bindings with `UnifiedInputPicker`](#bindings-with-unifiedinputpicker)  
+11. [Field controllers](#field-controllers)  
+12. [Field states (`isDisabled`, `loading`, …)](#field-states-isdisabled-loading-)  
+13. [UI strings (`UnifiedFieldsStrings`)](#ui-strings-unifiedfieldsstrings)  
+14. [Theming & layout](#theming--layout)  
+15. [Persian digits (`UnifiedFieldsTypography`)](#persian-digits-unifiedfieldstypography)  
+16. [Localization](#localization)  
+17. [Try the built-in demo](#try-the-built-in-demo)  
+18. [Dependencies](#dependencies)  
 
 ---
 
@@ -31,7 +33,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.3.0
+  unified_fields: ^0.1.6
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -73,11 +75,12 @@ dependencies:
 | **Customizable pickers** | `UnifiedCustomizablePickerField`, `UnifiedCustomizableMultiPickerField`, `UnifiedCustomizableAsyncPickerField`, `UnifiedCustomizableAsyncMultiPickerField`, `CustomizableSinglePickerController`, `CustomizableMultiPickerController` | Controller-driven single or multi selection that also accepts free typed text |
 | **Form wrappers** | `UnifiedFormField`, `UnifiedFormTextField`, `UnifiedFormSinglePickerField`, `UnifiedFormMultiPickerField`, `UnifiedFormAsyncPickerField`, `UnifiedFormAsyncMultiPickerField`, `UnifiedFormDateField`, `UnifiedFormDateRangeField`, `UnifiedFormTimeOfDayField`, `UnifiedFormDurationField`, `UnifiedFormNumberField`, `UnifiedFormCustomizablePickerField`, `UnifiedFormCustomizableMultiPickerField`, `UnifiedFormCustomizableAsyncPickerField`, `UnifiedFormCustomizableAsyncMultiPickerField` | `Form` integration: `validate`, `save`, `reset`, validators |
 | **Form scope** | `UnifiedFormFieldScope` | Shared `AutovalidateMode` for all unified form descendants |
-| **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind` | Single date or range; day / month / year granularity; Gregorian vs Jalali toggle |
-| **Time** | `TimePickerUtils.show` | Wraps `showTimePicker` with sensible defaults |
+| **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind`, `UnifiedFieldsDatePickerStyle` | Single date or range; calendar grid or scroll wheels; Gregorian vs Jalali |
+| **Time** | `UnifiedTimeOfDayField`, `showUnifiedFieldsTimePicker`, `UnifiedFieldsTimePickerStyle`, `UnifiedFieldsTimeGranularity`, `TimePickerUtils.show` | Material dial (default) or H:M:S wheels with Shamsi digit toggle |
+| **Duration** | `UnifiedDurationField`, `showUnifiedFieldsDurationPicker`, `UnifiedFieldsDurationColumn`, `UnifiedFieldsDurationColumnPresets`, `UnifiedDurationGranularity`, `UnifiedFieldsDurationPickerStyle` | Wheel picker with fixed granularity or custom column order (year · week · day · hour, …) |
 | **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedInputDecoration`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputTheme`, `UnifiedInputThemeScope` | Labels, errors, light/dark palettes, optional global theme scope |
 | **Controllers** | `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, `UnifiedAsyncPickerFieldController`, `UnifiedDateFieldController`, `UnifiedTimeOfDayFieldController`, `UnifiedDurationFieldController`, `UnifiedNumberFieldController`, `UnifiedFormController` | Listenable value + validation + imperative `openPicker` / `requestFocus` |
-| **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, layout helpers, default colors, sheet actions |
+| **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsTypography`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, Persian digits, layout helpers, default colors, sheet actions |
 | **Demo** | `UnifiedInputsShowcasePage` | Scrollable gallery of widgets + palette toggle |
 
 ---
@@ -209,43 +212,40 @@ Users can switch **Gregorian** vs **Jalali (Shamsi)** when **`showCalendarKindTo
 | Style | UI |
 |-------|-----|
 | **`calendar`** (default) | Month grid (day granularity) or year/month lists |
-| **`wheels`** | Scroll wheels: day + month + year, month + year, or year only — per **`pickerGranularity`** |
+| **`wheels`** | Scroll wheels left→right: **year · month · day** (subset per **`pickerGranularity`**) |
 
-Both styles support **Gregorian / Shamsi** when `showCalendarKindToggle` is true.
+Both styles support **Gregorian / Shamsi** when `showCalendarKindToggle` is true. In Shamsi wheel mode, column headers use **سال / ماه / روز** (customize via `UnifiedFieldsStrings`). Set `showWeekdayInWheel: false` to show only the day numeral; weekday + day use fixed column widths on `UnifiedFieldsDateWheelStyle`.
+
+Calendar **today** is shown as a hollow circle (same shape as the selected day fill).
 
 ```dart
 UnifiedDateField(
   label: 'Birth date',
   pickerStyle: UnifiedFieldsDatePickerStyle.wheels,
+  showWeekdayInWheel: true,
   initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
   pickerGranularity: UnifiedFieldsDatePickerGranularity.day,
+)
+
+// Same parameters on the Form wrapper:
+UnifiedFormDateField(
+  label: 'Birth date',
+  pickerStyle: UnifiedFieldsDatePickerStyle.wheels,
+  wheelStyle: null, // optional; auto-themed when omitted
 )
 ```
 
 Date **ranges** still use the calendar sheet (`showUnifiedFieldsDatePickerRange`).
 
-Wheel chrome is themed automatically; override with `wheelStyle`:
+Wheel chrome is themed automatically (`UnifiedFieldsDateWheelStyle.resolve`). Pass optional `wheelStyle:` only when you need custom colors or zoom.
+
+**Jalali field text:** when `initialCalendarKind` / active kind is **`jalali`**, the field shows Shamsi-formatted text (e.g. `۱۳,مرداد ۱۴۰۳`) after pick, not a Gregorian `DateFormat`. `initialCalendarKind: jalali` applies to **both** calendar grid and wheel pickers (0.1.6).
 
 ```dart
-final base = UnifiedFieldsDateWheelStyle.resolve(
-  UnifiedInputPalette.light(),
-  Theme.of(context),
-);
-
 UnifiedDateField(
-  pickerStyle: UnifiedFieldsDatePickerStyle.wheels,
-  wheelStyle: UnifiedFieldsDateWheelStyle(
-    wheelBackground: base.wheelBackground,
-    dayColumnBackground: base.dayColumnBackground,
-    selectionFill: base.selectionFill,
-    selectionBorder: base.selectionBorder,
-    columnDivider: base.columnDivider,
-    headerDivider: base.headerDivider,
-    fadeColor: base.fadeColor,
-    headerTextColor: base.headerTextColor,
-    itemTextColor: base.itemTextColor,
-    magnification: 1.22,
-  ),
+  label: 'Event',
+  initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
+  pickerStyle: UnifiedFieldsDatePickerStyle.calendar, // grid respects jalali
 )
 ```
 
@@ -253,8 +253,84 @@ UnifiedDateField(
 
 ## Time
 
-- **`UnifiedTimeOfDayField`** / **`UnifiedFormTimeOfDayField`** — display + edit time with your chrome.  
-- **`TimePickerUtils.show(context, …)`** — thin wrapper around **`showTimePicker`** using **`MaterialLocalizations`** for OK/cancel and English **Hour** / **Minute** labels (override in your fork if needed).
+- **`UnifiedTimeOfDayField`** / **`UnifiedFormTimeOfDayField`** — display + edit time with unified chrome.  
+- **`showUnifiedFieldsTimePicker`** — bottom sheet with **`UnifiedFieldsTimePickerStyle.dial`** (Material) or **`wheels`** (H:M:S scroll wheels).  
+- **`TimePickerUtils.show(context, …)`** — forwards to **`showUnifiedFieldsTimePicker`** (wheels by default in recent versions; pass `pickerStyle` to use the platform dial).
+
+### Picker style (`UnifiedFieldsTimePickerStyle`)
+
+| Style | UI |
+|-------|-----|
+| **`dial`** | Platform **`showTimePicker`** |
+| **`wheels`** | Scroll wheels for hour · minute · (optional) second |
+
+### Granularity (`UnifiedFieldsTimeGranularity`)
+
+- **`hours`** — hour wheel only  
+- **`hoursMinutes`** — hour + minute (default for wheels)  
+- **`hoursMinutesSeconds`** — hour + minute + second  
+
+Wheels support **Gregorian / Shamsi** digit toggle via **`initialCalendarKind`** and **`showCalendarKindToggle`** (same idea as date/duration wheels).
+
+```dart
+UnifiedTimeOfDayField(
+  label: 'Start time',
+  pickerStyle: UnifiedFieldsTimePickerStyle.wheels,
+  pickerGranularity: UnifiedFieldsTimeGranularity.hoursMinutesSeconds,
+  initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
+)
+```
+
+---
+
+## Duration
+
+- **`UnifiedDurationField`** / **`UnifiedFormDurationField`** — tap to open a duration sheet; optional manual edit of the formatted string.  
+- **`showUnifiedFieldsDurationPicker`** — imperative sheet API (also used internally by the field).
+
+### Picker style (`UnifiedFieldsDurationPickerStyle`)
+
+| Style | UI |
+|-------|-----|
+| **`wheels`** (default) | Unified scroll wheels (themed like date/time wheels) |
+| **`cupertino`** | Legacy Cupertino-style H:M:S wheels |
+
+### Granularity vs custom columns
+
+Use **`granularity`** for the classic fixed shapes when you do **not** need year/month/week:
+
+| `UnifiedDurationGranularity` | Columns | Display example |
+|------------------------------|---------|-----------------|
+| **`hours`** | hour | `05` |
+| **`hoursMinutes`** | hour, minute | `05:30` |
+| **`hoursMinutesSeconds`** | hour, minute, second | `05:30:45` |
+| **`minutesSeconds`** | minute, second (minutes may exceed 59) | `90:00` |
+
+Use **`pickerColumns`** when you need **calendar-style units** in a custom order (largest unit first, left → right on the wheel):
+
+```dart
+UnifiedDurationField(
+  label: 'Tenure',
+  pickerColumns: [
+    UnifiedFieldsDurationColumn.year,
+    UnifiedFieldsDurationColumn.week,
+    UnifiedFieldsDurationColumn.day,
+    UnifiedFieldsDurationColumn.hour,
+  ],
+  // or: UnifiedFieldsDurationColumnPresets.yearsWeeksDaysHours
+  initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
+  min: Duration.zero,
+  max: const Duration(days: 365 * 10),
+)
+```
+
+**`UnifiedFieldsDurationColumn`:** `year`, `month`, `week`, `day`, `hour`, `minute`, `second`.
+
+**Presets** on **`UnifiedFieldsDurationColumnPresets`:** `yearsMonthsDays`, `yearsWeeksDaysHours`, `hoursMinutesSeconds`, `minutesSeconds`.
+
+When **`pickerColumns`** is set, it overrides **`granularity`** for both the picker and display format. Wheel ranges: **year** `0…999`, **month** `0…11`, **week** `0…4` (when used with coarser calendar columns). Totals still compose with **year = 365 days**, **month = 30 days**, **week = 7 days** per unit (standard day/hour/minute/second otherwise); the result is clamped to **`max`** on confirm.
+
+Helpers: **`unifiedFormatDuration`**, **`unifiedTryParseDuration`**, **`composeUnifiedDuration`**, **`decomposeUnifiedDuration`**, **`formatUnifiedDurationColumns`**.
 
 ---
 
@@ -294,7 +370,7 @@ country.clear();
 
 You can use **`binding`** and **`fieldController`** together: the binding holds app state; the typed controller adds picker-specific APIs (`openPicker`, `displayText`, sheet options).
 
-> `AppInputController` was renamed in **0.2.0**; a deprecated typedef points to **`UnifiedInputPicker`**.
+> `AppInputController` was renamed in **0.1.4**; a deprecated typedef points to **`UnifiedInputPicker`**.
 
 ---
 
@@ -365,9 +441,27 @@ Multi-picker titles use **`multiPickerTitle(label)`** (default `"Pick $label"`).
 
 ---
 
+## Persian digits (`UnifiedFieldsTypography`)
+
+Shamsi (Jalali) date pickers show **Persian numerals** (۰–۹) using the bundled **KookFaNum** font. Override at startup:
+
+```dart
+void main() {
+  UnifiedFieldsTypography.instance = const UnifiedFieldsTypography(
+    usePersianDigitsGlobally: true, // all unified text / number fields
+    // persianFontFamily: 'YourAppNumFont', // optional
+  );
+  runApp(const MyApp());
+}
+```
+
+By default only Shamsi UI uses Persian digits (`usePersianDigitsInShamsi: true`). Set `usePersianDigitsGlobally: true` to apply the font and digit mapping to every field (including `UnifiedBaseTextField`, numeric step fields, and duration wheels).
+
+---
+
 ## Localization
 
-- Set **`UnifiedFieldsStrings.instance`** for package-owned copy (pickers, date sheet, duration sheet, time picker hour/minute fallbacks).  
+- Set **`UnifiedFieldsStrings.instance`** for package-owned copy (pickers, date sheet, duration sheet, time picker hour/minute fallbacks, wheel headers including Shamsi سال/ماه/روز, duration column headers via **`durationColumnHeader`**).  
 - **Time picker** OK/Cancel use **`MaterialLocalizations`** when available.  
 - **Clear** tooltip on the base text field uses **`MaterialLocalizations.deleteButtonTooltip`** (platform).
 
@@ -425,7 +519,14 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.3.0`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.1.6`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+
+### Upgrading to 0.1.6
+
+- **Duration wheels** are the default (`UnifiedFieldsDurationPickerStyle.wheels`). Pass **`pickerStyle: UnifiedFieldsDurationPickerStyle.cupertino`** to keep the old Cupertino sheet.  
+- **`unifiedFormatDuration`** / **`unifiedTryParseDuration`** now use **named** parameters: `granularity:` and optional `pickerColumns:` / `calendarKind:`.  
+- **Shamsi dates** in the field use Jalali formatting when the active calendar kind is Jalali; set **`initialCalendarKind: jalali`** on date fields and pickers.  
+- Optional **`UnifiedFieldsTypography.instance`** for Persian digits globally or in Shamsi UI only (bundled **KookFaNum** font).
 
 ---
 

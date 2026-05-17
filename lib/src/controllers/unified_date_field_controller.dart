@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import '../unified_date_picker_types.dart';
 import '../unified_date_picker_sheet.dart';
+import '../unified_date_wheel_style.dart';
 import '../fields/unified_date_field.dart' show formatUnifiedDateFieldText;
 import 'base_unified_field_controller.dart';
 
@@ -21,6 +22,8 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
     this.showCalendarKindToggle = true,
     this.mode = DatePickerEntryMode.calendar,
     this.pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
+    this.wheelStyle,
+    this.showWeekdayInWheel = true,
   })  : _calendarKind = calendarKind,
         super(initialValue: initialValue);
 
@@ -45,6 +48,12 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
   /// Calendar grid vs scroll-wheel picker UI.
   final UnifiedFieldsDatePickerStyle pickerStyle;
 
+  /// Optional wheel chrome when [pickerStyle] is [UnifiedFieldsDatePickerStyle.wheels].
+  final UnifiedFieldsDateWheelStyle? wheelStyle;
+
+  /// Show weekday names in the day wheel column.
+  final bool showWeekdayInWheel;
+
   UnifiedFieldsCalendarKind _calendarKind;
 
   /// Active calendar kind for the picker UI.
@@ -65,6 +74,7 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
       date ?? value,
       valueFormat,
       granularity: pickerGranularity,
+      calendarKind: calendarKind,
     );
   }
 
@@ -94,6 +104,9 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
       granularity: pickerGranularity,
       pickerStyle: pickerStyle,
       initialCalendarKind: calendarKind,
+      wheelStyle: wheelStyle,
+      showWeekdayInWheel: showWeekdayInWheel,
+      onConfirmedCalendarKind: (kind) => calendarKind = kind,
     );
     if (picked != null) {
       value = picked;

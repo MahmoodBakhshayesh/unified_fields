@@ -13,7 +13,16 @@ export 'unified_input_brightness.dart';
 export 'unified_input_decoration.dart';
 export 'unified_input_palette.dart';
 export 'unified_input_theme.dart';
-export 'unified_duration_field.dart';
+export 'unified_duration_field.dart'
+    show
+        UnifiedDurationField,
+        UnifiedDurationGranularity,
+        UnifiedDurationPickerSheet,
+        showUnifiedFieldsDurationPicker,
+        unifiedClampDuration,
+        unifiedFormatDuration,
+        unifiedTryParseDuration;
+export '../unified_duration_columns.dart';
 export 'unified_number_field.dart';
 export 'unified_numeric_step_field.dart';
 export 'unified_multi_picker_sheet.dart';

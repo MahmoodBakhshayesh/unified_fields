@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../fields/unified_duration_field.dart';
+import '../unified_date_picker_types.dart';
+import '../unified_date_wheel_style.dart';
+import '../unified_duration_columns.dart';
 import '../unified_fields_strings.dart';
+import '../unified_time_picker_types.dart';
 import '../fields/unified_input_brightness.dart';
-import '../fields/unified_input_theme.dart';
 import 'base_unified_field_controller.dart';
 
 /// Controller for [UnifiedDurationField].
@@ -14,13 +17,24 @@ class UnifiedDurationFieldController extends BaseUnifiedFieldController<Duration
     super.validator,
     super.focusNode,
     this.granularity = UnifiedDurationGranularity.hoursMinutesSeconds,
+    this.pickerColumns,
+    this.pickerStyle = UnifiedFieldsDurationPickerStyle.wheels,
+    UnifiedFieldsCalendarKind calendarKind = UnifiedFieldsCalendarKind.gregorian,
     this.min,
     this.max,
     this.brightness,
-  });
+    this.wheelStyle,
+    this.showCalendarKindToggle = true,
+  }) : _calendarKind = calendarKind;
 
-  /// Step granularity shown in the picker sheet.
+  /// Step granularity when [pickerColumns] is null.
   final UnifiedDurationGranularity granularity;
+
+  /// Custom wheel columns (overrides [granularity] when set).
+  final List<UnifiedFieldsDurationColumn>? pickerColumns;
+
+  /// Cupertino vs unified styled wheels.
+  final UnifiedFieldsDurationPickerStyle pickerStyle;
 
   /// Minimum allowed duration.
   final Duration? min;
@@ -31,6 +45,28 @@ class UnifiedDurationFieldController extends BaseUnifiedFieldController<Duration
   /// Optional brightness override for the sheet palette.
   final UnifiedInputBrightness? brightness;
 
+  /// Optional wheel chrome.
+  final UnifiedFieldsDateWheelStyle? wheelStyle;
+
+  /// Whether the picker shows Gregorian / Shamsi digit toggle.
+  final bool showCalendarKindToggle;
+
+  UnifiedFieldsCalendarKind _calendarKind;
+
+  /// Active digit / label mode for display and wheels.
+  UnifiedFieldsCalendarKind get calendarKind => _calendarKind;
+
+  set calendarKind(UnifiedFieldsCalendarKind kind) {
+    if (_calendarKind == kind) return;
+    _calendarKind = kind;
+    notifyListeners();
+  }
+
+  List<UnifiedFieldsDurationColumn> get _columns => resolveUnifiedDurationColumns(
+        pickerColumns: pickerColumns,
+        granularity: granularity,
+      );
+
   String _boundTitle = UnifiedFieldsStrings.instance.defaultDurationTitle;
 
   /// Sheet title from the bound field.
@@ -39,7 +75,12 @@ class UnifiedDurationFieldController extends BaseUnifiedFieldController<Duration
   }
 
   /// Formats [value] for display.
-  String format([Duration? d]) => unifiedFormatDuration(d ?? value ?? Duration.zero, granularity);
+  String format([Duration? d]) => unifiedFormatDuration(
+        d ?? value ?? Duration.zero,
+        granularity: granularity,
+        pickerColumns: _columns,
+        calendarKind: calendarKind,
+      );
 
   /// Opens the duration picker sheet and updates [value] when confirmed.
   Future<Duration?> openPicker(
@@ -52,23 +93,20 @@ class UnifiedDurationFieldController extends BaseUnifiedFieldController<Duration
       await opener(context);
       return value;
     }
-    final palette = brightness != null
-        ? UnifiedInputThemeResolver.paletteFor(brightness!)
-        : UnifiedInputThemeResolver.resolvePalette(context);
 
-    final result = await showModalBottomSheet<Duration?>(
+    final result = await showUnifiedFieldsDurationPicker(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: palette.sheetBackground,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (ctx) => UnifiedDurationPickerSheet(
-        title: title ?? _boundTitle,
-        palette: palette,
-        initial: unifiedClampDuration(initial ?? value ?? Duration.zero, min, max),
-        min: min ?? Duration.zero,
-        max: max ?? const Duration(hours: 999),
-        granularity: granularity,
-      ),
+      title: title ?? _boundTitle,
+      initial: unifiedClampDuration(initial ?? value ?? Duration.zero, min, max),
+      min: min ?? Duration.zero,
+      max: max ?? const Duration(hours: 999),
+      granularity: granularity,
+      pickerColumns: pickerColumns,
+      pickerStyle: pickerStyle,
+      showCalendarKindToggle: showCalendarKindToggle,
+      initialCalendarKind: calendarKind,
+      wheelStyle: wheelStyle,
+      onConfirmedCalendarKind: (k) => calendarKind = k,
     );
 
     if (result != null) {

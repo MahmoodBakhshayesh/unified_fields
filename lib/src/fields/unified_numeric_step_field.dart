@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 
 import '../controllers/unified_number_field_controller.dart';
 import '../unified_colors.dart';
+import '../unified_date_picker_types.dart';
+import '../unified_fields_typography.dart';
 import 'unified_base_text_field.dart';
 
 double _pow10(int digits) {
@@ -67,6 +69,7 @@ class UnifiedNumericStepField extends StatefulWidget {
     this.onSubmitted,
     this.fractionDigits,
     this.requiredField = false,
+    this.digitCalendarKind,
   }) : assert(step != 0, 'step must be non-zero');
 
   /// External [TextEditingController]; if null one is created internally.
@@ -107,6 +110,10 @@ class UnifiedNumericStepField extends StatefulWidget {
 
   /// Override for the editing text style.
   final TextStyle? style;
+
+  /// When set (e.g. [UnifiedFieldsCalendarKind.jalali]), displayed digits use
+  /// [UnifiedFieldsTypography] for that calendar context.
+  final UnifiedFieldsCalendarKind? digitCalendarKind;
 
   /// When true, allow decimal values.
   final bool allowDecimals;
@@ -294,7 +301,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   }
 
   num? _tryParse(String raw) {
-    final s = raw.trim();
+    final s = UnifiedFieldsTypography.fromPersianDigits(raw.trim());
     if (s.isEmpty || s == '-' || s == '+' || s == '.' || s == '-.' || s == '+.') {
       return null;
     }
@@ -348,17 +355,28 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   }
 
   String _formatCommitted(num value) {
+    final String raw;
     if (!widget.allowDecimals) {
-      return value.round().toString();
+      raw = value.round().toString();
+    } else {
+      final fd = widget.fractionDigits;
+      if (fd != null) {
+        raw = value.toDouble().toStringAsFixed(fd);
+      } else {
+        final d = value.toDouble();
+        if (!d.isFinite) {
+          raw = d.toString();
+        } else if (d % 1 == 0) {
+          raw = d.toInt().toString();
+        } else {
+          raw = d.toString();
+        }
+      }
     }
-    final fd = widget.fractionDigits;
-    if (fd != null) {
-      return value.toDouble().toStringAsFixed(fd);
-    }
-    final d = value.toDouble();
-    if (!d.isFinite) return d.toString();
-    if (d % 1 == 0) return d.toInt().toString();
-    return d.toString();
+    return UnifiedFieldsTypography.instance.localizeDigits(
+      raw,
+      calendarKind: widget.digitCalendarKind,
+    );
   }
 
   List<TextInputFormatter> get _formatters {
