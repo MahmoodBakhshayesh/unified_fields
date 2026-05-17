@@ -20,6 +20,7 @@ class UnifiedTextField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.disabled = false,
+    this.isDisabled = false,
     this.readOnly = false,
     this.locked = false,
     this.autofocus = false,
@@ -68,10 +69,13 @@ class UnifiedTextField extends StatefulWidget {
   /// When true, the field is non-editable and visually muted.
   final bool disabled;
 
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
+
   /// When true, the field rejects edits but still looks active.
   final bool readOnly;
 
-  /// When true, paints the field in the "locked" style and disables editing.
+  /// When true, greys out the field and shows a lock suffix icon.
   final bool locked;
 
   /// Whether the field should request focus on first build.
@@ -209,6 +213,7 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       padding: d.contentPadding,
       validator: widget.validator,
       disabled: widget.disabled,
+      isDisabled: widget.isDisabled,
       readOnly: widget.readOnly,
       locked: widget.locked,
       autofocus: widget.autofocus,

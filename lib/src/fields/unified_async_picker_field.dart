@@ -31,6 +31,7 @@ class UnifiedAsyncPickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.validationOverrideMessage,
     this.placeholder,
@@ -85,6 +86,9 @@ class UnifiedAsyncPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
@@ -147,7 +151,7 @@ class _UnifiedAsyncPickerFieldState<T> extends State<UnifiedAsyncPickerField<T>>
   }
 
   Future<void> _open() async {
-    if (widget.locked || _loading) return;
+    if (widget.locked || widget.isDisabled || _loading) return;
     if (!mounted) return;
 
     final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
@@ -203,17 +207,19 @@ class _UnifiedAsyncPickerFieldState<T> extends State<UnifiedAsyncPickerField<T>>
   Widget build(BuildContext context) {
     final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
 
-    final suffix = dec.suffixIcon ??
-        IconButton(
-          onPressed: widget.locked || _loading ? null : _open,
-          icon: Icon(
-            Icons.arrow_drop_down,
-            color: UnifiedColors.textColorDark,
-          ),
-        );
+    final Widget? suffix = widget.isDisabled || widget.locked
+        ? dec.suffixIcon
+        : (dec.suffixIcon ??
+            IconButton(
+              onPressed: widget.locked || widget.isDisabled || _loading ? null : _open,
+              icon: Icon(
+                Icons.arrow_drop_down,
+                color: UnifiedColors.textColorDark,
+              ),
+            ));
 
     return GestureDetector(
-      onTap: widget.locked || _loading ? null : _open,
+      onTap: widget.locked || widget.isDisabled || _loading ? null : _open,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -239,6 +245,8 @@ class _UnifiedAsyncPickerFieldState<T> extends State<UnifiedAsyncPickerField<T>>
             prefixIcon: dec.prefixIcon,
             suffixIcon: suffix,
             padding: dec.contentPadding,
+            isDisabled: widget.isDisabled,
+            locked: widget.locked,
             validator: (value) {
               final o = widget.validationOverrideMessage;
               if (o != null) {
@@ -292,6 +300,7 @@ class UnifiedAsyncMultiPickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.validationOverrideMessage,
     this.placeholder,
@@ -346,6 +355,9 @@ class UnifiedAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
@@ -405,7 +417,7 @@ class _UnifiedAsyncMultiPickerFieldState<T> extends State<UnifiedAsyncMultiPicke
   }
 
   Future<void> _open(UnifiedInputDecoration dec) async {
-    if (widget.locked || _loading) return;
+    if (widget.locked || widget.isDisabled || _loading) return;
     if (!mounted) return;
 
     setState(() => _loading = true);
@@ -460,17 +472,19 @@ class _UnifiedAsyncMultiPickerFieldState<T> extends State<UnifiedAsyncMultiPicke
   Widget build(BuildContext context) {
     final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
 
-    final suffix = dec.suffixIcon ??
-        IconButton(
-          onPressed: widget.locked || _loading ? null : () => _open(dec),
-          icon: Icon(
-            Icons.arrow_drop_down,
-            color: UnifiedColors.textColorDark,
-          ),
-        );
+    final Widget? suffix = widget.isDisabled || widget.locked
+        ? dec.suffixIcon
+        : (dec.suffixIcon ??
+            IconButton(
+              onPressed: widget.locked || widget.isDisabled || _loading ? null : () => _open(dec),
+              icon: Icon(
+                Icons.arrow_drop_down,
+                color: UnifiedColors.textColorDark,
+              ),
+            ));
 
     return GestureDetector(
-      onTap: widget.locked || _loading ? null : () => _open(dec),
+      onTap: widget.locked || widget.isDisabled || _loading ? null : () => _open(dec),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -496,6 +510,8 @@ class _UnifiedAsyncMultiPickerFieldState<T> extends State<UnifiedAsyncMultiPicke
             prefixIcon: dec.prefixIcon,
             suffixIcon: suffix,
             padding: dec.contentPadding,
+            isDisabled: widget.isDisabled,
+            locked: widget.locked,
             validator: (value) {
               final o = widget.validationOverrideMessage;
               if (o != null) {

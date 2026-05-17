@@ -902,7 +902,7 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                     final d = PersianJalaliCalendar.toGregorianDate(_jYearForMonthPicker, jm, 1);
                     final jSel = PersianJalaliCalendar.fromGregorian(_selected);
                     final sel = jSel.year == _jYearForMonthPicker && jSel.month == jm;
-                    final label = PersianJalaliCalendar.englishMonthName(jm);
+                    final label = PersianJalaliCalendar.persianMonthName(jm);
                     return Padding(
                       padding: const EdgeInsets.all(4),
                       child: InkWell(
@@ -980,7 +980,7 @@ class _PickerTitleBar extends StatelessWidget {
         final ix = _clampPageIndex(page, jalaliMonths.length);
         final jy = jalaliMonths[ix].$1;
         final jm = jalaliMonths[ix].$2;
-        final name = PersianJalaliCalendar.englishMonthName(jm);
+        final name = PersianJalaliCalendar.persianMonthName(jm);
         label = '$name $jy';
       }
     }
@@ -1592,7 +1592,7 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
           _MonthJumpGrid(
             palette: widget.palette,
             theme: theme,
-            labels: [for (var mm = 1; mm <= 12; mm++) PersianJalaliCalendar.englishMonthName(mm)],
+            labels: [for (var mm = 1; mm <= 12; mm++) PersianJalaliCalendar.persianMonthName(mm)],
             selectedMonth: _month,
             monthEnabled: (m) => jalaliMonthSelectable(_year, m, widget.firstDate, widget.lastDate),
             onMonthSelected: (m) => setState(() => _month = m),

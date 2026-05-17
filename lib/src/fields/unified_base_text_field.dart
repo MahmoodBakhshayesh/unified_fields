@@ -42,6 +42,7 @@ class UnifiedBaseTextField extends StatefulWidget {
     this.maxLength,
     this.readOnly = false,
     this.disabled = false,
+    this.isDisabled = false,
     this.locked = false,
     /// When [locked] becomes true, reset text to [initialValue] / empty.
     this.resetTextWhenLocked = true,
@@ -135,7 +136,11 @@ class UnifiedBaseTextField extends StatefulWidget {
   /// When true, the field is non-editable and visually muted.
   final bool disabled;
 
-  /// When true, paints the field in "locked" style.
+  /// When true, greys out the label and shows a forbid icon in the suffix.
+  /// Unlike [locked], which uses a lock icon. Either state blocks editing.
+  final bool isDisabled;
+
+  /// When true, paints the field in "locked" style with a lock suffix icon.
   final bool locked;
 
   /// Whether to reset to [initialValue] when [locked] becomes true.
@@ -335,9 +340,59 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     return Border.fromBorderSide(side);
   }
 
+  bool get _nonInteractive => widget.disabled || widget.isDisabled || widget.locked;
+
+  Color get _labelColor {
+    if (widget.isDisabled || widget.disabled) {
+      return UnifiedColors.textColorDark.withValues(alpha: 0.45);
+    }
+    if (widget.locked) {
+      return UnifiedColors.textColorDark.withValues(alpha: 0.55);
+    }
+    return UnifiedColors.textColorDark;
+  }
+
+  TextStyle _resolveLabelStyle() {
+    final base = widget.labelStyle ?? TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _labelColor);
+    return base.copyWith(color: _labelColor);
+  }
+
+  TextStyle _resolveFieldStyle() {
+    final base = widget.style ?? TextStyle(color: UnifiedColors.textColorDark);
+    if (widget.isDisabled || widget.disabled) {
+      return base.copyWith(color: UnifiedColors.textColorDark.withValues(alpha: 0.45));
+    }
+    if (widget.locked) {
+      return base.copyWith(color: UnifiedColors.textColorDark.withValues(alpha: 0.55));
+    }
+    return base;
+  }
+
+  Color get _effectiveBackgroundColor {
+    if (widget.isDisabled || widget.disabled) {
+      return widget.backgroundColor.withValues(alpha: 0.55);
+    }
+    if (widget.locked) {
+      return widget.backgroundColor.withValues(alpha: 0.65);
+    }
+    return widget.backgroundColor;
+  }
+
+  Widget _stateSuffixIcon(IconData icon) {
+    return ExcludeFocus(
+      child: IconButton(
+        style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+        onPressed: null,
+        icon: Icon(icon, size: 18, color: UnifiedColors.textColorDark.withValues(alpha: 0.7)),
+      ),
+    );
+  }
+
   Widget _labelBlock(String? errorText) {
     if (widget.label == null) return const SizedBox.shrink();
-    final defaultLabelStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: UnifiedColors.textColorDark);
+    final defaultLabelStyle = _resolveLabelStyle();
     return Padding(
       padding: const EdgeInsets.only(bottom: 4, top: 8),
       child: IgnorePointer(
@@ -345,7 +400,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Expanded(child: Row(children: [
-              Text(widget.label!, style: widget.labelStyle ?? defaultLabelStyle),
+              Text(widget.label!, style: defaultLabelStyle),
               if (widget.requiredField)
                 const Padding(
                   padding: EdgeInsets.only(bottom: 6,right: 4),
@@ -363,18 +418,10 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   Widget? _buildSuffixRow(bool hasText) {
     final widgets = <Widget>[];
 
-    if (widget.locked && hasText) {
-      widgets.add(
-        ExcludeFocus(
-          child: IconButton(
-            style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-            onPressed: null,
-            icon: Icon(Icons.lock, size: 18, color: UnifiedColors.textColorDark.withValues(alpha: 0.7)),
-          ),
-        ),
-      );
+    if (widget.isDisabled || widget.disabled) {
+      widgets.add(_stateSuffixIcon(Icons.not_interested_outlined));
+    } else if (widget.locked) {
+      widgets.add(_stateSuffixIcon(Icons.lock_outline));
     } else {
       if (widget.isPassword) {
         widgets.add(
@@ -393,7 +440,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         widgets.add(widget.suffixIcon!);
       }
 
-      if (widget.showClearButton && hasText && !widget.locked) {
+      if (widget.showClearButton && hasText && !widget.locked && !widget.isDisabled && !widget.disabled) {
         widgets.insert(
           0,
           ExcludeFocus(
@@ -425,8 +472,8 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       controller: _ctrl,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
-      enabled: !widget.disabled && !widget.locked,
-      readOnly: widget.readOnly || widget.locked,
+      enabled: !_nonInteractive,
+      readOnly: widget.readOnly || _nonInteractive,
       textInputAction: widget.textInputAction ?? TextInputAction.done,
       textAlignVertical: TextAlignVertical.center,
       padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 12),
@@ -439,15 +486,19 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       minLines: widget.minLines,
       maxLength: widget.maxLength,
       inputFormatters: widget.inputFormatters ?? const [],
-      style: widget.style ?? TextStyle(color: UnifiedColors.textColorDark),
+      style: _resolveFieldStyle(),
       placeholder: widget.placeholder,
-      placeholderStyle: TextStyle(color: UnifiedColors.hintColor),
+      placeholderStyle: TextStyle(
+        color: widget.isDisabled || widget.disabled
+            ? UnifiedColors.hintColor.withValues(alpha: 0.45)
+            : UnifiedColors.hintColor,
+      ),
       prefix: widget.prefixIcon ?? widget.prefix,
       suffix: _buildSuffixRow(hasText),
       onSubmitted: widget.onSubmit,
       decoration: widget.labelInRow
           ? BoxDecoration(
-              color: widget.backgroundColor,
+              color: _effectiveBackgroundColor,
               borderRadius: widget.borderRadius,
               border: _borderFromSide(widget.borderSide),
             )
@@ -470,12 +521,12 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   }
 
   Widget _labelRowCompact() {
-    final defaultLabelStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: UnifiedColors.textColorDark);
+    final defaultLabelStyle = _resolveLabelStyle();
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Flexible(child: Text(widget.label!, style: widget.labelStyle ?? defaultLabelStyle, textAlign: TextAlign.center)),
+        Flexible(child: Text(widget.label!, style: defaultLabelStyle, textAlign: TextAlign.center)),
         if (widget.requiredField)
           const Padding(
             padding: EdgeInsets.only(bottom: 10),
@@ -520,7 +571,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                       flex: labelFlex,
                       child: Container(
                         height: h,
-                        color: widget.headerBackgroundColor ?? widget.backgroundColor,
+                        color: widget.headerBackgroundColor ?? _effectiveBackgroundColor,
                         alignment: Alignment.center,
                         child: widget.label == null
                             ? const SizedBox.shrink()
@@ -534,7 +585,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                       flex: bodyFlex,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: widget.backgroundColor,
+                          color: _effectiveBackgroundColor,
                           borderRadius: BorderRadiusDirectional.horizontal(end: Radius.circular(radius.bottomRight.x)),
                         ),
                         height: h,
@@ -558,7 +609,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                   Container(
                     height: widget.height,
                     decoration: BoxDecoration(
-                      color: widget.backgroundColor,
+                      color: _effectiveBackgroundColor,
                       borderRadius: radius,
                       border: _borderFromSide(widget.borderSide, hasError),
                     ),

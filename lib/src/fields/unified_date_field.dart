@@ -58,6 +58,8 @@ class UnifiedDateField extends StatefulWidget {
     this.label,
     this.placeholder,
     this.isRequired = false,
+    this.isDisabled = false,
+    this.locked = false,
     this.showClearButton = false,
     this.readOnly = true,
     this.autofocus = false,
@@ -122,6 +124,12 @@ class UnifiedDateField extends StatefulWidget {
 
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
+
+  /// When true, greys out the field and shows a lock suffix icon.
+  final bool locked;
 
   /// Whether to show the inline clear button when there is a value.
   final bool showClearButton;
@@ -196,6 +204,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
   }
 
   Future<void> _pick(BuildContext context, UnifiedInputDecoration d) async {
+    if (widget.isDisabled || widget.locked) return;
     final effectiveValue = widget.binding?.value ?? widget.value;
     final titleRaw = ((d.label ?? '').trim().isEmpty) ? (d.placeholder ?? d.label) : d.label;
     final title = titleRaw ?? '';
@@ -227,7 +236,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
     final headerBg = d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26;
 
     return GestureDetector(
-      onTap: () => _pick(context, d),
+      onTap: widget.isDisabled || widget.locked ? null : () => _pick(context, d),
       child: UnifiedBaseTextField(
         focusNode: widget.focusNode,
         controller: _effectiveController,
@@ -247,9 +256,12 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
         validationIcon: d.validationIcon,
         prefix: widget.prefix ?? d.prefix,
         prefixIcon: widget.prefixIcon ?? d.prefixIcon,
-        suffixIcon: widget.suffixIcon ?? d.suffixIcon ?? const SizedBox(height: 22),
+        suffixIcon: widget.isDisabled || widget.locked
+            ? null
+            : (widget.suffixIcon ?? d.suffixIcon ?? const SizedBox(height: 22)),
         validator: widget.validator,
-        disabled: true,
+        isDisabled: widget.isDisabled,
+        locked: widget.locked,
         readOnly: true,
         textAlign: widget.textAlign,
         autofocus: widget.autofocus,
@@ -278,6 +290,8 @@ class UnifiedDateRangeField extends StatefulWidget {
     this.label,
     this.placeholder,
     this.isRequired = false,
+    this.isDisabled = false,
+    this.locked = false,
   });
 
   /// Visual chrome.
@@ -321,6 +335,12 @@ class UnifiedDateRangeField extends StatefulWidget {
 
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
+
+  /// When true, greys out the field and shows a lock suffix icon.
+  final bool locked;
 
   @override
   State<UnifiedDateRangeField> createState() => _UnifiedDateRangeFieldState();
@@ -376,6 +396,7 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
   }
 
   Future<void> _pick(BuildContext context, UnifiedInputDecoration d) async {
+    if (widget.isDisabled || widget.locked) return;
     final effective = widget.binding?.value ?? widget.rangeValue;
     final titleRaw = ((d.label ?? '').trim().isEmpty) ? (d.placeholder ?? d.label) : d.label;
     final title = titleRaw ?? '';
@@ -406,7 +427,7 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
     final headerBg = d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26;
 
     return GestureDetector(
-      onTap: () => _pick(context, d),
+      onTap: widget.isDisabled || widget.locked ? null : () => _pick(context, d),
       child: UnifiedBaseTextField(
         controller: _effectiveController,
         label: widget.label ?? d.label,
@@ -423,9 +444,10 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
         showError: true,
         validationColor: d.validationColor,
         validationIcon: d.validationIcon,
-        suffixIcon: const SizedBox(height: 22),
+        suffixIcon: widget.isDisabled || widget.locked ? null : const SizedBox(height: 22),
         validator: widget.validator,
-        disabled: true,
+        isDisabled: widget.isDisabled,
+        locked: widget.locked,
         readOnly: true,
         textAlign: widget.textAlign,
       ),

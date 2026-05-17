@@ -28,6 +28,7 @@ class UnifiedSinglePickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.validationOverrideMessage,
     this.placeholder,
@@ -82,6 +83,9 @@ class UnifiedSinglePickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
@@ -143,7 +147,7 @@ class _UnifiedSinglePickerFieldState<T> extends State<UnifiedSinglePickerField<T
   }
 
   Future<void> _open(BuildContext context) async {
-    if (widget.locked) return;
+    if (widget.locked || widget.isDisabled) return;
     final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
@@ -189,7 +193,7 @@ class _UnifiedSinglePickerFieldState<T> extends State<UnifiedSinglePickerField<T
     final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
 
     return GestureDetector(
-      onTap: widget.locked ? null : () => _open(context),
+      onTap: widget.locked || widget.isDisabled ? null : () => _open(context),
       child: AbsorbPointer(
         child: UnifiedBaseTextField(
           controller: _txt,
@@ -211,8 +215,13 @@ class _UnifiedSinglePickerFieldState<T> extends State<UnifiedSinglePickerField<T
           validationIcon: dec.validationIcon,
           prefix: dec.prefix,
           prefixIcon: dec.prefixIcon,
-          suffixIcon: dec.suffixIcon ??  Icon(Icons.arrow_drop_down,color: UnifiedColors.textColorDark,),
+          suffixIcon: dec.suffixIcon ??
+              (widget.isDisabled || widget.locked
+                  ? null
+                  : Icon(Icons.arrow_drop_down, color: UnifiedColors.textColorDark)),
           padding: dec.contentPadding,
+          isDisabled: widget.isDisabled,
+          locked: widget.locked,
           validator: (value) {
             final o = widget.validationOverrideMessage;
             if (o != null) {
@@ -246,6 +255,7 @@ class UnifiedMultiPickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.validationOverrideMessage,
     this.placeholder,
@@ -300,6 +310,9 @@ class UnifiedMultiPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
@@ -358,7 +371,7 @@ class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>>
   }
 
   Future<void> _open(BuildContext context, UnifiedInputDecoration dec) async {
-    if (widget.locked) return;
+    if (widget.locked || widget.isDisabled) return;
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
       context: context,
@@ -404,7 +417,7 @@ class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>>
     final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
 
     return GestureDetector(
-      onTap: widget.locked ? null : () => _open(context, dec),
+      onTap: widget.locked || widget.isDisabled ? null : () => _open(context, dec),
       child: AbsorbPointer(
         child: UnifiedBaseTextField(
           controller: _txt,
@@ -426,8 +439,13 @@ class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>>
           validationIcon: dec.validationIcon,
           prefix: dec.prefix,
           prefixIcon: dec.prefixIcon,
-          suffixIcon: dec.suffixIcon ??  Icon(Icons.arrow_drop_down,color: UnifiedColors.textColorDark,),
+          suffixIcon: dec.suffixIcon ??
+              (widget.isDisabled || widget.locked
+                  ? null
+                  : Icon(Icons.arrow_drop_down, color: UnifiedColors.textColorDark)),
           padding: dec.contentPadding,
+          isDisabled: widget.isDisabled,
+          locked: widget.locked,
           validator: (value) {
             final o = widget.validationOverrideMessage;
             if (o != null) {

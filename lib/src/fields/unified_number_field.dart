@@ -20,7 +20,9 @@ class UnifiedNumberField extends StatelessWidget {
     this.onChanged,
     this.onSubmitted,
     this.disabled = false,
+    this.isDisabled = false,
     this.readOnly = false,
+    this.locked = false,
     this.autofocus = false,
     this.allowDecimals = false,
     this.step = 1,
@@ -56,6 +58,12 @@ class UnifiedNumberField extends StatelessWidget {
 
   /// When true, the field is disabled.
   final bool disabled;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
+
+  /// When true, greys out the field and shows a lock suffix icon.
+  final bool locked;
 
   /// When true, the field is read-only.
   final bool readOnly;
@@ -114,6 +122,8 @@ class UnifiedNumberField extends StatelessWidget {
       max: max,
       fractionDigits: fractionDigits,
       disabled: disabled,
+      isDisabled: isDisabled,
+      locked: locked,
       readOnly: readOnly,
       autofocus: autofocus,
       textInputAction: textInputAction,

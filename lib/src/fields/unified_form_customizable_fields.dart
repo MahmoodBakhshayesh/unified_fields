@@ -106,6 +106,7 @@ class UnifiedFormCustomizablePickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.onSaved,
     this.onChanged,
@@ -159,6 +160,9 @@ class UnifiedFormCustomizablePickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Validator on the current snapshot.
   final FormFieldValidator<CustomizableSinglePickerController<T>>? validator;
@@ -250,6 +254,7 @@ class _UnifiedFormCustomizablePickerFieldState<T>
           searchAutoFocus: widget.searchAutoFocus,
           showClearButton: widget.showClearButton,
           locked: widget.locked,
+          isDisabled: widget.isDisabled,
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           onChanged: widget.onChanged,
@@ -282,6 +287,7 @@ class UnifiedFormCustomizableMultiPickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.onSaved,
     this.onChanged,
@@ -335,6 +341,9 @@ class UnifiedFormCustomizableMultiPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Validator on the current snapshot.
   final FormFieldValidator<CustomizableMultiPickerController<T>>? validator;
@@ -426,6 +435,7 @@ class _UnifiedFormCustomizableMultiPickerFieldState<T>
           searchAutoFocus: widget.searchAutoFocus,
           showClearButton: widget.showClearButton,
           locked: widget.locked,
+          isDisabled: widget.isDisabled,
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           onChanged: widget.onChanged,
@@ -458,6 +468,7 @@ class UnifiedFormCustomizableAsyncPickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.onSaved,
     this.onChanged,
@@ -511,6 +522,9 @@ class UnifiedFormCustomizableAsyncPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Validator on the current snapshot.
   final FormFieldValidator<CustomizableSinglePickerController<T>>? validator;
@@ -602,6 +616,7 @@ class _UnifiedFormCustomizableAsyncPickerFieldState<T>
           searchAutoFocus: widget.searchAutoFocus,
           showClearButton: widget.showClearButton,
           locked: widget.locked,
+          isDisabled: widget.isDisabled,
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           onChanged: widget.onChanged,
@@ -634,6 +649,7 @@ class UnifiedFormCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.onSaved,
     this.onChanged,
@@ -687,6 +703,9 @@ class UnifiedFormCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Validator on the current snapshot.
   final FormFieldValidator<CustomizableMultiPickerController<T>>? validator;
@@ -779,6 +798,7 @@ class _UnifiedFormCustomizableAsyncMultiPickerFieldState<T>
           searchAutoFocus: widget.searchAutoFocus,
           showClearButton: widget.showClearButton,
           locked: widget.locked,
+          isDisabled: widget.isDisabled,
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           onChanged: widget.onChanged,

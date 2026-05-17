@@ -20,6 +20,7 @@ class UnifiedTimeOfDayField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.locked = false,
+    this.isDisabled = false,
     this.timePickerEntryMode = TimePickerEntryMode.dial,
     this.label,
     this.placeholder,
@@ -49,6 +50,9 @@ class UnifiedTimeOfDayField extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Forwarded to [showTimePicker].
   final TimePickerEntryMode timePickerEntryMode;
@@ -106,6 +110,7 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
   }
 
   Future<void> _pick(BuildContext context) async {
+    if (widget.isDisabled || widget.locked) return;
     final initial = widget.binding?.value ?? widget.value ?? TimeOfDay.now();
     final picked = await TimePickerUtils.show(
       context,
@@ -129,11 +134,12 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
     final d = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
 
     return GestureDetector(
-      onTap: widget.locked ? null : () => _pick(context),
+      onTap: widget.locked || widget.isDisabled ? null : () => _pick(context),
       child: AbsorbPointer(
         absorbing: true,
         child: UnifiedBaseTextField(
           controller: _txt,
+          isDisabled: widget.isDisabled,
           locked: widget.locked,
           readOnly: true,
           label: widget.label ?? d.label,
@@ -153,7 +159,7 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
           validationIcon: d.validationIcon,
           prefix: d.prefix,
           prefixIcon: d.prefixIcon,
-          suffixIcon: d.suffixIcon ?? const Icon(Icons.schedule),
+          suffixIcon: widget.isDisabled || widget.locked ? null : (d.suffixIcon ?? const Icon(Icons.schedule)),
           padding: d.contentPadding,
           validator: widget.validator,
           textAlign: TextAlign.center,

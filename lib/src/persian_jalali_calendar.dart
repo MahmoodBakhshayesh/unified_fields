@@ -38,8 +38,8 @@ abstract final class PersianJalaliCalendar {
     return out;
   }
 
-  /// English month names (matches [JalaliFormatter.mNFn]); [month] is 1…12.
-  static String englishMonthName(int month) {
-    return JalaliFormatter(Jalali(1400, month, 1)).mNFn;
+  /// Persian month names (matches [JalaliFormatter.mN]); [month] is 1…12.
+  static String persianMonthName(int month) {
+    return JalaliFormatter(Jalali(1400, month, 1)).mN;
   }
 }

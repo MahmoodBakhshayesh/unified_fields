@@ -42,6 +42,7 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.onSaved,
     this.shakeOnError = false,
@@ -102,6 +103,9 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Validator passed to the underlying [FormField].
   final FormFieldValidator<List<T>>? validator;
@@ -246,6 +250,7 @@ class _UnifiedFormMultiPickerFieldState<T> extends State<UnifiedFormMultiPickerF
           searchAutoFocus: widget.searchAutoFocus,
           showClearButton: widget.showClearButton,
           locked: widget.locked,
+          isDisabled: widget.isDisabled,
           validator: null,
           validationOverrideMessage: unifiedFormPickerOverride(fieldState),
         );
@@ -287,6 +292,8 @@ class UnifiedFormDateField extends StatefulWidget {
     this.shakeOnError = false,
     this.placeholder,
     this.isRequired = false,
+    this.isDisabled = false,
+    this.locked = false,
   });
 
   /// Visual chrome overrides.
@@ -351,6 +358,12 @@ class UnifiedFormDateField extends StatefulWidget {
 
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
+
+  /// When true, greys out the field and shows a lock suffix icon.
+  final bool locked;
 
   /// Whether to show the inline clear button when there is a value.
   final bool showClearButton;
@@ -485,6 +498,8 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
           focusNode: widget.focusNode,
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
+          isDisabled: widget.isDisabled,
+          locked: widget.locked,
           validator: (_) => unifiedFormErrorText(fieldState),
           onChanged: (dt) {
             fieldState.didChange(dt);
@@ -540,6 +555,8 @@ class UnifiedFormDateRangeField extends StatefulWidget {
     this.label,
     this.placeholder,
     this.isRequired = false,
+    this.isDisabled = false,
+    this.locked = false,
   });
 
   /// Visual chrome overrides.
@@ -589,6 +606,12 @@ class UnifiedFormDateRangeField extends StatefulWidget {
 
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
+
+  /// When true, greys out the field and shows a lock suffix icon.
+  final bool locked;
 
   /// When true, shakes once when validation error appears on this field.
   final bool shakeOnError;
@@ -705,6 +728,8 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
           label: widget.label,
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
+          isDisabled: widget.isDisabled,
+          locked: widget.locked,
           validator: (_) => unifiedFormErrorText(fieldState),
           onRangeChanged: (r) {
             fieldState.didChange(r);
@@ -742,6 +767,7 @@ class UnifiedFormTimeOfDayField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.locked = false,
+    this.isDisabled = false,
     this.timePickerEntryMode = TimePickerEntryMode.dial,
     this.shakeOnError = false,
     this.label,
@@ -787,6 +813,9 @@ class UnifiedFormTimeOfDayField extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Entry mode for the time picker.
   final TimePickerEntryMode timePickerEntryMode;
@@ -913,6 +942,7 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
           },
           onSubmitted: widget.onSubmitted,
           locked: widget.locked,
+          isDisabled: widget.isDisabled,
           timePickerEntryMode: widget.timePickerEntryMode,
         );
       },
@@ -938,6 +968,7 @@ class UnifiedFormDurationField extends StatefulWidget {
     this.min,
     this.max,
     this.locked = false,
+    this.isDisabled = false,
     this.focusNode,
     this.shakeOnError = false,
     this.label,
@@ -992,6 +1023,9 @@ class UnifiedFormDurationField extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// External focus node.
   final FocusNode? focusNode;
@@ -1121,6 +1155,7 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
           min: widget.min,
           max: widget.max,
           locked: widget.locked,
+          isDisabled: widget.isDisabled,
           focusNode: widget.focusNode,
         );
       },
@@ -1149,6 +1184,7 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.onSaved,
     this.shakeOnError = false,
@@ -1209,6 +1245,9 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Validator passed to the underlying [FormField].
   final FormFieldValidator<T?>? validator;
@@ -1344,6 +1383,7 @@ class _UnifiedFormAsyncPickerFieldState<T> extends State<UnifiedFormAsyncPickerF
           searchAutoFocus: widget.searchAutoFocus,
           showClearButton: widget.showClearButton,
           locked: widget.locked,
+          isDisabled: widget.isDisabled,
           validator: null,
           validationOverrideMessage: unifiedFormPickerOverride(fieldState),
         );
@@ -1373,6 +1413,7 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.onSaved,
     this.shakeOnError = false,
@@ -1433,6 +1474,9 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Validator passed to the underlying [FormField].
   final FormFieldValidator<List<T>>? validator;
@@ -1577,6 +1621,7 @@ class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMu
           searchAutoFocus: widget.searchAutoFocus,
           showClearButton: widget.showClearButton,
           locked: widget.locked,
+          isDisabled: widget.isDisabled,
           validator: null,
           validationOverrideMessage: unifiedFormPickerOverride(fieldState),
         );
@@ -1602,6 +1647,8 @@ class UnifiedFormNumberField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.disabled = false,
+    this.isDisabled = false,
+    this.locked = false,
     this.readOnly = false,
     this.autofocus = false,
     this.allowDecimals = false,
@@ -1657,6 +1704,12 @@ class UnifiedFormNumberField extends StatefulWidget {
 
   /// When true, the field is non-editable.
   final bool disabled;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
+
+  /// When true, greys out the field and shows a lock suffix icon.
+  final bool locked;
 
   /// When true, the field rejects edits.
   final bool readOnly;
@@ -1804,6 +1857,8 @@ class _UnifiedFormNumberFieldState extends State<UnifiedFormNumberField> {
           },
           onSubmitted: widget.onSubmitted,
           disabled: widget.disabled,
+          isDisabled: widget.isDisabled,
+          locked: widget.locked,
           readOnly: widget.readOnly,
           autofocus: widget.autofocus,
           allowDecimals: widget.allowDecimals,

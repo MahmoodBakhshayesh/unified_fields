@@ -80,6 +80,7 @@ class UnifiedDurationField extends StatefulWidget {
     this.min,
     this.max,
     this.locked = false,
+    this.isDisabled = false,
     this.focusNode,
     this.label,
     this.placeholder,
@@ -118,6 +119,9 @@ class UnifiedDurationField extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Optional focus node.
   final FocusNode? focusNode;
@@ -213,6 +217,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
   }
 
   Future<void> _openSheet(BuildContext context, UnifiedInputDecoration d) async {
+    if (widget.isDisabled || widget.locked) return;
     final palette = widget.brightness != null ? UnifiedInputThemeResolver.paletteFor(widget.brightness!) : UnifiedInputThemeResolver.resolvePalette(context);
 
     final result = await showModalBottomSheet<Duration?>(
@@ -249,12 +254,13 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
     final d = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
 
     return GestureDetector(
-      onTap: widget.locked ? null : () => _openSheet(context, d),
+      onTap: widget.locked || widget.isDisabled ? null : () => _openSheet(context, d),
       child: AbsorbPointer(
         absorbing: true,
         child: UnifiedBaseTextField(
           controller: _txt,
           focusNode: _fn,
+          isDisabled: widget.isDisabled,
           locked: widget.locked,
           readOnly: true,
           label: widget.label ?? d.label,
@@ -274,7 +280,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
           validationIcon: d.validationIcon,
           prefix: d.prefix,
           prefixIcon: d.prefixIcon,
-          suffixIcon: d.suffixIcon ?? const Icon(Icons.timer),
+          suffixIcon: widget.isDisabled || widget.locked ? null : (d.suffixIcon ?? const Icon(Icons.timer)),
           padding: d.contentPadding,
           validator: widget.validator,
           textAlign: TextAlign.center,

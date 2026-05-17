@@ -261,6 +261,7 @@ class UnifiedFormTextField extends StatefulWidget {
     this.disabled = false,
     this.readOnly = false,
     this.locked = false,
+    this.isDisabled = false,
     this.autofocus = false,
     this.keyboardType,
     this.textInputAction,
@@ -321,6 +322,9 @@ class UnifiedFormTextField extends StatefulWidget {
 
   /// When true, paints the field in the "locked" style.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Autofocus the field on first build.
   final bool autofocus;
@@ -503,6 +507,7 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
           autovalidateMode: AutovalidateMode.always,
           validator: (_) => unifiedFormErrorText(fieldState),
           disabled: widget.disabled,
+          isDisabled: widget.isDisabled,
           readOnly: widget.readOnly,
           locked: widget.locked,
           autofocus: widget.autofocus,
@@ -567,6 +572,7 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.placeholder,
     this.isRequired = false,
     this.validator,
@@ -627,6 +633,9 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Validator passed to the underlying [FormField].
   final FormFieldValidator<T?>? validator;
@@ -762,6 +771,7 @@ class _UnifiedFormSinglePickerFieldState<T> extends State<UnifiedFormSinglePicke
           searchAutoFocus: widget.searchAutoFocus,
           showClearButton: widget.showClearButton,
           locked: widget.locked,
+          isDisabled: widget.isDisabled,
           validator: null,
           validationOverrideMessage: unifiedFormPickerOverride(fieldState),
         );

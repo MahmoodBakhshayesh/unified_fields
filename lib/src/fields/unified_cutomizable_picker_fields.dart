@@ -29,6 +29,7 @@ class UnifiedCustomizablePickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.placeholder,
     this.isRequired = false,
@@ -80,6 +81,9 @@ class UnifiedCustomizablePickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
@@ -154,7 +158,7 @@ class _UnifiedCustomizablePickerFieldState<T> extends State<UnifiedCustomizableP
   }
 
   Future<void> _open(BuildContext context) async {
-    if (widget.locked) return;
+    if (widget.locked || widget.isDisabled) return;
     final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
@@ -195,11 +199,13 @@ class _UnifiedCustomizablePickerFieldState<T> extends State<UnifiedCustomizableP
   @override
   Widget build(BuildContext context) {
     final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
-    final readOnly = widget.locked || !widget.allowFreeText;
+    final readOnly = widget.locked || widget.isDisabled || !widget.allowFreeText;
 
     final field = UnifiedBaseTextField(
       controller: _txt,
       readOnly: readOnly,
+      isDisabled: widget.isDisabled,
+      locked: widget.locked,
       onChanged: widget.allowFreeText ? _onFieldTextChanged : null,
       label: dec.label ?? widget.label,
       placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
@@ -218,20 +224,22 @@ class _UnifiedCustomizablePickerFieldState<T> extends State<UnifiedCustomizableP
       validationIcon: dec.validationIcon,
       prefix: dec.prefix,
       prefixIcon: dec.prefixIcon,
-      suffixIcon: IconButton(
-        onPressed: widget.locked ? null : () => _open(context),
-        icon: Icon(
-          Icons.arrow_drop_down,
-          color: UnifiedColors.textColorDark,
-        ),
-      ),
+      suffixIcon: widget.isDisabled || widget.locked
+          ? null
+          : IconButton(
+              onPressed: () => _open(context),
+              icon: Icon(
+                Icons.arrow_drop_down,
+                color: UnifiedColors.textColorDark,
+              ),
+            ),
       padding: dec.contentPadding,
       validator: widget.validator,
     );
 
     if (!widget.allowFreeText) {
       return GestureDetector(
-        onTap: widget.locked ? null : () => _open(context),
+        onTap: widget.locked || widget.isDisabled ? null : () => _open(context),
         child: field,
       );
     }
@@ -257,6 +265,7 @@ class UnifiedCustomizableMultiPickerField<T> extends StatefulWidget {
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.isDisabled = false,
     this.validator,
     this.placeholder,
     this.isRequired = false,
@@ -305,6 +314,9 @@ class UnifiedCustomizableMultiPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
 
   /// Synchronous validator on the displayed text.
   final String? Function(String value)? validator;
@@ -381,7 +393,7 @@ class _UnifiedCustomizableMultiPickerFieldState<T> extends State<UnifiedCustomiz
   }
 
   Future<void> _open(BuildContext context, UnifiedInputDecoration dec) async {
-    if (widget.locked) return;
+    if (widget.locked || widget.isDisabled) return;
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
       context: context,
@@ -422,11 +434,13 @@ class _UnifiedCustomizableMultiPickerFieldState<T> extends State<UnifiedCustomiz
   @override
   Widget build(BuildContext context) {
     final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
-    final readOnly = widget.locked || !widget.allowFreeText;
+    final readOnly = widget.locked || widget.isDisabled || !widget.allowFreeText;
 
     final field = UnifiedBaseTextField(
       controller: _txt,
       readOnly: readOnly,
+      isDisabled: widget.isDisabled,
+      locked: widget.locked,
       onChanged: widget.allowFreeText ? _onFieldTextChanged : null,
       label: dec.label ?? widget.label,
       placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
@@ -445,20 +459,22 @@ class _UnifiedCustomizableMultiPickerFieldState<T> extends State<UnifiedCustomiz
       validationIcon: dec.validationIcon,
       prefix: dec.prefix,
       prefixIcon: dec.prefixIcon,
-      suffixIcon: IconButton(
-        onPressed: widget.locked ? null : () => _open(context, dec),
-        icon: Icon(
-          Icons.arrow_drop_down,
-          color: UnifiedColors.textColorDark,
-        ),
-      ),
+      suffixIcon: widget.isDisabled || widget.locked
+          ? null
+          : IconButton(
+              onPressed: () => _open(context, dec),
+              icon: Icon(
+                Icons.arrow_drop_down,
+                color: UnifiedColors.textColorDark,
+              ),
+            ),
       padding: dec.contentPadding,
       validator: widget.validator,
     );
 
     if (!widget.allowFreeText) {
       return GestureDetector(
-        onTap: widget.locked ? null : () => _open(context, dec),
+        onTap: widget.locked || widget.isDisabled ? null : () => _open(context, dec),
         child: field,
       );
     }

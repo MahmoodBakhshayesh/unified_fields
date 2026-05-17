@@ -52,7 +52,9 @@ class UnifiedNumericStepField extends StatefulWidget {
     this.min,
     this.max,
     this.disabled = false,
+    this.isDisabled = false,
     this.readOnly = false,
+    this.locked = false,
     this.autofocus = false,
     this.textInputAction,
     this.validator,
@@ -115,6 +117,12 @@ class UnifiedNumericStepField extends StatefulWidget {
 
   /// When true, the field is non-editable and visually muted.
   final bool disabled;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool isDisabled;
+
+  /// When true, greys out the field and shows a lock suffix icon.
+  final bool locked;
 
   /// When true, the field rejects edits.
   final bool readOnly;
@@ -254,7 +262,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
 
   void _beginStepHold(num delta) {
     _endStepHold();
-    if (widget.disabled || widget.readOnly) return;
+    if (widget.disabled || widget.isDisabled || widget.locked || widget.readOnly) return;
 
     _applyDelta(delta);
 
@@ -298,7 +306,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   }
 
   void _applyDelta(num delta) {
-    if (widget.disabled || widget.readOnly) return;
+    if (widget.disabled || widget.isDisabled || widget.locked || widget.readOnly) return;
 
     num next = _baselineForStep() + delta;
     next = _clamp(next);
@@ -351,7 +359,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   }
 
   Widget _stepButton({required IconData icon, required num delta}) {
-    final enabled = !widget.disabled && !widget.readOnly;
+    final enabled = !widget.disabled && !widget.isDisabled && !widget.locked && !widget.readOnly;
     final h = widget.height != null ? (widget.height! - 8).clamp(32.0, 56.0).toDouble() : 40.0;
 
     return ExcludeFocus(
@@ -398,6 +406,8 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       style: widget.style ?? TextStyle(color: UnifiedColors.textColorDark),
       padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 4),
       disabled: widget.disabled,
+      isDisabled: widget.isDisabled,
+      locked: widget.locked,
       readOnly: widget.readOnly,
       autofocus: widget.autofocus,
       textInputAction: widget.textInputAction ?? TextInputAction.done,
@@ -409,14 +419,18 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
         _clampTypedValueIfOutOfRange();
         widget.onSubmitted?.call(_effectiveController.text);
       },
-      prefix: _stepButton(
-        icon: Icons.remove_rounded,
-        delta: -widget.step,
-      ),
-      suffixIcon: _stepButton(
-        icon: Icons.add_rounded,
-        delta: widget.step,
-      ),
+      prefix: widget.isDisabled || widget.disabled || widget.locked
+          ? null
+          : _stepButton(
+              icon: Icons.remove_rounded,
+              delta: -widget.step,
+            ),
+      suffixIcon: widget.isDisabled || widget.disabled || widget.locked
+          ? null
+          : _stepButton(
+              icon: Icons.add_rounded,
+              delta: widget.step,
+            ),
       onChanged: (_) {
         final text = _effectiveController.text;
         if (_hasTrailingDecimalPointForTyping(text)) return;
