@@ -232,12 +232,14 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   ),
                   const SizedBox(height: 12),
                   UnifiedDurationField(
-                    showCalendarKindToggle: false,
+                    // locked: true,
+                    // isDisabled: true,
+                    // showCalendarKindToggle: false,
                     // pickerStyle: UnifiedFieldsDurationPickerStyle.wheels, // default
                     // granularity: UnifiedDurationGranularity.hoursMinutesSeconds, // or .hours / .hoursMinutesSeconds
                     // initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
                     // value: const Duration(hours: 1, minutes: 30),
-                    pickerColumns: [UnifiedFieldsDurationColumn.year,UnifiedFieldsDurationColumn.month,UnifiedFieldsDurationColumn.week],
+                    // pickerColumns: [UnifiedFieldsDurationColumn.year,UnifiedFieldsDurationColumn.month,UnifiedFieldsDurationColumn.week],
                   ),
                   const SizedBox(height: 12),
 

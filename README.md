@@ -33,7 +33,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.1.6
+  unified_fields: ^0.1.4
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -239,7 +239,7 @@ Date **ranges** still use the calendar sheet (`showUnifiedFieldsDatePickerRange`
 
 Wheel chrome is themed automatically (`UnifiedFieldsDateWheelStyle.resolve`). Pass optional `wheelStyle:` only when you need custom colors or zoom.
 
-**Jalali field text:** when `initialCalendarKind` / active kind is **`jalali`**, the field shows Shamsi-formatted text (e.g. `۱۳,مرداد ۱۴۰۳`) after pick, not a Gregorian `DateFormat`. `initialCalendarKind: jalali` applies to **both** calendar grid and wheel pickers (0.1.6).
+**Jalali field text:** when `initialCalendarKind` / active kind is **`jalali`**, the field shows Shamsi-formatted text (e.g. `۱۳,مرداد ۱۴۰۳`) after pick, not a Gregorian `DateFormat`. `initialCalendarKind: jalali` applies to **both** calendar grid and wheel pickers (0.1.4).
 
 ```dart
 UnifiedDateField(
@@ -519,9 +519,9 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.1.6`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.1.4`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
 
-### Upgrading to 0.1.6
+### Upgrading to 0.1.4
 
 - **Duration wheels** are the default (`UnifiedFieldsDurationPickerStyle.wheels`). Pass **`pickerStyle: UnifiedFieldsDurationPickerStyle.cupertino`** to keep the old Cupertino sheet.  
 - **`unifiedFormatDuration`** / **`unifiedTryParseDuration`** now use **named** parameters: `granularity:` and optional `pickerColumns:` / `calendarKind:`.  

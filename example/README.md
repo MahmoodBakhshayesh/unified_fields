@@ -23,5 +23,5 @@ so any edit in `lib/` is picked up on hot reload.
 
 ## Package version
 
-This example tracks the parent package (**currently 0.1.6**). See the root
+This example tracks the parent package (**currently 0.1.4**). See the root
 [`CHANGELOG.md`](../CHANGELOG.md) for release notes.

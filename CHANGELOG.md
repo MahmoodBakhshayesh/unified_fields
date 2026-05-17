@@ -1,6 +1,6 @@
-## 0.1.6
+## 0.1.4
 
-### Features
+### Features and Fixes
 
 * **Time wheel picker:** `UnifiedFieldsTimePickerStyle.wheels` on `UnifiedTimeOfDayField` / `UnifiedFormTimeOfDayField` with `UnifiedFieldsTimeGranularity` (`hours`, `hoursMinutes`, `hoursMinutesSeconds`); `showUnifiedFieldsTimePicker`; Shamsi digit toggle via `initialCalendarKind`.
 * **Duration wheel picker:** `UnifiedFieldsDurationPickerStyle.wheels` (default) with extended `UnifiedDurationGranularity` (`hours`, `hoursMinutes`, `hoursMinutesSeconds`, legacy `minutesSeconds`); shared `UnifiedFieldsHmsWheelPickerSheet` chrome for simple H:M:S; `UnifiedFieldsDurationColumnWheelPickerSheet` for custom columns.
@@ -9,20 +9,13 @@
 * **Typography API:** `localizeDigits`, `mergeDigitStyle`, `toPersianDigits`, `fromPersianDigits`; optional `persianFontFamily`.
 * **Duration / time form fields:** `UnifiedFormDurationField` gains `pickerColumns`, `pickerStyle`, `initialCalendarKind`, `showCalendarKindToggle`.
 * **`UnifiedFieldsStrings.durationColumnHeader`:** localized column headers for duration wheels (Gregorian and Shamsi).
-
-### Fixes
-
 * **Duration calendar columns:** year / month / week wheels use fixed ranges (**0…999**, **0…11**, **0…4**) instead of shrinking to `0` when `max` is below one year.
 * **Calendar mode:** Shamsi month title bar and jump-panel year field show Persian year numerals (not only wheel / day grid).
 * **`initialCalendarKind: jalali`** now applies to **calendar** (grid) pickers, not only wheel mode (`UnifiedFieldsDatePickerSheet` was missing the parameter).
 * **Jalali field display:** after pick (or when calendar kind is Jalali), the date field shows Shamsi text (e.g. `۱۳,مرداد ۱۴۰۳`) instead of Gregorian `DateFormat`; picker confirm syncs kind via `onConfirmedCalendarKind`.
-
-### API notes
-
 * `unifiedFormatDuration` / `unifiedTryParseDuration` use **named** `granularity:` and optional `pickerColumns:` / `calendarKind:` (update call sites from positional `granularity`).
 * `UnifiedNumericStepField.digitCalendarKind` — optional Shamsi digit context for numeric surfaces inside pickers.
 
-## 0.1.5
 
 * **Wheel date picker:** `UnifiedFieldsDatePickerStyle.wheels` on `UnifiedDateField`, `UnifiedFormDateField`, and `showUnifiedFieldsDatePicker` — scroll wheels (year · month · day) with Gregorian / Shamsi toggle; column set follows `UnifiedFieldsDatePickerGranularity`.
 * **Wheel styling:** optional `UnifiedFieldsDateWheelStyle` (themed via `forPicker`); desktop mouse / trackpad drag via `ListWheelScrollView`.
@@ -32,9 +25,6 @@
 * **`showWeekdayInWheel`:** optional weekday names in the day wheel (`true` by default); fixed-width day + weekday layout via `wheelDayNumberWidth` / `wheelWeekdayWidth` on `UnifiedFieldsDateWheelStyle`.
 * **Renamed** `AppInputController` → `UnifiedInputPicker`, `AppUnifiedFieldShell` → `UnifiedFieldShell` (deprecated typedefs).
 * **Localization:** `UnifiedFieldsStrings.instance` for Cancel, Confirm, picker copy, and wheel headers.
-
-## 0.1.4
-
 * **Breaking:** Renamed `AppInputController` → [`UnifiedInputPicker`](lib/src/fields/unified_input_picker.dart) and `AppUnifiedFieldShell` → [`UnifiedFieldShell`](lib/src/fields/unified_field_shell.dart). Deprecated typedefs remain for one release.
 * **Localization:** All package button/label strings (Cancel, Confirm, Clear, Done, Pick, Suggestion, date picker copy, time hour/minute labels, default duration title) live in [`UnifiedFieldsStrings`](lib/src/unified_fields_strings.dart). Set `UnifiedFieldsStrings.instance` before `runApp` to customize. `UnifiedDatePickerStrings` is deprecated and forwards to the same instance.
 
