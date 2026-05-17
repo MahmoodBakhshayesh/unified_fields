@@ -164,13 +164,17 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       }
       return;
     }
-    _effectiveController = widget.controller ?? TextEditingController(text: widget.initialValue ?? '');
+    _effectiveController =
+        widget.controller ??
+        TextEditingController(text: widget.initialValue ?? '');
     _ownsController = widget.controller == null;
   }
 
   void _syncBindingFromExternal() {
     final bound = widget.binding?.value ?? _fc?.value;
-    if (bound != null && bound.isNotEmpty && bound != _effectiveController.text) {
+    if (bound != null &&
+        bound.isNotEmpty &&
+        bound != _effectiveController.text) {
       _effectiveController.text = bound;
     }
   }
@@ -206,7 +210,8 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       );
       _syncFocusTarget();
     }
-    if (oldWidget.fieldController != widget.fieldController || oldWidget.controller != widget.controller) {
+    if (oldWidget.fieldController != widget.fieldController ||
+        oldWidget.controller != widget.controller) {
       if (_ownsController) _effectiveController.dispose();
       _initController();
     }
@@ -262,7 +267,11 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final d = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
 
     return UnifiedBaseTextField(
       controller: _effectiveController,
@@ -272,18 +281,20 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
         direct: widget.focusNode,
       ),
       errorText: _fc?.errorText,
-      label: widget.label??d.label,
-      placeholder: widget.placeholder??d.placeholder ?? d.label,
+      label: widget.label ?? d.label,
+      placeholder: widget.placeholder ?? d.placeholder ?? d.label,
       labelStyle: d.labelStyle,
       style: d.fieldStyle,
       backgroundColor: d.backgroundColor ?? Colors.black26,
-      headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26,
-      borderRadius: d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+      headerBackgroundColor:
+          d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26,
+      borderRadius:
+          d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
       borderSide: d.borderSide,
       height: d.height,
       rowLabelRatio: d.rowLabelRatio,
       labelInRow: d.labelInRow,
-      requiredField:widget.isRequired,
+      requiredField: widget.isRequired,
       showError: d.showError,
       validationColor: d.validationColor,
       validationIcon: d.validationIcon,
@@ -293,7 +304,9 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       padding: d.contentPadding,
       validator: _fc != null
           ? (v) {
-              final err = _fc!.validator?.call(v.isEmpty ? null : v) ?? widget.validator?.call(v);
+              final err =
+                  _fc!.validator?.call(v.isEmpty ? null : v) ??
+                  widget.validator?.call(v);
               if (err != null && err.isNotEmpty) {
                 _fc!.setError(err);
               } else {

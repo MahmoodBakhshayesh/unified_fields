@@ -59,7 +59,8 @@ class UnifiedFormFieldScope extends InheritedWidget {
 
   /// Resolves the effective [AutovalidateMode] for unified form fields under [context].
   static AutovalidateMode autovalidateModeOf(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<UnifiedFormFieldScope>();
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<UnifiedFormFieldScope>();
     if (scope?.autovalidateMode != null) {
       return scope!.autovalidateMode!;
     }
@@ -76,17 +77,12 @@ class UnifiedFormFieldScope extends InheritedWidget {
 }
 
 /// Builds the child for [UnifiedFormField].
-typedef UnifiedFormFieldBuilder<T> = Widget Function(
-  BuildContext context,
-  FormFieldState<T> field,
-);
+typedef UnifiedFormFieldBuilder<T> =
+    Widget Function(BuildContext context, FormFieldState<T> field);
 
 /// Horizontal shake when [hasError] flips from false to true (e.g. failed validation).
 class _UnifiedFormShakeHost extends StatefulWidget {
-  const _UnifiedFormShakeHost({
-    required this.hasError,
-    required this.child,
-  });
+  const _UnifiedFormShakeHost({required this.hasError, required this.child});
 
   final bool hasError;
   final Widget child;
@@ -95,7 +91,8 @@ class _UnifiedFormShakeHost extends StatefulWidget {
   State<_UnifiedFormShakeHost> createState() => _UnifiedFormShakeHostState();
 }
 
-class _UnifiedFormShakeHostState extends State<_UnifiedFormShakeHost> with SingleTickerProviderStateMixin {
+class _UnifiedFormShakeHostState extends State<_UnifiedFormShakeHost>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
@@ -136,10 +133,7 @@ class _UnifiedFormShakeHostState extends State<_UnifiedFormShakeHost> with Singl
         if (dx == 0 && !_controller.isAnimating) {
           return child!;
         }
-        return Transform.translate(
-          offset: Offset(dx, 0),
-          child: child,
-        );
+        return Transform.translate(offset: Offset(dx, 0), child: child);
       },
     );
   }
@@ -392,7 +386,8 @@ class UnifiedFormTextField extends StatefulWidget {
 class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
   late TextEditingController _effectiveController;
   bool _ownsController = false;
-  final GlobalKey<FormFieldState<String>> _formFieldKey = GlobalKey<FormFieldState<String>>();
+  final GlobalKey<FormFieldState<String>> _formFieldKey =
+      GlobalKey<FormFieldState<String>>();
 
   /// Passed to [UnifiedFormField.initialValue]. When [resetValue] is non-null, holds the
   /// last `resetValue()` snapshot; otherwise mirrors controller text for reset no-op.
@@ -420,7 +415,8 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
       _ownsController = false;
       return;
     }
-    _effectiveController = widget.controller ??
+    _effectiveController =
+        widget.controller ??
         TextEditingController(text: widget.initialValue ?? '');
     _ownsController = widget.controller == null;
   }
@@ -514,7 +510,11 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final d = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
 
     return UnifiedFormField<String>(
       formFieldKey: _formFieldKey,
@@ -537,8 +537,10 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
           labelStyle: d.labelStyle,
           style: d.fieldStyle,
           backgroundColor: d.backgroundColor ?? Colors.black26,
-          headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26,
-          borderRadius: d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+          headerBackgroundColor:
+              d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26,
+          borderRadius:
+              d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
           borderSide: d.borderSide,
           height: d.height,
           rowLabelRatio: d.rowLabelRatio,
@@ -569,7 +571,8 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
           textCapitalization: widget.textCapitalization,
           textAlign: widget.textAlign,
 
-          mustResolveTextDirectionByInput: widget.mustResolveTextDirectionByInput,
+          mustResolveTextDirectionByInput:
+              widget.mustResolveTextDirectionByInput,
           initialValue: widget.controller != null ? null : widget.initialValue,
           onSubmit: widget.onSubmitted,
           onChanged: (s) {
@@ -706,19 +709,22 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
   final bool shakeOnError;
 
   @override
-  State<UnifiedFormSinglePickerField<T>> createState() => _UnifiedFormSinglePickerFieldState<T>();
+  State<UnifiedFormSinglePickerField<T>> createState() =>
+      _UnifiedFormSinglePickerFieldState<T>();
 }
 
-class _UnifiedFormSinglePickerFieldState<T> extends State<UnifiedFormSinglePickerField<T>> {
-  final GlobalKey<FormFieldState<T?>> _formFieldKey = GlobalKey<FormFieldState<T?>>();
+class _UnifiedFormSinglePickerFieldState<T>
+    extends State<UnifiedFormSinglePickerField<T>> {
+  final GlobalKey<FormFieldState<T?>> _formFieldKey =
+      GlobalKey<FormFieldState<T?>>();
   late T? _echoInitialWhenNoReset;
   late T _cachedResetTarget;
 
   T? _displayValue() => unifiedEffectiveValue(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.value,
-      );
+    fieldController: widget.fieldController,
+    binding: widget.binding,
+    direct: widget.value,
+  );
 
   void _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -761,7 +767,8 @@ class _UnifiedFormSinglePickerFieldState<T> extends State<UnifiedFormSinglePicke
     }
     final resetChanged = widget.resetValue != oldWidget.resetValue;
     final bindingChanged = widget.binding != oldWidget.binding;
-    final fieldControllerChanged = widget.fieldController != oldWidget.fieldController;
+    final fieldControllerChanged =
+        widget.fieldController != oldWidget.fieldController;
     if (resetChanged || bindingChanged || fieldControllerChanged) {
       if (widget.resetValue != null) {
         _cachedResetTarget = widget.resetValue!();
@@ -849,7 +856,9 @@ class _UnifiedFormSinglePickerFieldState<T> extends State<UnifiedFormSinglePicke
   Widget build(BuildContext context) {
     return UnifiedFormField<T?>(
       formFieldKey: _formFieldKey,
-      initialValue: widget.resetValue != null ? _cachedResetTarget : _echoInitialWhenNoReset,
+      initialValue: widget.resetValue != null
+          ? _cachedResetTarget
+          : _echoInitialWhenNoReset,
       validator: widget.validator,
       onSaved: widget.onSaved,
       onReset: _syncBindingFromForm,

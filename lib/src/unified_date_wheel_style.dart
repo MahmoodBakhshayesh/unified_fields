@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'fields/unified_input_palette.dart';
+import 'fields/unified_input_theme.dart';
 
 /// Visual styling for [UnifiedFieldsDateWheelPickerSheet] scroll wheels.
 ///
@@ -97,10 +98,14 @@ class UnifiedFieldsDateWheelStyle {
   /// Theme defaults (no separate day-column tint unless you set [dayColumnBackground]).
   factory UnifiedFieldsDateWheelStyle.resolve(
     UnifiedInputPalette palette,
-    ThemeData theme,
-  ) {
+    ThemeData theme, {
+    Color? sheetBackground,
+  }) {
     final primary = theme.colorScheme.primary;
-    final sheetBg = theme.bottomSheetTheme.backgroundColor ?? palette.sheetBackground;
+    final sheetBg =
+        sheetBackground ??
+        theme.bottomSheetTheme.backgroundColor ??
+        palette.sheetBackground;
     final isDark = theme.brightness == Brightness.dark;
 
     return UnifiedFieldsDateWheelStyle(
@@ -155,10 +160,21 @@ class UnifiedFieldsDateWheelStyle {
   /// [resolve] merged with optional [overrides], with all metrics filled in.
   static UnifiedFieldsDateWheelStyle forPicker(
     UnifiedInputPalette palette,
-    ThemeData theme, [
+    ThemeData theme, {
     UnifiedFieldsDateWheelStyle? overrides,
-  ]) {
-    final merged = UnifiedFieldsDateWheelStyle.resolve(palette, theme).merge(overrides);
+    BuildContext? context,
+  }) {
+    final sheetBg = context != null
+        ? UnifiedInputThemeResolver.resolvePickerSheetBackground(
+            context,
+            palette: palette,
+          )
+        : null;
+    final merged = UnifiedFieldsDateWheelStyle.resolve(
+      palette,
+      theme,
+      sheetBackground: sheetBg,
+    ).merge(overrides);
     return UnifiedFieldsDateWheelStyle(
       wheelBackground: merged.wheelBackground!,
       dayColumnBackground: merged.dayColumnBackground,

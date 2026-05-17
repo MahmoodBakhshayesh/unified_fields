@@ -99,7 +99,10 @@ List<UnifiedFieldsDurationColumn> unifiedDurationColumnsFromGranularity(
     case UnifiedDurationGranularity.hours:
       return [UnifiedFieldsDurationColumn.hour];
     case UnifiedDurationGranularity.hoursMinutes:
-      return UnifiedFieldsDurationColumnPresets.hoursMinutesSeconds.sublist(0, 2);
+      return UnifiedFieldsDurationColumnPresets.hoursMinutesSeconds.sublist(
+        0,
+        2,
+      );
     case UnifiedDurationGranularity.hoursMinutesSeconds:
       return UnifiedFieldsDurationColumnPresets.hoursMinutesSeconds;
     case UnifiedDurationGranularity.minutesSeconds:
@@ -174,7 +177,9 @@ int unifiedDurationColumnMaxIndex(
       }
       return (totalSecs ~/ unit).clamp(0, 999);
     case UnifiedFieldsDurationColumn.day:
-      if (_hasColumnAfter(columns, column, {UnifiedFieldsDurationColumn.hour})) {
+      if (_hasColumnAfter(columns, column, {
+        UnifiedFieldsDurationColumn.hour,
+      })) {
         return 30.clamp(0, (totalSecs ~/ unit).clamp(0, 999));
       }
       return (totalSecs ~/ unit).clamp(0, 999);
@@ -187,7 +192,9 @@ int unifiedDurationColumnMaxIndex(
       }
       return (totalSecs ~/ unit).clamp(0, 999);
     case UnifiedFieldsDurationColumn.minute:
-      if (_hasColumnAfter(columns, column, {UnifiedFieldsDurationColumn.second})) {
+      if (_hasColumnAfter(columns, column, {
+        UnifiedFieldsDurationColumn.second,
+      })) {
         return 59;
       }
       return (totalSecs ~/ unit).clamp(0, 99999);
@@ -241,7 +248,10 @@ String formatUnifiedDurationColumns(
     buffer.add(v.toString().padLeft(minWidth, '0'));
   }
   final joined = buffer.join(':');
-  return UnifiedFieldsTypography.instance.localizeDigits(joined, calendarKind: calendarKind);
+  return UnifiedFieldsTypography.instance.localizeDigits(
+    joined,
+    calendarKind: calendarKind,
+  );
 }
 
 /// Parses colon-separated text built by [formatUnifiedDurationColumns].

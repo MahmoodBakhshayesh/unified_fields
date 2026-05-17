@@ -10,15 +10,24 @@ abstract final class PersianJalaliCalendar {
       Jalali(jalaliYear, jalaliMonth, 1).monthLength;
 
   /// Local midnights from Jalali day.
-  static DateTime toGregorianDate(int jalaliYear, int jalaliMonth, int jalaliDay) {
-    return DateUtils.dateOnly(Jalali(jalaliYear, jalaliMonth, jalaliDay).toDateTime());
+  static DateTime toGregorianDate(
+    int jalaliYear,
+    int jalaliMonth,
+    int jalaliDay,
+  ) {
+    return DateUtils.dateOnly(
+      Jalali(jalaliYear, jalaliMonth, jalaliDay).toDateTime(),
+    );
   }
 
   /// Converts a [DateTime] (Gregorian) into a [Jalali] date.
   static Jalali fromGregorian(DateTime g) => Jalali.fromDateTime(g);
 
   /// Every Jalali month that intersects `[first, last]` (local midnights).
-  static List<(int jy, int jm)> enumerateMonthsBetween(DateTime first, DateTime last) {
+  static List<(int jy, int jm)> enumerateMonthsBetween(
+    DateTime first,
+    DateTime last,
+  ) {
     final a = DateUtils.dateOnly(first);
     final b = DateUtils.dateOnly(last);
     if (a.isAfter(b)) return [];
@@ -46,19 +55,28 @@ abstract final class PersianJalaliCalendar {
   }
 
   /// Persian weekday name (شنبه … جمعه) for a Jalali date.
-  static String persianWeekdayName(int jalaliYear, int jalaliMonth, int jalaliDay) {
+  static String persianWeekdayName(
+    int jalaliYear,
+    int jalaliMonth,
+    int jalaliDay,
+  ) {
     return JalaliFormatter(Jalali(jalaliYear, jalaliMonth, jalaliDay)).wN;
   }
 
   /// Day column label for wheel picker: `"$day $weekday"` in Farsi.
-  static String jalaliDayWheelLabel(int jalaliYear, int jalaliMonth, int jalaliDay) {
+  static String jalaliDayWheelLabel(
+    int jalaliYear,
+    int jalaliMonth,
+    int jalaliDay,
+  ) {
     return '$jalaliDay ${persianWeekdayName(jalaliYear, jalaliMonth, jalaliDay)}';
   }
 
   /// Formats a Gregorian [dateTime] for display in Shamsi mode (mirrors default Gregorian patterns).
   static String formatFieldText(
     DateTime dateTime, {
-    UnifiedFieldsDatePickerGranularity granularity = UnifiedFieldsDatePickerGranularity.day,
+    UnifiedFieldsDatePickerGranularity granularity =
+        UnifiedFieldsDatePickerGranularity.day,
   }) {
     final j = fromGregorian(DateUtils.dateOnly(dateTime));
     switch (granularity) {

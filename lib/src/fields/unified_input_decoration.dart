@@ -100,7 +100,8 @@ class UnifiedInputDecoration {
       labelStyle: other.labelStyle ?? labelStyle,
       fieldStyle: other.fieldStyle ?? fieldStyle,
       backgroundColor: other.backgroundColor ?? backgroundColor,
-      headerBackgroundColor: other.headerBackgroundColor ?? headerBackgroundColor,
+      headerBackgroundColor:
+          other.headerBackgroundColor ?? headerBackgroundColor,
       borderRadius: other.borderRadius ?? borderRadius,
       borderSide: other.borderSide ?? borderSide,
       height: other.height ?? height,
@@ -122,7 +123,8 @@ class UnifiedInputDecoration {
     return UnifiedInputDecoration(
       label: label,
       placeholder: placeholder,
-      labelStyle: labelStyle ??
+      labelStyle:
+          labelStyle ??
           TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
@@ -154,6 +156,8 @@ UnifiedInputDecoration resolveUnifiedDecoration(
   UnifiedInputDecoration? overrides,
   UnifiedInputBrightness? brightness,
 }) {
-  final palette = brightness != null ? UnifiedInputThemeResolver.paletteFor(brightness) : UnifiedInputThemeResolver.resolvePalette(context);
+  final palette = brightness != null
+      ? UnifiedInputThemeResolver.paletteFor(brightness)
+      : UnifiedInputThemeResolver.resolvePalette(context);
   return const UnifiedInputDecoration().merge(overrides).applyPalette(palette);
 }

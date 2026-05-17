@@ -15,5 +15,6 @@ export 'src/controllers/unified_field_controllers.dart';
 export 'src/unified_fields_context.dart';
 export 'src/unified_sheet_button.dart';
 export 'src/unified_date_picker_sheet.dart';
-export 'src/time_picker_utils.dart' show TimePickerUtils, showUnifiedFieldsTimePicker;
+export 'src/time_picker_utils.dart'
+    show TimePickerUtils, showUnifiedFieldsTimePicker;
 export 'src/fields/unified_inputs.dart';

@@ -8,7 +8,8 @@ import '../unified_time_picker_types.dart';
 import 'base_unified_field_controller.dart';
 
 /// Controller for [UnifiedTimeOfDayField].
-class UnifiedTimeOfDayFieldController extends BaseUnifiedFieldController<TimeOfDay> {
+class UnifiedTimeOfDayFieldController
+    extends BaseUnifiedFieldController<TimeOfDay> {
   /// Creates a time-of-day controller.
   UnifiedTimeOfDayFieldController({
     super.initialValue,
@@ -17,12 +18,13 @@ class UnifiedTimeOfDayFieldController extends BaseUnifiedFieldController<TimeOfD
     this.timePickerEntryMode = TimePickerEntryMode.dial,
     this.pickerStyle = UnifiedFieldsTimePickerStyle.dial,
     this.granularity = UnifiedFieldsTimeGranularity.hoursMinutes,
-    UnifiedFieldsCalendarKind calendarKind = UnifiedFieldsCalendarKind.gregorian,
+    UnifiedFieldsCalendarKind calendarKind =
+        UnifiedFieldsCalendarKind.gregorian,
     this.showCalendarKindToggle = true,
     this.wheelStyle,
     int initialSecond = 0,
-  })  : _calendarKind = calendarKind,
-        _second = initialSecond;
+  }) : _calendarKind = calendarKind,
+       _second = initialSecond;
 
   /// Entry mode for the platform dial picker.
   final TimePickerEntryMode timePickerEntryMode;
@@ -72,11 +74,11 @@ class UnifiedTimeOfDayFieldController extends BaseUnifiedFieldController<TimeOfD
 
   /// Formats [value] for display.
   String format([TimeOfDay? time]) => formatUnifiedTimeOfDayText(
-        time ?? value,
-        granularity: granularity,
-        second: _second,
-        calendarKind: calendarKind,
-      );
+    time ?? value,
+    granularity: granularity,
+    second: _second,
+    calendarKind: calendarKind,
+  );
 
   /// Opens the time picker and updates [value] when confirmed.
   Future<TimeOfDay?> openPicker(

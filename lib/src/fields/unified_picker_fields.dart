@@ -1,4 +1,3 @@
-import '../unified_colors.dart';
 import 'package:flutter/material.dart';
 
 import '../controllers/field_controller_sync.dart';
@@ -7,6 +6,7 @@ import 'unified_input_picker.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
+import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_sheet.dart';
 
@@ -104,10 +104,12 @@ class UnifiedSinglePickerField<T> extends StatefulWidget {
   final bool isRequired;
 
   @override
-  State<UnifiedSinglePickerField<T>> createState() => _UnifiedSinglePickerFieldState<T>();
+  State<UnifiedSinglePickerField<T>> createState() =>
+      _UnifiedSinglePickerFieldState<T>();
 }
 
-class _UnifiedSinglePickerFieldState<T> extends State<UnifiedSinglePickerField<T>> {
+class _UnifiedSinglePickerFieldState<T>
+    extends State<UnifiedSinglePickerField<T>> {
   late final TextEditingController _txt = TextEditingController();
 
   String _display(T? v) {
@@ -116,17 +118,21 @@ class _UnifiedSinglePickerFieldState<T> extends State<UnifiedSinglePickerField<T
   }
 
   T? get _effective => unifiedEffectiveValue(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.value,
-      );
+    fieldController: widget.fieldController,
+    binding: widget.binding,
+    direct: widget.value,
+  );
 
   void _syncText() {
     _txt.text = _display(_effective);
   }
 
   String _sheetLabel(BuildContext context) {
-    final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
     return dec.placeholder ?? dec.label ?? widget.label;
   }
 
@@ -168,7 +174,8 @@ class _UnifiedSinglePickerFieldState<T> extends State<UnifiedSinglePickerField<T
         fieldController: oldWidget.fieldController,
       );
     }
-    if (oldWidget.binding != widget.binding || oldWidget.fieldController != widget.fieldController) {
+    if (oldWidget.binding != widget.binding ||
+        oldWidget.fieldController != widget.fieldController) {
       oldWidget.binding?.removeListener(_onBinding);
       oldWidget.fieldController?.removeListener(_onBinding);
       widget.binding?.addListener(_onBinding);
@@ -185,7 +192,8 @@ class _UnifiedSinglePickerFieldState<T> extends State<UnifiedSinglePickerField<T
         oldWidget.fieldController?.value != widget.fieldController?.value) {
       _syncText();
     }
-    if (oldWidget.validationOverrideMessage != widget.validationOverrideMessage) {
+    if (oldWidget.validationOverrideMessage !=
+        widget.validationOverrideMessage) {
       setState(() {});
     }
   }
@@ -216,7 +224,11 @@ class _UnifiedSinglePickerFieldState<T> extends State<UnifiedSinglePickerField<T
 
   Future<void> _presentPicker(BuildContext context) async {
     if (widget.locked || widget.isDisabled) return;
-    final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
       context: context,
@@ -263,7 +275,11 @@ class _UnifiedSinglePickerFieldState<T> extends State<UnifiedSinglePickerField<T
 
   @override
   Widget build(BuildContext context) {
-    final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
 
     return GestureDetector(
       onTap: widget.locked || widget.isDisabled ? null : () => _open(context),
@@ -277,12 +293,16 @@ class _UnifiedSinglePickerFieldState<T> extends State<UnifiedSinglePickerField<T
           errorText: widget.fieldController?.errorText,
           readOnly: true,
           label: dec.label ?? widget.label,
-          placeholder: widget.placeholder??dec.placeholder ?? widget.label,
+          placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
           labelStyle: dec.labelStyle,
           style: dec.fieldStyle,
           backgroundColor: dec.backgroundColor ?? Colors.black26,
-          headerBackgroundColor: dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
-          borderRadius: dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+          headerBackgroundColor:
+              dec.headerBackgroundColor ??
+              dec.backgroundColor ??
+              Colors.black26,
+          borderRadius:
+              dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
           borderSide: dec.borderSide,
           height: dec.height,
           rowLabelRatio: dec.rowLabelRatio,
@@ -293,10 +313,15 @@ class _UnifiedSinglePickerFieldState<T> extends State<UnifiedSinglePickerField<T
           validationIcon: dec.validationIcon,
           prefix: dec.prefix,
           prefixIcon: dec.prefixIcon,
-          suffixIcon: dec.suffixIcon ??
+          suffixIcon:
+              dec.suffixIcon ??
               (widget.isDisabled || widget.locked
                   ? null
-                  : Icon(Icons.arrow_drop_down, color: UnifiedColors.textColorDark)),
+                  : UnifiedInputThemeResolver.defaultSuffixIcon(
+                      context,
+                      UnifiedInputFieldSuffixKind.picker,
+                      UnifiedInputThemeResolver.resolvePalette(context),
+                    )),
           padding: dec.contentPadding,
           isDisabled: widget.isDisabled,
           locked: widget.locked,
@@ -407,19 +432,22 @@ class UnifiedMultiPickerField<T> extends StatefulWidget {
   final bool isRequired;
 
   @override
-  State<UnifiedMultiPickerField<T>> createState() => _UnifiedMultiPickerFieldState<T>();
+  State<UnifiedMultiPickerField<T>> createState() =>
+      _UnifiedMultiPickerFieldState<T>();
 }
 
-class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>> {
+class _UnifiedMultiPickerFieldState<T>
+    extends State<UnifiedMultiPickerField<T>> {
   late final TextEditingController _txt = TextEditingController();
 
   List<T> get _effective => unifiedEffectiveListValue(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.values,
-      );
+    fieldController: widget.fieldController,
+    binding: widget.binding,
+    direct: widget.values,
+  );
 
-  String _display(List<T> vs) => vs.map((e) => widget.valueToString?.call(e) ?? e.toString()).join(', ');
+  String _display(List<T> vs) =>
+      vs.map((e) => widget.valueToString?.call(e) ?? e.toString()).join(', ');
 
   void _syncText() {
     _txt.text = _display(_effective);
@@ -453,7 +481,11 @@ class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
     _syncFieldController(dec);
   }
 
@@ -467,7 +499,8 @@ class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>>
         fieldController: oldWidget.fieldController,
       );
     }
-    if (oldWidget.binding != widget.binding || oldWidget.fieldController != widget.fieldController) {
+    if (oldWidget.binding != widget.binding ||
+        oldWidget.fieldController != widget.fieldController) {
       oldWidget.binding?.removeListener(_onBinding);
       oldWidget.fieldController?.removeListener(_onBinding);
       widget.binding?.addListener(_onBinding);
@@ -477,7 +510,11 @@ class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>>
         oldWidget.items != widget.items ||
         oldWidget.label != widget.label ||
         oldWidget.decoration != widget.decoration) {
-      final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+      final dec = resolveUnifiedDecoration(
+        context,
+        overrides: widget.decoration,
+        brightness: widget.brightness,
+      );
       _syncFieldController(dec);
     }
     if (oldWidget.values != widget.values ||
@@ -485,7 +522,8 @@ class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>>
         oldWidget.fieldController?.value != widget.fieldController?.value) {
       _syncText();
     }
-    if (oldWidget.validationOverrideMessage != widget.validationOverrideMessage) {
+    if (oldWidget.validationOverrideMessage !=
+        widget.validationOverrideMessage) {
       setState(() {});
     }
   }
@@ -514,7 +552,10 @@ class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>>
     super.dispose();
   }
 
-  Future<void> _presentPicker(BuildContext context, UnifiedInputDecoration dec) async {
+  Future<void> _presentPicker(
+    BuildContext context,
+    UnifiedInputDecoration dec,
+  ) async {
     if (widget.locked || widget.isDisabled) return;
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
@@ -563,10 +604,16 @@ class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>>
 
   @override
   Widget build(BuildContext context) {
-    final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
 
     return GestureDetector(
-      onTap: widget.locked || widget.isDisabled ? null : () => _open(context, dec),
+      onTap: widget.locked || widget.isDisabled
+          ? null
+          : () => _open(context, dec),
       child: AbsorbPointer(
         child: UnifiedBaseTextField(
           controller: _txt,
@@ -581,8 +628,12 @@ class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>>
           labelStyle: dec.labelStyle,
           style: dec.fieldStyle,
           backgroundColor: dec.backgroundColor ?? Colors.black26,
-          headerBackgroundColor: dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
-          borderRadius: dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+          headerBackgroundColor:
+              dec.headerBackgroundColor ??
+              dec.backgroundColor ??
+              Colors.black26,
+          borderRadius:
+              dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
           borderSide: dec.borderSide,
           height: dec.height,
           rowLabelRatio: dec.rowLabelRatio,
@@ -593,10 +644,15 @@ class _UnifiedMultiPickerFieldState<T> extends State<UnifiedMultiPickerField<T>>
           validationIcon: dec.validationIcon,
           prefix: dec.prefix,
           prefixIcon: dec.prefixIcon,
-          suffixIcon: dec.suffixIcon ??
+          suffixIcon:
+              dec.suffixIcon ??
               (widget.isDisabled || widget.locked
                   ? null
-                  : Icon(Icons.arrow_drop_down, color: UnifiedColors.textColorDark)),
+                  : UnifiedInputThemeResolver.defaultSuffixIcon(
+                      context,
+                      UnifiedInputFieldSuffixKind.multiPicker,
+                      UnifiedInputThemeResolver.resolvePalette(context),
+                    )),
           padding: dec.contentPadding,
           isDisabled: widget.isDisabled,
           locked: widget.locked,

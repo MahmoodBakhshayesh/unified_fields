@@ -10,12 +10,15 @@ class UnifiedTextFieldController extends BaseUnifiedFieldController<String> {
     super.validator,
     FocusNode? focusNode,
     TextEditingController? textController,
-  })  : textController = textController ?? TextEditingController(text: initialValue ?? ''),
-        _ownsTextController = textController == null,
-        super(
-          initialValue: initialValue == null || initialValue.isEmpty ? null : initialValue,
-          focusNode: focusNode,
-        ) {
+  }) : textController =
+           textController ?? TextEditingController(text: initialValue ?? ''),
+       _ownsTextController = textController == null,
+       super(
+         initialValue: initialValue == null || initialValue.isEmpty
+             ? null
+             : initialValue,
+         focusNode: focusNode,
+       ) {
     this.textController.addListener(_onTextChanged);
   }
 
@@ -48,7 +51,9 @@ class UnifiedTextFieldController extends BaseUnifiedFieldController<String> {
 
   @override
   String? validate() {
-    final err = validator?.call(textController.text.isEmpty ? null : textController.text);
+    final err = validator?.call(
+      textController.text.isEmpty ? null : textController.text,
+    );
     if (err != null && err.isNotEmpty) {
       setError(err);
       return err;

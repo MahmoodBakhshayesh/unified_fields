@@ -1,7 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:unified_fields/unified_fields.dart';
 
-void main() => runApp(const UnifiedFieldsDemoApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    UnifiedInputThemeScope(
+      data: const UnifiedInputThemeData(
+        requiredIconColor: Color(0xFF1565C0),
+        requiredIconSize: 9,
+        validationColor: Color(0xFFD32F2F),
+        disabledFieldOpacity: 0.38,
+        placeholderOpacityWhenDisabled: 0.38,
+        pickerSheetBackgroundColor: Color(0xFFF5F7FA),
+        defaultSuffixIcons: UnifiedInputDefaultSuffixIcons(
+          date: Icons.calendar_month_outlined,
+          time: Icons.access_time,
+          duration: Icons.timelapse_outlined,
+          picker: Icons.unfold_more,
+        ),
+      ),
+      child: const UnifiedFieldsDemoApp(),
+    ),
+  );
+}
 
 /// Demo entry. Wires every notable widget from the `unified_fields` package
 /// into a single `Form` so you can see validate / save / reset working with
@@ -151,6 +172,8 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 12),
+                  _ThemeScopeDemoCard(),
+                  const SizedBox(height: 12),
 
                   UnifiedFormTextField(
                     label: 'Full name',
@@ -219,7 +242,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
 
                     max: DateTime(2035),
                     // pickerGranularity: UnifiedFieldsDatePickerGranularity.year,
-                    validator: (v) => v == null ? 'Pick a date' : null,
+                    validator: (v) => v.trim().isEmpty ? 'Pick a date' : null,
                   ),
                   const SizedBox(height: 12),
                   UnifiedTimeOfDayField(
@@ -296,6 +319,69 @@ class _DemoHomePageState extends State<DemoHomePage> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Contrasts app-wide [UnifiedInputThemeScope] (from [main]) with a local override.
+class _ThemeScopeDemoCard extends StatelessWidget {
+  const _ThemeScopeDemoCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'UnifiedInputThemeScope',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'The whole app uses the scope from main() (blue required *, custom picker icons). '
+              'This card adds a nested scope with orange required icons.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            const UnifiedTextField(
+              label: 'App scope (blue *)',
+              isRequired: true,
+              initialValue: 'Uses main() theme',
+            ),
+            const SizedBox(height: 12),
+            UnifiedInputThemeScope(
+              data: const UnifiedInputThemeData(
+                requiredIconColor: Color(0xFFE65100),
+                requiredIconSize: 11,
+                validationColor: Color(0xFF6A1B9A),
+                disabledFieldColor: Color(0xFF757575),
+                disabledFieldOpacity: 0.5,
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  UnifiedTextField(
+                    label: 'Nested scope (orange *)',
+                    isRequired: true,
+                    initialValue: 'Overrides required icon only',
+                  ),
+                  SizedBox(height: 12),
+                  UnifiedTextField(
+                    label: 'Disabled (nested grey)',
+                    isDisabled: true,
+                    initialValue: 'Themed disabled value',
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

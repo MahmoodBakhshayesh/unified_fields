@@ -1,7 +1,6 @@
 import '../unified_colors.dart';
 import 'package:flutter/material.dart';
 
-
 import 'unified_base_text_field.dart';
 import 'unified_customizable_picker_controller.dart';
 import 'unified_input_brightness.dart';
@@ -96,10 +95,12 @@ class UnifiedCustomizableAsyncPickerField<T> extends StatefulWidget {
   final ValueChanged<CustomizableSinglePickerController<T>>? onChanged;
 
   @override
-  State<UnifiedCustomizableAsyncPickerField<T>> createState() => _UnifiedCustomizableAsyncPickerFieldState<T>();
+  State<UnifiedCustomizableAsyncPickerField<T>> createState() =>
+      _UnifiedCustomizableAsyncPickerFieldState<T>();
 }
 
-class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomizableAsyncPickerField<T>> {
+class _UnifiedCustomizableAsyncPickerFieldState<T>
+    extends State<UnifiedCustomizableAsyncPickerField<T>> {
   late final TextEditingController _txt = TextEditingController();
   List<T> _items = [];
   bool _loading = false;
@@ -108,7 +109,9 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
 
   T? get _sheetSeedValue {
     final pc = widget.pickerController;
-    return pc.inputKind == CustomizablePickerInputKind.selected ? pc.selectedItem : null;
+    return pc.inputKind == CustomizablePickerInputKind.selected
+        ? pc.selectedItem
+        : null;
   }
 
   void _syncText() {
@@ -133,7 +136,9 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
   }
 
   @override
-  void didUpdateWidget(covariant UnifiedCustomizableAsyncPickerField<T> oldWidget) {
+  void didUpdateWidget(
+    covariant UnifiedCustomizableAsyncPickerField<T> oldWidget,
+  ) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pickerController != widget.pickerController) {
       oldWidget.pickerController.removeListener(_onPickerController);
@@ -162,7 +167,11 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
     if (widget.locked || widget.isDisabled || _loading) return;
     if (!mounted) return;
 
-    final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
 
     setState(() => _loading = true);
     try {
@@ -185,7 +194,11 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
           hasClear: widget.showClearButton,
           searchBuilder: widget.searchBuilder,
           items: _items,
-          label: widget.placeholder ?? dec.placeholder ?? dec.label ?? widget.label,
+          label:
+              widget.placeholder ??
+              dec.placeholder ??
+              dec.label ??
+              widget.label,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
         ),
@@ -210,19 +223,24 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
 
   @override
   Widget build(BuildContext context) {
-    final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
-    final readOnly = widget.locked || widget.isDisabled || !widget.allowFreeText;
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
+    final readOnly =
+        widget.locked || widget.isDisabled || !widget.allowFreeText;
 
     final Widget? suffix = widget.isDisabled || widget.locked || _loading
         ? dec.suffixIcon
         : (dec.suffixIcon ??
-            IconButton(
-              onPressed: _open,
-              icon: Icon(
-                Icons.arrow_drop_down,
-                color: UnifiedColors.textColorDark,
-              ),
-            ));
+              IconButton(
+                onPressed: _open,
+                icon: Icon(
+                  Icons.arrow_drop_down,
+                  color: UnifiedColors.textColorDark,
+                ),
+              ));
 
     final field = UnifiedBaseTextField(
       controller: _txt,
@@ -239,8 +257,10 @@ class _UnifiedCustomizableAsyncPickerFieldState<T> extends State<UnifiedCustomiz
       labelStyle: dec.labelStyle,
       style: dec.fieldStyle,
       backgroundColor: dec.backgroundColor ?? Colors.black26,
-      headerBackgroundColor: dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
-      borderRadius: dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+      headerBackgroundColor:
+          dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
+      borderRadius:
+          dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
       borderSide: dec.borderSide,
       height: dec.height,
       rowLabelRatio: dec.rowLabelRatio,
@@ -351,10 +371,12 @@ class UnifiedCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
   final ValueChanged<CustomizableMultiPickerController<T>>? onChanged;
 
   @override
-  State<UnifiedCustomizableAsyncMultiPickerField<T>> createState() => _UnifiedCustomizableAsyncMultiPickerFieldState<T>();
+  State<UnifiedCustomizableAsyncMultiPickerField<T>> createState() =>
+      _UnifiedCustomizableAsyncMultiPickerFieldState<T>();
 }
 
-class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCustomizableAsyncMultiPickerField<T>> {
+class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
+    extends State<UnifiedCustomizableAsyncMultiPickerField<T>> {
   late final TextEditingController _txt = TextEditingController();
   List<T> _items = [];
   bool _loading = false;
@@ -363,7 +385,9 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
 
   List<T> get _sheetSeedValues {
     final pc = widget.pickerController;
-    return pc.inputKind == CustomizablePickerInputKind.selected ? List<T>.from(pc.selectedItems) : <T>[];
+    return pc.inputKind == CustomizablePickerInputKind.selected
+        ? List<T>.from(pc.selectedItems)
+        : <T>[];
   }
 
   void _syncText() {
@@ -388,7 +412,9 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
   }
 
   @override
-  void didUpdateWidget(covariant UnifiedCustomizableAsyncMultiPickerField<T> oldWidget) {
+  void didUpdateWidget(
+    covariant UnifiedCustomizableAsyncMultiPickerField<T> oldWidget,
+  ) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pickerController != widget.pickerController) {
       oldWidget.pickerController.removeListener(_onPickerController);
@@ -438,7 +464,11 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
           hasClear: widget.showClearButton,
           searchBuilder: widget.searchBuilder,
           items: _items,
-          label: widget.placeholder ?? dec.placeholder ?? dec.label ?? widget.label,
+          label:
+              widget.placeholder ??
+              dec.placeholder ??
+              dec.label ??
+              widget.label,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
         ),
@@ -464,19 +494,24 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
 
   @override
   Widget build(BuildContext context) {
-    final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
-    final readOnly = widget.locked || widget.isDisabled || !widget.allowFreeText;
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
+    final readOnly =
+        widget.locked || widget.isDisabled || !widget.allowFreeText;
 
     final Widget? suffix = widget.isDisabled || widget.locked || _loading
         ? dec.suffixIcon
         : (dec.suffixIcon ??
-            IconButton(
-              onPressed: () => _open(dec),
-              icon: Icon(
-                Icons.arrow_drop_down,
-                color: UnifiedColors.textColorDark,
-              ),
-            ));
+              IconButton(
+                onPressed: () => _open(dec),
+                icon: Icon(
+                  Icons.arrow_drop_down,
+                  color: UnifiedColors.textColorDark,
+                ),
+              ));
 
     final field = UnifiedBaseTextField(
       controller: _txt,
@@ -493,8 +528,10 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
       labelStyle: dec.labelStyle,
       style: dec.fieldStyle,
       backgroundColor: dec.backgroundColor ?? Colors.black26,
-      headerBackgroundColor: dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
-      borderRadius: dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+      headerBackgroundColor:
+          dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
+      borderRadius:
+          dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
       borderSide: dec.borderSide,
       height: dec.height,
       rowLabelRatio: dec.rowLabelRatio,
@@ -512,7 +549,9 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T> extends State<UnifiedCus
 
     if (!widget.allowFreeText) {
       return GestureDetector(
-        onTap: widget.locked || widget.isDisabled || _loading ? null : () => _open(dec),
+        onTap: widget.locked || widget.isDisabled || _loading
+            ? null
+            : () => _open(dec),
         child: field,
       );
     }

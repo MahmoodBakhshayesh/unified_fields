@@ -15,20 +15,22 @@ enum CustomizablePickerInputKind {
 /// [UnifiedCustomizablePickerField] and [UnifiedCustomizableAsyncPickerField].
 ///
 /// Acts as the field's [fieldController] (value, validate, focus, errors).
-class CustomizableSinglePickerController<T> extends BaseUnifiedFieldController<T> {
+class CustomizableSinglePickerController<T>
+    extends BaseUnifiedFieldController<T> {
   /// Creates a controller with optional initial state.
   CustomizableSinglePickerController({
     this.valueToString,
-    CustomizablePickerInputKind initialKind = CustomizablePickerInputKind.selected,
+    CustomizablePickerInputKind initialKind =
+        CustomizablePickerInputKind.selected,
     T? initialSelected,
     String initialTyped = '',
     super.validator,
     super.focusNode,
     this.displayValidator,
-  })  : _kind = initialKind,
-        _selected = initialSelected,
-        _typedText = initialTyped,
-        super(initialValue: initialSelected);
+  }) : _kind = initialKind,
+       _selected = initialSelected,
+       _typedText = initialTyped,
+       super(initialValue: initialSelected);
 
   /// Renders an item to its display text.
   String Function(T value)? valueToString;
@@ -44,10 +46,12 @@ class CustomizableSinglePickerController<T> extends BaseUnifiedFieldController<T
   CustomizablePickerInputKind get inputKind => _kind;
 
   /// Non-null only when [inputKind] is [CustomizablePickerInputKind.selected].
-  T? get selectedItem => _kind == CustomizablePickerInputKind.selected ? _selected : null;
+  T? get selectedItem =>
+      _kind == CustomizablePickerInputKind.selected ? _selected : null;
 
   /// Meaningful only when [inputKind] is [CustomizablePickerInputKind.typed].
-  String get typedText => _kind == CustomizablePickerInputKind.typed ? _typedText : '';
+  String get typedText =>
+      _kind == CustomizablePickerInputKind.typed ? _typedText : '';
 
   @override
   T? get value => selectedItem;
@@ -70,7 +74,8 @@ class CustomizableSinglePickerController<T> extends BaseUnifiedFieldController<T
 
   @override
   String? validate() {
-    if (_kind == CustomizablePickerInputKind.typed && displayValidator != null) {
+    if (_kind == CustomizablePickerInputKind.typed &&
+        displayValidator != null) {
       final err = displayValidator!(fieldDisplayText);
       if (err != null && err.isNotEmpty) {
         setError(err);
@@ -115,7 +120,9 @@ class CustomizableSinglePickerController<T> extends BaseUnifiedFieldController<T
     _kind = kind;
     _selected = selected;
     _typedText = typed;
-    silentSetValue(kind == CustomizablePickerInputKind.selected ? selected : null);
+    silentSetValue(
+      kind == CustomizablePickerInputKind.selected ? selected : null,
+    );
   }
 
   /// Call after [silentReplace] to refresh bound widgets.
@@ -124,20 +131,22 @@ class CustomizableSinglePickerController<T> extends BaseUnifiedFieldController<T
 
 /// Holds either a typed [String] or a multi selection [List] for
 /// [UnifiedCustomizableMultiPickerField] and [UnifiedCustomizableAsyncMultiPickerField].
-class CustomizableMultiPickerController<T> extends BaseUnifiedFieldController<List<T>> {
+class CustomizableMultiPickerController<T>
+    extends BaseUnifiedFieldController<List<T>> {
   /// Creates a controller with optional initial state.
   CustomizableMultiPickerController({
     this.valueToString,
-    CustomizablePickerInputKind initialKind = CustomizablePickerInputKind.selected,
+    CustomizablePickerInputKind initialKind =
+        CustomizablePickerInputKind.selected,
     List<T> initialSelected = const [],
     String initialTyped = '',
     super.validator,
     super.focusNode,
     this.displayValidator,
-  })  : _kind = initialKind,
-        _selected = List<T>.from(initialSelected),
-        _typedText = initialTyped,
-        super(initialValue: List<T>.from(initialSelected));
+  }) : _kind = initialKind,
+       _selected = List<T>.from(initialSelected),
+       _typedText = initialTyped,
+       super(initialValue: List<T>.from(initialSelected));
 
   /// Renders an item to its display text.
   String Function(T value)? valueToString;
@@ -153,13 +162,18 @@ class CustomizableMultiPickerController<T> extends BaseUnifiedFieldController<Li
   CustomizablePickerInputKind get inputKind => _kind;
 
   /// Empty when [inputKind] is [CustomizablePickerInputKind.typed].
-  List<T> get selectedItems => _kind == CustomizablePickerInputKind.selected ? List<T>.unmodifiable(_selected) : const [];
+  List<T> get selectedItems => _kind == CustomizablePickerInputKind.selected
+      ? List<T>.unmodifiable(_selected)
+      : const [];
 
   /// Meaningful only when [inputKind] is [CustomizablePickerInputKind.typed].
-  String get typedText => _kind == CustomizablePickerInputKind.typed ? _typedText : '';
+  String get typedText =>
+      _kind == CustomizablePickerInputKind.typed ? _typedText : '';
 
   @override
-  List<T>? get value => _kind == CustomizablePickerInputKind.selected ? List<T>.from(_selected) : null;
+  List<T>? get value => _kind == CustomizablePickerInputKind.selected
+      ? List<T>.from(_selected)
+      : null;
 
   @override
   set value(List<T>? next) => applySelected(next ?? <T>[]);
@@ -169,7 +183,9 @@ class CustomizableMultiPickerController<T> extends BaseUnifiedFieldController<Li
     switch (_kind) {
       case CustomizablePickerInputKind.selected:
         final fn = valueToString;
-        return _selected.map((e) => fn != null ? fn(e) : e.toString()).join(', ');
+        return _selected
+            .map((e) => fn != null ? fn(e) : e.toString())
+            .join(', ');
       case CustomizablePickerInputKind.typed:
         return _typedText;
     }
@@ -177,7 +193,8 @@ class CustomizableMultiPickerController<T> extends BaseUnifiedFieldController<Li
 
   @override
   String? validate() {
-    if (_kind == CustomizablePickerInputKind.typed && displayValidator != null) {
+    if (_kind == CustomizablePickerInputKind.typed &&
+        displayValidator != null) {
       final err = displayValidator!(fieldDisplayText);
       if (err != null && err.isNotEmpty) {
         setError(err);
@@ -222,7 +239,9 @@ class CustomizableMultiPickerController<T> extends BaseUnifiedFieldController<Li
     _kind = kind;
     _selected = List<T>.from(selected);
     _typedText = typed;
-    silentSetValue(kind == CustomizablePickerInputKind.selected ? _selected : null);
+    silentSetValue(
+      kind == CustomizablePickerInputKind.selected ? _selected : null,
+    );
   }
 
   /// Call after [silentReplace] to refresh bound widgets.

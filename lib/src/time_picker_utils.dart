@@ -19,10 +19,13 @@ class TimePickerUtils {
     TimeOfDay? initialTime,
     int initialSecond = 0,
     TimePickerEntryMode timePickerEntryMode = TimePickerEntryMode.dial,
-    UnifiedFieldsTimePickerStyle pickerStyle = UnifiedFieldsTimePickerStyle.dial,
-    UnifiedFieldsTimeGranularity granularity = UnifiedFieldsTimeGranularity.hoursMinutes,
+    UnifiedFieldsTimePickerStyle pickerStyle =
+        UnifiedFieldsTimePickerStyle.dial,
+    UnifiedFieldsTimeGranularity granularity =
+        UnifiedFieldsTimeGranularity.hoursMinutes,
     bool showCalendarKindToggle = true,
-    UnifiedFieldsCalendarKind initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
+    UnifiedFieldsCalendarKind initialCalendarKind =
+        UnifiedFieldsCalendarKind.gregorian,
     UnifiedFieldsDateWheelStyle? wheelStyle,
     ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind,
   }) async {
@@ -62,15 +65,18 @@ Future<UnifiedFieldsPickedTime?> showUnifiedFieldsTimePicker({
   required TimeOfDay initialTime,
   int initialSecond = 0,
   String? title,
-  UnifiedFieldsTimeGranularity granularity = UnifiedFieldsTimeGranularity.hoursMinutes,
+  UnifiedFieldsTimeGranularity granularity =
+      UnifiedFieldsTimeGranularity.hoursMinutes,
   bool showCalendarKindToggle = true,
-  UnifiedFieldsCalendarKind initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
+  UnifiedFieldsCalendarKind initialCalendarKind =
+      UnifiedFieldsCalendarKind.gregorian,
   UnifiedFieldsDateWheelStyle? wheelStyle,
   ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind,
   bool barrierDismissible = true,
 }) {
   final showMinutes = granularity != UnifiedFieldsTimeGranularity.hours;
-  final showSeconds = granularity == UnifiedFieldsTimeGranularity.hoursMinutesSeconds;
+  final showSeconds =
+      granularity == UnifiedFieldsTimeGranularity.hoursMinutesSeconds;
 
   final sheet = UnifiedFieldsHmsWheelPickerSheet(
     title: title,
@@ -90,16 +96,24 @@ Future<UnifiedFieldsPickedTime?> showUnifiedFieldsTimePicker({
   );
 
   Future<UnifiedFieldsHmsPick?> present() {
-    if (context.isDesktop) {
+    if (context.unifiedFieldsUseDialogLayout) {
       return showDialog<UnifiedFieldsHmsPick>(
         context: context,
         barrierDismissible: barrierDismissible,
         builder: (ctx) => Dialog(
           clipBehavior: Clip.antiAlias,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 40,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 420, maxHeight: MediaQuery.sizeOf(ctx).height * 0.92),
+            constraints: BoxConstraints(
+              maxWidth: 420,
+              maxHeight: MediaQuery.sizeOf(ctx).height * 0.92,
+            ),
             child: sheet,
           ),
         ),
@@ -112,7 +126,9 @@ Future<UnifiedFieldsPickedTime?> showUnifiedFieldsTimePicker({
       enableDrag: false,
       useSafeArea: true,
       clipBehavior: Clip.antiAlias,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
         child: sheet,
@@ -122,6 +138,10 @@ Future<UnifiedFieldsPickedTime?> showUnifiedFieldsTimePicker({
 
   return present().then((pick) {
     if (pick == null) return null;
-    return UnifiedFieldsPickedTime(hour: pick.hours, minute: pick.minutes, second: pick.seconds);
+    return UnifiedFieldsPickedTime(
+      hour: pick.hours,
+      minute: pick.minutes,
+      second: pick.seconds,
+    );
   });
 }

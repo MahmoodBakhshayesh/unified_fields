@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'unified_picker_field_controller.dart';
 
 /// Controller for [UnifiedAsyncPickerField].
-class UnifiedAsyncPickerFieldController<T> extends UnifiedPickerFieldController<T> {
+class UnifiedAsyncPickerFieldController<T>
+    extends UnifiedPickerFieldController<T> {
   /// Creates an async single-select picker controller.
   UnifiedAsyncPickerFieldController({
     super.initialValue,
@@ -30,10 +31,7 @@ class UnifiedAsyncPickerFieldController<T> extends UnifiedPickerFieldController<
   }
 
   /// Opens the async picker. Uses the attached field when present (same as tap).
-  Future<T?> openPickerAsync(
-    BuildContext context, {
-    String? label,
-  }) async {
+  Future<T?> openPickerAsync(BuildContext context, {String? label}) async {
     final opener = attachedFieldOpener;
     if (opener != null) {
       await opener(context);
@@ -41,7 +39,11 @@ class UnifiedAsyncPickerFieldController<T> extends UnifiedPickerFieldController<
     }
     final loaded = await itemProvider();
     if (!context.mounted) return null;
-    return super.openPicker(context, items: loaded, label: label ?? _boundLabel);
+    return super.openPicker(
+      context,
+      items: loaded,
+      label: label ?? _boundLabel,
+    );
   }
 
   @override
@@ -49,12 +51,12 @@ class UnifiedAsyncPickerFieldController<T> extends UnifiedPickerFieldController<
     BuildContext context, {
     List<T>? items,
     String? label,
-  }) =>
-      openPickerAsync(context, label: label);
+  }) => openPickerAsync(context, label: label);
 }
 
 /// Controller for [UnifiedAsyncMultiPickerField].
-class UnifiedAsyncMultiPickerFieldController<T> extends UnifiedMultiPickerFieldController<T> {
+class UnifiedAsyncMultiPickerFieldController<T>
+    extends UnifiedMultiPickerFieldController<T> {
   /// Creates an async multi-select picker controller.
   UnifiedAsyncMultiPickerFieldController({
     super.initialValue,
@@ -92,7 +94,11 @@ class UnifiedAsyncMultiPickerFieldController<T> extends UnifiedMultiPickerFieldC
     }
     final loaded = await itemProvider();
     if (!context.mounted) return null;
-    return super.openPicker(context, items: loaded, label: label ?? _boundLabel);
+    return super.openPicker(
+      context,
+      items: loaded,
+      label: label ?? _boundLabel,
+    );
   }
 
   @override
@@ -100,6 +106,5 @@ class UnifiedAsyncMultiPickerFieldController<T> extends UnifiedMultiPickerFieldC
     BuildContext context, {
     List<T>? items,
     String? label,
-  }) =>
-      openPickerAsync(context, label: label);
+  }) => openPickerAsync(context, label: label);
 }

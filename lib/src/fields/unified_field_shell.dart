@@ -56,11 +56,16 @@ class UnifiedFieldShell extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  if (dec.validationIcon != null) Icon(dec.validationIcon!, color: validationColor, size: 20),
+                  if (dec.validationIcon != null)
+                    Icon(dec.validationIcon!, color: validationColor, size: 20),
                   Expanded(
                     child: Text(
                       errorText ?? '',
-                      style: TextStyle(color: validationColor, fontSize: 9, height: 1),
+                      style: TextStyle(
+                        color: validationColor,
+                        fontSize: 9,
+                        height: 1,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -75,7 +80,11 @@ class UnifiedFieldShell extends StatelessWidget {
       constraints: BoxConstraints(minHeight: h),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: dec.labelInRow ? BorderRadiusDirectional.horizontal(end: Radius.circular(radius.bottomRight.x)) : radius,
+        borderRadius: dec.labelInRow
+            ? BorderRadiusDirectional.horizontal(
+                end: Radius.circular(radius.bottomRight.x),
+              )
+            : radius,
         border: Border.fromBorderSide(border),
       ),
       alignment: Alignment.center,
@@ -110,10 +119,7 @@ class UnifiedFieldShell extends StatelessWidget {
             ),
           ),
         ),
-        Expanded(
-          flex: dec.rowLabelRatio[1],
-          child: boxed,
-        ),
+        Expanded(flex: dec.rowLabelRatio[1], child: boxed),
       ],
     );
   }
@@ -133,7 +139,9 @@ class _LabelRow extends StatelessWidget {
     final dec = decoration;
     if (dec.label == null) return const SizedBox.shrink();
 
-    final pad = dec.labelInRow ? EdgeInsets.zero : const EdgeInsets.only(bottom: 4, top: 8);
+    final pad = dec.labelInRow
+        ? EdgeInsets.zero
+        : const EdgeInsets.only(bottom: 4, top: 8);
 
     return Padding(
       padding: pad,
@@ -143,12 +151,22 @@ class _LabelRow extends StatelessWidget {
           children: [
             Text(
               dec.label!,
-              style: dec.labelStyle ?? const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: UnifiedColors.textColorDark),
+              style:
+                  dec.labelStyle ??
+                  const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: UnifiedColors.textColorDark,
+                  ),
             ),
             if (dec.requiredField)
               const Padding(
                 padding: EdgeInsets.only(bottom: 10),
-                child: Icon(Icons.star_rate_rounded, color: Colors.red, size: 8),
+                child: Icon(
+                  Icons.star_rate_rounded,
+                  color: Colors.red,
+                  size: 8,
+                ),
               ),
           ],
         ),

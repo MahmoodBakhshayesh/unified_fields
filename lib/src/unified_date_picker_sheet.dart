@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'fields/unified_input_palette.dart';
+import 'fields/unified_input_theme.dart';
 import 'fields/unified_numeric_step_field.dart';
 import 'persian_jalali_calendar.dart';
 import 'unified_fields_context.dart';
@@ -13,7 +14,6 @@ import 'unified_fields_typography.dart';
 export 'unified_date_picker_types.dart';
 export 'unified_date_wheel_picker_sheet.dart'
     show UnifiedFieldsDateWheelPickerSheet, UnifiedFieldsDateWheelStyle;
-
 
 int _clampPageIndex(int page, int pageCount) {
   if (pageCount <= 0) return 0;
@@ -37,9 +37,12 @@ Future<DateTime?> showUnifiedFieldsDatePicker({
   String? title,
   bool barrierDismissible = true,
   bool showCalendarKindToggle = true,
-  UnifiedFieldsDatePickerGranularity granularity = UnifiedFieldsDatePickerGranularity.day,
-  UnifiedFieldsDatePickerStyle pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
-  UnifiedFieldsCalendarKind initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
+  UnifiedFieldsDatePickerGranularity granularity =
+      UnifiedFieldsDatePickerGranularity.day,
+  UnifiedFieldsDatePickerStyle pickerStyle =
+      UnifiedFieldsDatePickerStyle.calendar,
+  UnifiedFieldsCalendarKind initialCalendarKind =
+      UnifiedFieldsCalendarKind.gregorian,
   UnifiedFieldsDateWheelStyle? wheelStyle,
   bool showWeekdayInWheel = true,
   ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind,
@@ -96,7 +99,8 @@ Future<DateTimeRange?> showUnifiedFieldsDatePickerRange({
   String? title,
   bool barrierDismissible = true,
   bool showCalendarKindToggle = true,
-  UnifiedFieldsCalendarKind initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
+  UnifiedFieldsCalendarKind initialCalendarKind =
+      UnifiedFieldsCalendarKind.gregorian,
   ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind,
 }) {
   final first = DateUtils.dateOnly(firstDate);
@@ -115,7 +119,11 @@ Future<DateTimeRange?> showUnifiedFieldsDatePickerRange({
     onConfirmedCalendarKind: onConfirmedCalendarKind,
   );
 
-  return _presentPicker<DateTimeRange>(context: context, barrierDismissible: barrierDismissible, child: sheet);
+  return _presentPicker<DateTimeRange>(
+    context: context,
+    barrierDismissible: barrierDismissible,
+    child: sheet,
+  );
 }
 
 Future<T?> _presentPicker<T>({
@@ -130,7 +138,7 @@ Future<T?> _presentPicker<T>({
   final handle = showDragHandle ?? barrierDismissible;
   if (!context.mounted) return Future.value(null);
 
-  if (context.isDesktop) {
+  if (context.unifiedFieldsUseDialogLayout) {
     return showDialog<T>(
       context: context,
       barrierDismissible: barrierDismissible,
@@ -139,8 +147,13 @@ Future<T?> _presentPicker<T>({
         final body = scrollable ? SingleChildScrollView(child: child) : child;
         return Dialog(
           clipBehavior: Clip.antiAlias,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 40,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: 420, maxHeight: maxH),
             child: body,
@@ -218,15 +231,17 @@ class UnifiedFieldsDatePickerSheet extends StatefulWidget {
   final ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind;
 
   @override
-  State<UnifiedFieldsDatePickerSheet> createState() => _UnifiedFieldsDatePickerSheetState();
+  State<UnifiedFieldsDatePickerSheet> createState() =>
+      _UnifiedFieldsDatePickerSheetState();
 }
 
-class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSheet> {
-  String _digitText(String text) =>
-      UnifiedFieldsTypography.instance.localizeDigits(text, calendarKind: _kind);
+class _UnifiedFieldsDatePickerSheetState
+    extends State<UnifiedFieldsDatePickerSheet> {
+  String _digitText(String text) => UnifiedFieldsTypography.instance
+      .localizeDigits(text, calendarKind: _kind);
 
-  TextStyle _digitStyle(TextStyle style) =>
-      UnifiedFieldsTypography.instance.mergeDigitStyle(style, calendarKind: _kind);
+  TextStyle _digitStyle(TextStyle style) => UnifiedFieldsTypography.instance
+      .mergeDigitStyle(style, calendarKind: _kind);
 
   late DateTime _firstMonth;
   late int _monthCount;
@@ -249,10 +264,12 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
   ScrollController? _yearScrollController;
   bool _pendingYearAutoScroll = true;
 
-  DateTime get _pageAnchor => widget.pickRange ? (_rangeStart ?? _selected) : _selected;
+  DateTime get _pageAnchor =>
+      widget.pickRange ? (_rangeStart ?? _selected) : _selected;
 
   bool get _useDayCalendar =>
-      widget.pickRange || widget.granularity == UnifiedFieldsDatePickerGranularity.day;
+      widget.pickRange ||
+      widget.granularity == UnifiedFieldsDatePickerGranularity.day;
 
   @override
   void initState() {
@@ -261,27 +278,43 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
     _firstMonth = DateTime(widget.firstDate.year, widget.firstDate.month);
     final lastMonth = DateTime(widget.lastDate.year, widget.lastDate.month);
     _monthCount = _monthsBetween(_firstMonth, lastMonth) + 1;
-    _jalaliMonths = PersianJalaliCalendar.enumerateMonthsBetween(widget.firstDate, widget.lastDate);
+    _jalaliMonths = PersianJalaliCalendar.enumerateMonthsBetween(
+      widget.firstDate,
+      widget.lastDate,
+    );
 
     if (widget.pickRange) {
       final ir = widget.initialRange;
       if (ir != null) {
-        _rangeStart = DateUtils.dateOnly(_clampDate(ir.start, widget.firstDate, widget.lastDate));
-        _rangeEnd = DateUtils.dateOnly(_clampDate(ir.end, widget.firstDate, widget.lastDate));
+        _rangeStart = DateUtils.dateOnly(
+          _clampDate(ir.start, widget.firstDate, widget.lastDate),
+        );
+        _rangeEnd = DateUtils.dateOnly(
+          _clampDate(ir.end, widget.firstDate, widget.lastDate),
+        );
       } else {
-        final d = DateUtils.dateOnly(_clampDate(widget.initialDate, widget.firstDate, widget.lastDate));
+        final d = DateUtils.dateOnly(
+          _clampDate(widget.initialDate, widget.firstDate, widget.lastDate),
+        );
         _rangeStart = _rangeEnd = d;
       }
       _selected = _rangeStart!;
     } else {
-      _selected = DateUtils.dateOnly(_clampDate(widget.initialDate, widget.firstDate, widget.lastDate));
+      _selected = DateUtils.dateOnly(
+        _clampDate(widget.initialDate, widget.firstDate, widget.lastDate),
+      );
       _applyGranularityNormalizationToSelected();
     }
 
-    _gYearForMonthPicker = _selected.year.clamp(widget.firstDate.year, widget.lastDate.year);
+    _gYearForMonthPicker = _selected.year.clamp(
+      widget.firstDate.year,
+      widget.lastDate.year,
+    );
     final jMinY = PersianJalaliCalendar.fromGregorian(widget.firstDate).year;
     final jMaxY = PersianJalaliCalendar.fromGregorian(widget.lastDate).year;
-    _jYearForMonthPicker = PersianJalaliCalendar.fromGregorian(_selected).year.clamp(jMinY, jMaxY);
+    _jYearForMonthPicker = PersianJalaliCalendar.fromGregorian(
+      _selected,
+    ).year.clamp(jMinY, jMaxY);
 
     final initialPage = _computeInitialPage(kind: _kind, anchor: _pageAnchor);
     _pageController = PageController(initialPage: initialPage);
@@ -299,7 +332,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
       case UnifiedFieldsDatePickerGranularity.day:
         break;
     }
-    _selected = DateUtils.dateOnly(_clampDate(_selected, widget.firstDate, widget.lastDate));
+    _selected = DateUtils.dateOnly(
+      _clampDate(_selected, widget.firstDate, widget.lastDate),
+    );
   }
 
   @override
@@ -312,8 +347,10 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
   /// Index of the selected year in the year-granularity list for the active calendar.
   int _selectedYearIndex() {
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
-      return (_selected.year - widget.firstDate.year)
-          .clamp(0, widget.lastDate.year - widget.firstDate.year);
+      return (_selected.year - widget.firstDate.year).clamp(
+        0,
+        widget.lastDate.year - widget.firstDate.year,
+      );
     }
     final years = <int>{for (final e in _jalaliMonths) e.$1}.toList()..sort();
     if (years.isEmpty) return 0;
@@ -329,24 +366,36 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
     final viewport = ctrl.position.viewportDimension;
     final max = ctrl.position.maxScrollExtent;
     final centerOffset =
-        (_selectedYearIndex() * _kYearListItemExtent) - (viewport / 2) + (_kYearListItemExtent / 2);
+        (_selectedYearIndex() * _kYearListItemExtent) -
+        (viewport / 2) +
+        (_kYearListItemExtent / 2);
     final clamped = centerOffset.clamp(0.0, max);
     ctrl.jumpTo(clamped);
   }
 
-  int _computeInitialPage({required UnifiedFieldsCalendarKind kind, required DateTime anchor}) {
+  int _computeInitialPage({
+    required UnifiedFieldsCalendarKind kind,
+    required DateTime anchor,
+  }) {
     if (kind == UnifiedFieldsCalendarKind.gregorian) {
       final initialMonth = DateTime(anchor.year, anchor.month);
-      return _clampPageIndex(_monthsBetween(_firstMonth, initialMonth), _monthCount);
+      return _clampPageIndex(
+        _monthsBetween(_firstMonth, initialMonth),
+        _monthCount,
+      );
     }
     if (_jalaliMonths.isEmpty) return 0;
     final j = PersianJalaliCalendar.fromGregorian(anchor);
-    final idx = _jalaliMonths.indexWhere((e) => e.$1 == j.year && e.$2 == j.month);
+    final idx = _jalaliMonths.indexWhere(
+      (e) => e.$1 == j.year && e.$2 == j.month,
+    );
     return idx < 0 ? 0 : idx;
   }
 
   int _pageCountForKind(UnifiedFieldsCalendarKind kind) =>
-      kind == UnifiedFieldsCalendarKind.gregorian ? _monthCount : (_jalaliMonths.isEmpty ? 1 : _jalaliMonths.length);
+      kind == UnifiedFieldsCalendarKind.gregorian
+      ? _monthCount
+      : (_jalaliMonths.isEmpty ? 1 : _jalaliMonths.length);
 
   int _safeCurrentPage(int pageCount) {
     final safe = pageCount < 1 ? 1 : pageCount;
@@ -362,14 +411,22 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
     _pageController.dispose();
     _kind = k;
     final count = _pageCountForKind(k);
-    final page = _clampPageIndex(_computeInitialPage(kind: k, anchor: anchor), count);
+    final page = _clampPageIndex(
+      _computeInitialPage(kind: k, anchor: anchor),
+      count,
+    );
     _pageController = PageController(initialPage: page);
     setState(() {});
     if (!_useDayCalendar) {
-      _gYearForMonthPicker = _selected.year.clamp(widget.firstDate.year, widget.lastDate.year);
+      _gYearForMonthPicker = _selected.year.clamp(
+        widget.firstDate.year,
+        widget.lastDate.year,
+      );
       final jMinY = PersianJalaliCalendar.fromGregorian(widget.firstDate).year;
       final jMaxY = PersianJalaliCalendar.fromGregorian(widget.lastDate).year;
-      _jYearForMonthPicker = PersianJalaliCalendar.fromGregorian(_selected).year.clamp(jMinY, jMaxY);
+      _jYearForMonthPicker = PersianJalaliCalendar.fromGregorian(
+        _selected,
+      ).year.clamp(jMinY, jMaxY);
     }
     if (widget.granularity == UnifiedFieldsDatePickerGranularity.year) {
       _pendingYearAutoScroll = true;
@@ -411,7 +468,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
       if (rs == null || re == null) return;
       final start = rs.isBefore(re) ? rs : re;
       final end = rs.isBefore(re) ? re : rs;
-      Navigator.of(context).pop<DateTimeRange>(DateTimeRange(start: start, end: end));
+      Navigator.of(
+        context,
+      ).pop<DateTimeRange>(DateTimeRange(start: start, end: end));
       return;
     }
     var out = DateUtils.dateOnly(_selected);
@@ -425,12 +484,15 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
       case UnifiedFieldsDatePickerGranularity.day:
         break;
     }
-    out = DateUtils.dateOnly(_clampDate(out, widget.firstDate, widget.lastDate));
+    out = DateUtils.dateOnly(
+      _clampDate(out, widget.firstDate, widget.lastDate),
+    );
     Navigator.of(context).pop<DateTime>(out);
   }
 
-  UnifiedInputPalette _palette(Brightness b) =>
-      b == Brightness.dark ? UnifiedInputPalette.dark() : UnifiedInputPalette.light();
+  UnifiedInputPalette _palette(Brightness b) => b == Brightness.dark
+      ? UnifiedInputPalette.dark()
+      : UnifiedInputPalette.light();
 
   Future<void> _openMonthYearJump() async {
     final palette = _palette(Theme.of(context).brightness);
@@ -445,7 +507,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
         useSafeArea: true,
         builder: (ctx) {
           return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.viewInsetsOf(ctx).bottom,
+            ),
             child: _GregorianMonthYearJumpPanel(
               palette: palette,
               firstDate: widget.firstDate,
@@ -459,7 +523,10 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
         },
       );
       if (picked != null && mounted) {
-        final target = _monthsBetween(_firstMonth, DateTime(picked.$1, picked.$2));
+        final target = _monthsBetween(
+          _firstMonth,
+          DateTime(picked.$1, picked.$2),
+        );
         _pageController.jumpToPage(_clampPageIndex(target, _monthCount));
         setState(() {});
       }
@@ -489,7 +556,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
       },
     );
     if (picked != null && mounted) {
-      final idx = _jalaliMonths.indexWhere((e) => e.$1 == picked.$1 && e.$2 == picked.$2);
+      final idx = _jalaliMonths.indexWhere(
+        (e) => e.$1 == picked.$1 && e.$2 == picked.$2,
+      );
       if (idx >= 0) {
         _pageController.jumpToPage(idx);
         setState(() {});
@@ -507,7 +576,10 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
     final gridHeight = _kCalendarStaticRows * _kCellHeight;
 
     return Material(
-      color: theme.bottomSheetTheme.backgroundColor,
+      color: UnifiedInputThemeResolver.resolvePickerSheetBackground(
+        context,
+        palette: palette,
+      ),
       // color: UnifiedColors.scaffoldBackgroundColorDark,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -519,7 +591,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
               children: [
                 Expanded(
                   child: Text(
-                    titleText.isEmpty ? UnifiedFieldsStrings.instance.date : titleText,
+                    titleText.isEmpty
+                        ? UnifiedFieldsStrings.instance.date
+                        : titleText,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: palette.fieldTextColor,
                       fontWeight: FontWeight.w600,
@@ -528,7 +602,10 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                 ),
                 IconButton(
                   tooltip: UnifiedFieldsStrings.instance.cancel,
-                  icon: Icon(Icons.close_rounded, color: palette.fieldTextColor.withValues(alpha: 0.85)),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: palette.fieldTextColor.withValues(alpha: 0.85),
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -539,7 +616,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
               child: Text(
                 UnifiedFieldsStrings.instance.pickDateRangeHint,
-                style: theme.textTheme.bodySmall?.copyWith(color: palette.hintColor),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: palette.hintColor,
+                ),
               ),
             ),
           if (widget.showCalendarKindToggle && _jalaliMonths.isNotEmpty)
@@ -564,7 +643,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                 segments: [
                   ButtonSegment<UnifiedFieldsCalendarKind>(
                     value: UnifiedFieldsCalendarKind.gregorian,
-                    label: Text(UnifiedFieldsStrings.instance.calendarGregorian),
+                    label: Text(
+                      UnifiedFieldsStrings.instance.calendarGregorian,
+                    ),
                   ),
                   ButtonSegment<UnifiedFieldsCalendarKind>(
                     value: UnifiedFieldsCalendarKind.jalali,
@@ -606,7 +687,10 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                 onPageChanged: (_) => setState(() {}),
                 itemBuilder: (context, pageIndex) {
                   if (_kind == UnifiedFieldsCalendarKind.gregorian) {
-                    final month = DateTime(_firstMonth.year, _firstMonth.month + pageIndex);
+                    final month = DateTime(
+                      _firstMonth.year,
+                      _firstMonth.month + pageIndex,
+                    );
                     return _GregorianMonthGrid(
                       theme: theme,
                       month: month,
@@ -624,7 +708,11 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                     );
                   }
                   if (_jalaliMonths.isEmpty) return const SizedBox.shrink();
-                  final jmPair = _jalaliMonths[pageIndex.clamp(0, _jalaliMonths.length - 1)];
+                  final jmPair =
+                      _jalaliMonths[pageIndex.clamp(
+                        0,
+                        _jalaliMonths.length - 1,
+                      )];
                   return _JalaliMonthGrid(
                     theme: theme,
                     jalaliYear: jmPair.$1,
@@ -673,7 +761,11 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
     );
   }
 
-  Widget _buildGranularityBody(ThemeData theme, UnifiedInputPalette palette, MaterialLocalizations loc) {
+  Widget _buildGranularityBody(
+    ThemeData theme,
+    UnifiedInputPalette palette,
+    MaterialLocalizations loc,
+  ) {
     switch (widget.granularity) {
       case UnifiedFieldsDatePickerGranularity.year:
         return _buildYearGranularity(theme, palette);
@@ -716,7 +808,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
   /// Jan 1st) and immediately confirms/pops with the granularity-normalized result.
   void _pickYearAndConfirm(DateTime anchor) {
     setState(() {
-      _selected = DateUtils.dateOnly(_clampDate(anchor, widget.firstDate, widget.lastDate));
+      _selected = DateUtils.dateOnly(
+        _clampDate(anchor, widget.firstDate, widget.lastDate),
+      );
     });
     _confirm();
   }
@@ -735,7 +829,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
     final selectedBg = accent.withValues(alpha: 0.12);
 
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
-      final years = <int>[for (var y = widget.firstDate.year; y <= widget.lastDate.year; y++) y];
+      final years = <int>[
+        for (var y = widget.firstDate.year; y <= widget.lastDate.year; y++) y,
+      ];
       return ListView.builder(
         controller: _yearScrollController,
         itemExtent: _kYearListItemExtent,
@@ -759,14 +855,18 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                 ),
               ),
             ),
-            onTap: enabled ? () => _pickYearAndConfirm(DateTime(y, 1, 1)) : null,
+            onTap: enabled
+                ? () => _pickYearAndConfirm(DateTime(y, 1, 1))
+                : null,
           );
         },
       );
     }
     final years = <int>{for (final e in _jalaliMonths) e.$1}.toList()..sort();
     if (years.isEmpty) {
-      return Center(child: Text('-', style: TextStyle(color: palette.hintColor)));
+      return Center(
+        child: Text('-', style: TextStyle(color: palette.hintColor)),
+      );
     }
     return ListView.builder(
       controller: _yearScrollController,
@@ -793,16 +893,24 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
             ),
           ),
           onTap: enabled
-              ? () => _pickYearAndConfirm(PersianJalaliCalendar.toGregorianDate(jy, 1, 1))
+              ? () => _pickYearAndConfirm(
+                  PersianJalaliCalendar.toGregorianDate(jy, 1, 1),
+                )
               : null,
         );
       },
     );
   }
 
-  Widget _buildMonthGranularity(ThemeData theme, UnifiedInputPalette palette, MaterialLocalizations loc) {
+  Widget _buildMonthGranularity(
+    ThemeData theme,
+    UnifiedInputPalette palette,
+    MaterialLocalizations loc,
+  ) {
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
-      final years = <int>[for (var y = widget.firstDate.year; y <= widget.lastDate.year; y++) y];
+      final years = <int>[
+        for (var y = widget.firstDate.year; y <= widget.lastDate.year; y++) y,
+      ];
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -817,7 +925,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                       value: y,
                       child: Text(
                         _digitText('$y'),
-                        style: _digitStyle(TextStyle(color: palette.fieldTextColor)),
+                        style: _digitStyle(
+                          TextStyle(color: palette.fieldTextColor),
+                        ),
                       ),
                     ),
                   )
@@ -845,29 +955,48 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                     childAspectRatio: aspect,
                     children: List.generate(12, (idx) {
                       final m = idx + 1;
-                      final ok = _gregorianMonthCellEnabled(_gYearForMonthPicker, m);
+                      final ok = _gregorianMonthCellEnabled(
+                        _gYearForMonthPicker,
+                        m,
+                      );
                       final d = DateTime(_gYearForMonthPicker, m, 1);
-                      final sel = _selected.year == _gYearForMonthPicker && _selected.month == m;
+                      final sel =
+                          _selected.year == _gYearForMonthPicker &&
+                          _selected.month == m;
                       return Padding(
                         padding: const EdgeInsets.all(4),
                         child: InkWell(
                           onTap: ok
                               ? () => setState(() {
-                                    _selected = DateUtils.dateOnly(_clampDate(d, widget.firstDate, widget.lastDate));
-                                  })
+                                  _selected = DateUtils.dateOnly(
+                                    _clampDate(
+                                      d,
+                                      widget.firstDate,
+                                      widget.lastDate,
+                                    ),
+                                  );
+                                })
                               : null,
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
-                              color: sel ? theme.colorScheme.primary.withValues(alpha: 0.35) : palette.sheetHeaderBackground,
+                              color: sel
+                                  ? theme.colorScheme.primary.withValues(
+                                      alpha: 0.35,
+                                    )
+                                  : palette.sheetHeaderBackground,
                             ),
                             child: Text(
                               DateFormat.MMM().format(DateTime(2000, m)),
                               style: TextStyle(
-                                color: ok ? palette.fieldTextColor : palette.hintColor,
-                                fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
+                                color: ok
+                                    ? palette.fieldTextColor
+                                    : palette.hintColor,
+                                fontWeight: sel
+                                    ? FontWeight.w700
+                                    : FontWeight.w400,
                               ),
                             ),
                           ),
@@ -884,7 +1013,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
     }
     final years = <int>{for (final e in _jalaliMonths) e.$1}.toList()..sort();
     if (years.isEmpty) {
-      return Center(child: Text('-', style: TextStyle(color: palette.hintColor)));
+      return Center(
+        child: Text('-', style: TextStyle(color: palette.hintColor)),
+      );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -900,7 +1031,9 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                     value: jy,
                     child: Text(
                       _digitText('$jy'),
-                      style: _digitStyle(TextStyle(color: palette.fieldTextColor)),
+                      style: _digitStyle(
+                        TextStyle(color: palette.fieldTextColor),
+                      ),
                     ),
                   ),
                 )
@@ -928,33 +1061,55 @@ class _UnifiedFieldsDatePickerSheetState extends State<UnifiedFieldsDatePickerSh
                   childAspectRatio: aspect,
                   children: List.generate(12, (idx) {
                     final jm = idx + 1;
-                    final ok = _jalaliMonthCellEnabled(_jYearForMonthPicker, jm);
-                    final d = PersianJalaliCalendar.toGregorianDate(_jYearForMonthPicker, jm, 1);
+                    final ok = _jalaliMonthCellEnabled(
+                      _jYearForMonthPicker,
+                      jm,
+                    );
+                    final d = PersianJalaliCalendar.toGregorianDate(
+                      _jYearForMonthPicker,
+                      jm,
+                      1,
+                    );
                     final jSel = PersianJalaliCalendar.fromGregorian(_selected);
-                    final sel = jSel.year == _jYearForMonthPicker && jSel.month == jm;
+                    final sel =
+                        jSel.year == _jYearForMonthPicker && jSel.month == jm;
                     final label = PersianJalaliCalendar.persianMonthName(jm);
                     return Padding(
                       padding: const EdgeInsets.all(4),
                       child: InkWell(
                         onTap: ok
                             ? () => setState(() {
-                                  _selected = DateUtils.dateOnly(_clampDate(d, widget.firstDate, widget.lastDate));
-                                })
+                                _selected = DateUtils.dateOnly(
+                                  _clampDate(
+                                    d,
+                                    widget.firstDate,
+                                    widget.lastDate,
+                                  ),
+                                );
+                              })
                             : null,
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            color: sel ? theme.colorScheme.primary.withValues(alpha: 0.35) : palette.sheetHeaderBackground,
+                            color: sel
+                                ? theme.colorScheme.primary.withValues(
+                                    alpha: 0.35,
+                                  )
+                                : palette.sheetHeaderBackground,
                           ),
                           child: Text(
                             label,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 12,
-                              color: ok ? palette.fieldTextColor : palette.hintColor,
-                              fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
+                              color: ok
+                                  ? palette.fieldTextColor
+                                  : palette.hintColor,
+                              fontWeight: sel
+                                  ? FontWeight.w700
+                                  : FontWeight.w400,
                             ),
                           ),
                         ),
@@ -995,13 +1150,18 @@ class _PickerTitleBar extends StatelessWidget {
     final loc = MaterialLocalizations.of(context);
     final safePageCount = pageCount < 1 ? 1 : pageCount;
     final page = _clampPageIndex(
-      pageController.hasClients ? pageController.page!.round() : pageController.initialPage,
+      pageController.hasClients
+          ? pageController.page!.round()
+          : pageController.initialPage,
       safePageCount,
     );
 
     late final String label;
     if (kind == UnifiedFieldsCalendarKind.gregorian) {
-      final month = DateTime(firstGregorianMonth.year, firstGregorianMonth.month + page);
+      final month = DateTime(
+        firstGregorianMonth.year,
+        firstGregorianMonth.month + page,
+      );
       label = loc.formatMonthYear(DateTime(month.year, month.month));
     } else {
       if (jalaliMonths.isEmpty) {
@@ -1059,7 +1219,10 @@ class _PickerTitleBar extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Icon(Icons.arrow_drop_down_rounded, color: palette.fieldTextColor.withValues(alpha: 0.9)),
+                  Icon(
+                    Icons.arrow_drop_down_rounded,
+                    color: palette.fieldTextColor.withValues(alpha: 0.9),
+                  ),
                 ],
               ),
             ),
@@ -1067,7 +1230,10 @@ class _PickerTitleBar extends StatelessWidget {
         ),
         IconButton(
           onPressed: page < safePageCount - 1 ? () => go(1) : null,
-          icon: Icon(Icons.chevron_right_rounded, color: palette.fieldTextColor),
+          icon: Icon(
+            Icons.chevron_right_rounded,
+            color: palette.fieldTextColor,
+          ),
         ),
       ],
     );
@@ -1205,9 +1371,16 @@ class _JalaliMonthGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final start = PersianJalaliCalendar.toGregorianDate(jalaliYear, jalaliMonth, 1);
+    final start = PersianJalaliCalendar.toGregorianDate(
+      jalaliYear,
+      jalaliMonth,
+      1,
+    );
     final leadingBlanks = _weekdayGridOffset(start, loc);
-    final daysInMonth = PersianJalaliCalendar.monthLength(jalaliYear, jalaliMonth);
+    final daysInMonth = PersianJalaliCalendar.monthLength(
+      jalaliYear,
+      jalaliMonth,
+    );
 
     return _DayGrid(
       theme: theme,
@@ -1224,7 +1397,8 @@ class _JalaliMonthGrid extends StatelessWidget {
       rangeEnd: rangeEnd,
       dayLabel: (day) => '$day',
       calendarKindForDigits: UnifiedFieldsCalendarKind.jalali,
-      gregorianForDay: (day) => PersianJalaliCalendar.toGregorianDate(jalaliYear, jalaliMonth, day),
+      gregorianForDay: (day) =>
+          PersianJalaliCalendar.toGregorianDate(jalaliYear, jalaliMonth, day),
       onDayTap: onDayTap,
     );
   }
@@ -1292,12 +1466,14 @@ class _DayGrid extends StatelessWidget {
                     child: Builder(
                       builder: (_) {
                         final i = row * 7 + col;
-                        if (i < leadingBlanks || i >= leadingBlanks + daysInMonth) {
+                        if (i < leadingBlanks ||
+                            i >= leadingBlanks + daysInMonth) {
                           return const SizedBox.expand();
                         }
                         final day = dayAtIndex(i);
                         final date = DateUtils.dateOnly(gregorianForDay(day));
-                        final isDisabled = date.isBefore(firstDate) || date.isAfter(lastDate);
+                        final isDisabled =
+                            date.isBefore(firstDate) || date.isAfter(lastDate);
 
                         final rs = rangeStart;
                         final re = rangeEnd;
@@ -1308,7 +1484,9 @@ class _DayGrid extends StatelessWidget {
                           isEndpoint = DateUtils.isSameDay(date, selected);
                           isMiddle = false;
                         } else if (rs != null && re != null) {
-                          isEndpoint = DateUtils.isSameDay(date, rs) || DateUtils.isSameDay(date, re);
+                          isEndpoint =
+                              DateUtils.isSameDay(date, rs) ||
+                              DateUtils.isSameDay(date, re);
                           final inSpan = _inInclusiveRange(date, rs, re);
                           isMiddle = inSpan && !isEndpoint;
                         } else {
@@ -1316,19 +1494,24 @@ class _DayGrid extends StatelessWidget {
                           isMiddle = false;
                         }
 
-                        final isToday = DateUtils.isSameDay(date, DateUtils.dateOnly(DateTime.now()));
+                        final isToday = DateUtils.isSameDay(
+                          date,
+                          DateUtils.dateOnly(DateTime.now()),
+                        );
 
                         final typography = UnifiedFieldsTypography.instance;
                         final labelStyle = typography.mergeDigitStyle(
                           TextStyle(
                             fontSize: 14,
                             height: 1,
-                            fontWeight: isEndpoint ? FontWeight.w700 : FontWeight.w500,
+                            fontWeight: isEndpoint
+                                ? FontWeight.w700
+                                : FontWeight.w500,
                             color: isDisabled
                                 ? palette.hintColor.withValues(alpha: 0.35)
                                 : isEndpoint
-                                    ? cs.onPrimary
-                                    : palette.fieldTextColor,
+                                ? cs.onPrimary
+                                : palette.fieldTextColor,
                           ),
                           calendarKind: calendarKindForDigits,
                         );
@@ -1337,7 +1520,8 @@ class _DayGrid extends StatelessWidget {
                           calendarKind: calendarKindForDigits,
                         );
 
-                        final showCircle = isEndpoint || (isToday && !isEndpoint);
+                        final showCircle =
+                            isEndpoint || (isToday && !isEndpoint);
 
                         return Padding(
                           padding: const EdgeInsets.all(2),
@@ -1348,7 +1532,9 @@ class _DayGrid extends StatelessWidget {
                               customBorder: const CircleBorder(),
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: isMiddle ? cs.primary.withValues(alpha: 0.14) : Colors.transparent,
+                                  color: isMiddle
+                                      ? cs.primary.withValues(alpha: 0.14)
+                                      : Colors.transparent,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Center(
@@ -1359,9 +1545,14 @@ class _DayGrid extends StatelessWidget {
                                           child: DecoratedBox(
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
-                                              color: isEndpoint ? cs.primary : Colors.transparent,
+                                              color: isEndpoint
+                                                  ? cs.primary
+                                                  : Colors.transparent,
                                               border: isToday && !isEndpoint
-                                                  ? Border.all(color: cs.primary, width: 2)
+                                                  ? Border.all(
+                                                      color: cs.primary,
+                                                      width: 2,
+                                                    )
                                                   : null,
                                             ),
                                             child: Center(
@@ -1414,10 +1605,12 @@ class _GregorianMonthYearJumpPanel extends StatefulWidget {
   final String yearLabel;
 
   @override
-  State<_GregorianMonthYearJumpPanel> createState() => _GregorianMonthYearJumpPanelState();
+  State<_GregorianMonthYearJumpPanel> createState() =>
+      _GregorianMonthYearJumpPanelState();
 }
 
-class _GregorianMonthYearJumpPanelState extends State<_GregorianMonthYearJumpPanel> {
+class _GregorianMonthYearJumpPanelState
+    extends State<_GregorianMonthYearJumpPanel> {
   late int _year;
   late int _month;
   late final TextEditingController _yearController;
@@ -1440,7 +1633,10 @@ class _GregorianMonthYearJumpPanelState extends State<_GregorianMonthYearJumpPan
   @override
   void initState() {
     super.initState();
-    _year = widget.initialYear.clamp(widget.firstDate.year, widget.lastDate.year);
+    _year = widget.initialYear.clamp(
+      widget.firstDate.year,
+      widget.lastDate.year,
+    );
     _month = widget.initialMonth.clamp(1, 12);
     if (!monthAllowed(_year, _month)) {
       _month = firstAllowedMonth(_year) ?? _month;
@@ -1458,7 +1654,8 @@ class _GregorianMonthYearJumpPanelState extends State<_GregorianMonthYearJumpPan
     final dim = DateUtils.getDaysInMonth(y, m);
     final monthStart = DateTime(y, m, 1);
     final monthEnd = DateTime(y, m, dim);
-    return !monthEnd.isBefore(widget.firstDate) && !monthStart.isAfter(widget.lastDate);
+    return !monthEnd.isBefore(widget.firstDate) &&
+        !monthStart.isAfter(widget.lastDate);
   }
 
   int? firstAllowedMonth(int y) {
@@ -1490,7 +1687,12 @@ class _GregorianMonthYearJumpPanelState extends State<_GregorianMonthYearJumpPan
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Text(widget.title, style: theme.textTheme.titleMedium?.copyWith(color: widget.palette.fieldTextColor)),
+            child: Text(
+              widget.title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: widget.palette.fieldTextColor,
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1509,8 +1711,14 @@ class _GregorianMonthYearJumpPanelState extends State<_GregorianMonthYearJumpPan
                     height: 52,
                     backgroundColor: widget.palette.sheetHeaderBackground,
                     headerBackgroundColor: widget.palette.sheetHeaderBackground,
-                    borderSide: BorderSide(color: widget.palette.borderColor, width: 0.5),
-                    style: TextStyle(color: widget.palette.fieldTextColor, fontSize: 16),
+                    borderSide: BorderSide(
+                      color: widget.palette.borderColor,
+                      width: 0.5,
+                    ),
+                    style: TextStyle(
+                      color: widget.palette.fieldTextColor,
+                      fontSize: 16,
+                    ),
                     onChanged: _onYearChanged,
                   ),
                 ),
@@ -1528,7 +1736,9 @@ class _GregorianMonthYearJumpPanelState extends State<_GregorianMonthYearJumpPan
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: FilledButton(
-              onPressed: monthAllowed(_year, _month) ? () => Navigator.of(context).pop((_year, _month)) : null,
+              onPressed: monthAllowed(_year, _month)
+                  ? () => Navigator.of(context).pop((_year, _month))
+                  : null,
               child: Text(MaterialLocalizations.of(context).okButtonLabel),
             ),
           ),
@@ -1558,7 +1768,8 @@ class _JalaliMonthYearJumpPanel extends StatefulWidget {
   final String yearLabel;
 
   @override
-  State<_JalaliMonthYearJumpPanel> createState() => _JalaliMonthYearJumpPanelState();
+  State<_JalaliMonthYearJumpPanel> createState() =>
+      _JalaliMonthYearJumpPanelState();
 }
 
 class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
@@ -1566,7 +1777,12 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
   late int _month;
   late final TextEditingController _yearController;
 
-  static bool jalaliMonthSelectable(int jy, int jm, DateTime first, DateTime last) {
+  static bool jalaliMonthSelectable(
+    int jy,
+    int jm,
+    DateTime first,
+    DateTime last,
+  ) {
     final f = DateUtils.dateOnly(first);
     final l = DateUtils.dateOnly(last);
     final dim = PersianJalaliCalendar.monthLength(jy, jm);
@@ -1584,16 +1800,19 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
     super.initState();
     _year = widget.initialYear.clamp(_minY, _maxY);
     _month = widget.initialMonth.clamp(1, 12);
-    if (!jalaliMonthSelectable(_year, _month, widget.firstDate, widget.lastDate)) {
+    if (!jalaliMonthSelectable(
+      _year,
+      _month,
+      widget.firstDate,
+      widget.lastDate,
+    )) {
       _month = firstAllowed() ?? 1;
     }
     _yearController = TextEditingController(text: _formatYearText(_year));
   }
 
-  String _formatYearText(int year) => UnifiedFieldsTypography.instance.localizeDigits(
-        '$year',
-        calendarKind: UnifiedFieldsCalendarKind.jalali,
-      );
+  String _formatYearText(int year) => UnifiedFieldsTypography.instance
+      .localizeDigits('$year', calendarKind: UnifiedFieldsCalendarKind.jalali);
 
   @override
   void dispose() {
@@ -1603,7 +1822,9 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
 
   int? firstAllowed() {
     for (var m = 1; m <= 12; m++) {
-      if (jalaliMonthSelectable(_year, m, widget.firstDate, widget.lastDate)) return m;
+      if (jalaliMonthSelectable(_year, m, widget.firstDate, widget.lastDate)) {
+        return m;
+      }
     }
     return null;
   }
@@ -1612,7 +1833,12 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
     final y = v.round().clamp(_minY, _maxY);
     setState(() {
       _year = y;
-      if (!jalaliMonthSelectable(_year, _month, widget.firstDate, widget.lastDate)) {
+      if (!jalaliMonthSelectable(
+        _year,
+        _month,
+        widget.firstDate,
+        widget.lastDate,
+      )) {
         _month = firstAllowed() ?? _month;
       }
       final formatted = _formatYearText(_year);
@@ -1634,7 +1860,12 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Text(widget.title, style: theme.textTheme.titleMedium?.copyWith(color: widget.palette.fieldTextColor)),
+            child: Text(
+              widget.title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: widget.palette.fieldTextColor,
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1654,9 +1885,15 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
                     digitCalendarKind: UnifiedFieldsCalendarKind.jalali,
                     backgroundColor: widget.palette.sheetHeaderBackground,
                     headerBackgroundColor: widget.palette.sheetHeaderBackground,
-                    borderSide: BorderSide(color: widget.palette.borderColor, width: 0.5),
+                    borderSide: BorderSide(
+                      color: widget.palette.borderColor,
+                      width: 0.5,
+                    ),
                     style: UnifiedFieldsTypography.instance.mergeDigitStyle(
-                      TextStyle(color: widget.palette.fieldTextColor, fontSize: 16),
+                      TextStyle(
+                        color: widget.palette.fieldTextColor,
+                        fontSize: 16,
+                      ),
                       calendarKind: UnifiedFieldsCalendarKind.jalali,
                     ),
                     onChanged: _onYearChanged,
@@ -1668,15 +1905,29 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
           _MonthJumpGrid(
             palette: widget.palette,
             theme: theme,
-            labels: [for (var mm = 1; mm <= 12; mm++) PersianJalaliCalendar.persianMonthName(mm)],
+            labels: [
+              for (var mm = 1; mm <= 12; mm++)
+                PersianJalaliCalendar.persianMonthName(mm),
+            ],
             selectedMonth: _month,
-            monthEnabled: (m) => jalaliMonthSelectable(_year, m, widget.firstDate, widget.lastDate),
+            monthEnabled: (m) => jalaliMonthSelectable(
+              _year,
+              m,
+              widget.firstDate,
+              widget.lastDate,
+            ),
             onMonthSelected: (m) => setState(() => _month = m),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: FilledButton(
-              onPressed: jalaliMonthSelectable(_year, _month, widget.firstDate, widget.lastDate)
+              onPressed:
+                  jalaliMonthSelectable(
+                    _year,
+                    _month,
+                    widget.firstDate,
+                    widget.lastDate,
+                  )
                   ? () => Navigator.of(context).pop((_year, _month))
                   : null,
               child: Text(MaterialLocalizations.of(context).okButtonLabel),
@@ -1764,12 +2015,14 @@ class _MonthJumpCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fill = selected ? colorScheme.primary : palette.sheetHeaderBackground;
-    final borderColor = selected ? colorScheme.primary : palette.borderColor.withValues(alpha: 0.65);
+    final borderColor = selected
+        ? colorScheme.primary
+        : palette.borderColor.withValues(alpha: 0.65);
     final textColor = !enabled
         ? palette.hintColor.withValues(alpha: 0.4)
         : selected
-            ? colorScheme.onPrimary
-            : palette.fieldTextColor;
+        ? colorScheme.onPrimary
+        : palette.fieldTextColor;
 
     Widget child = Material(
       color: Colors.transparent,
@@ -1813,7 +2066,8 @@ class _MonthJumpCell extends StatelessWidget {
 }
 
 int _monthsBetween(DateTime startMonth, DateTime endMonth) {
-  return (endMonth.year - startMonth.year) * 12 + (endMonth.month - startMonth.month);
+  return (endMonth.year - startMonth.year) * 12 +
+      (endMonth.month - startMonth.month);
 }
 
 DateTime _clampDate(DateTime date, DateTime min, DateTime max) {

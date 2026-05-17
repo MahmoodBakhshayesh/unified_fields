@@ -170,7 +170,8 @@ class UnifiedNumericStepField extends StatefulWidget {
   final bool requiredField;
 
   @override
-  State<UnifiedNumericStepField> createState() => _UnifiedNumericStepFieldState();
+  State<UnifiedNumericStepField> createState() =>
+      _UnifiedNumericStepFieldState();
 }
 
 class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
@@ -186,7 +187,8 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   static const Duration _holdRepeatInitialDelay = Duration(milliseconds: 450);
   static const Duration _holdRepeatInterval = Duration(milliseconds: 55);
 
-  int get _quantizeFractionDigits => widget.fractionDigits ?? _kDecimalStepQuantizeDigits;
+  int get _quantizeFractionDigits =>
+      widget.fractionDigits ?? _kDecimalStepQuantizeDigits;
 
   @override
   void initState() {
@@ -197,9 +199,13 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
 
   void _initControllers() {
     _effectiveController =
-        widget.fieldController?.text.textController ?? widget.controller ?? TextEditingController();
-    _ownsController = widget.fieldController == null && widget.controller == null;
-    _focusNode = widget.fieldController?.focusNode ?? widget.focusNode ?? FocusNode();
+        widget.fieldController?.text.textController ??
+        widget.controller ??
+        TextEditingController();
+    _ownsController =
+        widget.fieldController == null && widget.controller == null;
+    _focusNode =
+        widget.fieldController?.focusNode ?? widget.focusNode ?? FocusNode();
     _ownsFocusNode = widget.fieldController == null && widget.focusNode == null;
     _focusNode.addListener(_onFocusChanged);
   }
@@ -209,7 +215,8 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   @override
   void didUpdateWidget(covariant UnifiedNumericStepField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.fieldController != widget.fieldController || oldWidget.controller != widget.controller) {
+    if (oldWidget.fieldController != widget.fieldController ||
+        oldWidget.controller != widget.controller) {
       _focusNode.removeListener(_onFocusChanged);
       if (_ownsFocusNode) _focusNode.dispose();
       if (_ownsController) _effectiveController.dispose();
@@ -283,13 +290,21 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
 
   void _beginStepHold(num delta) {
     _endStepHold();
-    if (widget.disabled || widget.isDisabled || widget.locked || widget.readOnly) return;
+    if (widget.disabled ||
+        widget.isDisabled ||
+        widget.locked ||
+        widget.readOnly) {
+      return;
+    }
 
     _applyDelta(delta);
 
     _holdInitialDelayTimer = Timer(_holdRepeatInitialDelay, () {
       _holdInitialDelayTimer = null;
-      _holdRepeatTimer = Timer.periodic(_holdRepeatInterval, (_) => _applyDelta(delta));
+      _holdRepeatTimer = Timer.periodic(
+        _holdRepeatInterval,
+        (_) => _applyDelta(delta),
+      );
     });
   }
 
@@ -302,7 +317,12 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
 
   num? _tryParse(String raw) {
     final s = UnifiedFieldsTypography.fromPersianDigits(raw.trim());
-    if (s.isEmpty || s == '-' || s == '+' || s == '.' || s == '-.' || s == '+.') {
+    if (s.isEmpty ||
+        s == '-' ||
+        s == '+' ||
+        s == '.' ||
+        s == '-.' ||
+        s == '+.') {
       return null;
     }
     if (widget.allowDecimals) {
@@ -327,7 +347,12 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   }
 
   void _applyDelta(num delta) {
-    if (widget.disabled || widget.isDisabled || widget.locked || widget.readOnly) return;
+    if (widget.disabled ||
+        widget.isDisabled ||
+        widget.locked ||
+        widget.readOnly) {
+      return;
+    }
 
     num next = _baselineForStep() + delta;
     next = _clamp(next);
@@ -381,22 +406,26 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
 
   List<TextInputFormatter> get _formatters {
     if (widget.allowDecimals) {
-      return [
-        FilteringTextInputFormatter.allow(RegExp(r'^[-+]?\d*\.?\d*')),
-      ];
+      return [FilteringTextInputFormatter.allow(RegExp(r'^[-+]?\d*\.?\d*'))];
     }
-    return [
-      FilteringTextInputFormatter.allow(RegExp(r'^[-+]?\d*')),
-    ];
+    return [FilteringTextInputFormatter.allow(RegExp(r'^[-+]?\d*'))];
   }
 
   TextInputType get _keyboardType {
-    return widget.allowDecimals ? const TextInputType.numberWithOptions(decimal: true, signed: true) : const TextInputType.numberWithOptions(decimal: false, signed: true);
+    return widget.allowDecimals
+        ? const TextInputType.numberWithOptions(decimal: true, signed: true)
+        : const TextInputType.numberWithOptions(decimal: false, signed: true);
   }
 
   Widget _stepButton({required IconData icon, required num delta}) {
-    final enabled = !widget.disabled && !widget.isDisabled && !widget.locked && !widget.readOnly;
-    final h = widget.height != null ? (widget.height! - 8).clamp(32.0, 56.0).toDouble() : 40.0;
+    final enabled =
+        !widget.disabled &&
+        !widget.isDisabled &&
+        !widget.locked &&
+        !widget.readOnly;
+    final h = widget.height != null
+        ? (widget.height! - 8).clamp(32.0, 56.0).toDouble()
+        : 40.0;
 
     return ExcludeFocus(
       child: Material(
@@ -412,7 +441,9 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
             child: Icon(
               icon,
               size: 22,
-              color: enabled ? UnifiedColors.textColorDark.withValues(alpha: 0.85) : UnifiedColors.textColorDark.withValues(alpha: 0.35),
+              color: enabled
+                  ? UnifiedColors.textColorDark.withValues(alpha: 0.85)
+                  : UnifiedColors.textColorDark.withValues(alpha: 0.35),
             ),
           ),
         ),
@@ -433,7 +464,8 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       placeholder: placeholder,
       borderRadius: widget.borderRadius,
       backgroundColor: widget.backgroundColor,
-      headerBackgroundColor: widget.headerBackgroundColor ?? widget.backgroundColor,
+      headerBackgroundColor:
+          widget.headerBackgroundColor ?? widget.backgroundColor,
       borderSide: widget.borderSide,
       validator: widget.validator,
       height: widget.height,
@@ -458,16 +490,10 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       },
       prefix: widget.isDisabled || widget.disabled || widget.locked
           ? null
-          : _stepButton(
-              icon: Icons.remove_rounded,
-              delta: -widget.step,
-            ),
+          : _stepButton(icon: Icons.remove_rounded, delta: -widget.step),
       suffixIcon: widget.isDisabled || widget.disabled || widget.locked
           ? null
-          : _stepButton(
-              icon: Icons.add_rounded,
-              delta: widget.step,
-            ),
+          : _stepButton(icon: Icons.add_rounded, delta: widget.step),
       onChanged: (_) {
         final text = _effectiveController.text;
         if (_hasTrailingDecimalPointForTyping(text)) return;

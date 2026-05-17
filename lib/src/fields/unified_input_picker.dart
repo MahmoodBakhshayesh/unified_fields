@@ -9,11 +9,7 @@ import '../controllers/base_unified_field_controller.dart';
 /// Listen with [Listenable.merge] or attach to [AnimatedBuilder]; widgets sync both ways when bound.
 class UnifiedInputPicker<T> extends BaseUnifiedFieldController<T> {
   /// Creates a binding controller, optionally seeded with [initialValue].
-  UnifiedInputPicker({
-    super.initialValue,
-    super.validator,
-    super.focusNode,
-  });
+  UnifiedInputPicker({super.initialValue, super.validator, super.focusNode});
 }
 
 /// @deprecated Renamed to [UnifiedInputPicker].

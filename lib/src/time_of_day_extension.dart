@@ -20,7 +20,11 @@ extension TimeOfDayParsingExtension on TimeOfDay {
 class TimeOfDayParser {
   /// Returns a [TimeOfDay] parsed from [stringValue] (`HH:mm`), or null when malformed.
   static TimeOfDay? tryParse(String? stringValue) {
-    if (stringValue == null || stringValue.isEmpty || stringValue.contains(':') == false) return null;
+    if (stringValue == null ||
+        stringValue.isEmpty ||
+        stringValue.contains(':') == false) {
+      return null;
+    }
 
     final split = stringValue.split(':');
 

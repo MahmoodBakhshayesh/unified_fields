@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// Base listenable handle for unified fields (value, errors, focus, validation).
@@ -9,16 +8,17 @@ abstract class BaseUnifiedFieldController<T> extends ChangeNotifier {
   /// Creates a controller with optional [initialValue], [validator], and [focusNode].
   BaseUnifiedFieldController({
     T? initialValue,
-    String? Function(T? value)? validator,
+    this.validator,
     FocusNode? focusNode,
   })  : _value = initialValue,
-        _validator = validator,
         _focusNode = focusNode,
         _ownsFocusNode = focusNode == null;
 
   T? _value;
   String? _errorText;
-  String? Function(T? value)? _validator;
+
+  /// Imperative validator; return an error message or null when valid.
+  String? Function(T? value)? validator;
   final FocusNode? _focusNode;
   final bool _ownsFocusNode;
 
@@ -30,7 +30,8 @@ abstract class BaseUnifiedFieldController<T> extends ChangeNotifier {
 
   /// Opener registered by the bound field widget (same behavior as tapping the field).
   @protected
-  Future<void> Function(BuildContext context)? get attachedFieldOpener => _attachedFieldOpener;
+  Future<void> Function(BuildContext context)? get attachedFieldOpener =>
+      _attachedFieldOpener;
 
   /// Current field value (may be null).
   T? get value => _value;
@@ -40,13 +41,6 @@ abstract class BaseUnifiedFieldController<T> extends ChangeNotifier {
     if (_value == next) return;
     _value = next;
     notifyListeners();
-  }
-
-  /// Imperative validator; return an error message or null when valid.
-  String? Function(T? value)? get validator => _validator;
-
-  set validator(String? Function(T? value)? fn) {
-    _validator = fn;
   }
 
   /// Last validation / API error shown on the field.
@@ -73,7 +67,7 @@ abstract class BaseUnifiedFieldController<T> extends ChangeNotifier {
 
   /// Runs [validator], updates [errorText], and returns the error (if any).
   String? validate() {
-    final err = _validator?.call(_value);
+    final err = validator?.call(_value);
     if (err != null && err.isNotEmpty) {
       setError(err);
       return err;

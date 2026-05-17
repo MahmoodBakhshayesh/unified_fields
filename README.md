@@ -20,10 +20,11 @@
 12. [Field states (`isDisabled`, `loading`, …)](#field-states-isdisabled-loading-)  
 13. [UI strings (`UnifiedFieldsStrings`)](#ui-strings-unifiedfieldsstrings)  
 14. [Theming & layout](#theming--layout)  
-15. [Persian digits (`UnifiedFieldsTypography`)](#persian-digits-unifiedfieldstypography)  
-16. [Localization](#localization)  
-17. [Try the built-in demo](#try-the-built-in-demo)  
-18. [Dependencies](#dependencies)  
+15. [Global theme (`UnifiedInputThemeScope`)](#global-theme-unifiedinputthemescope)  
+16. [Persian digits (`UnifiedFieldsTypography`)](#persian-digits-unifiedfieldstypography)  
+17. [Localization](#localization)  
+18. [Try the built-in demo](#try-the-built-in-demo)  
+19. [Dependencies](#dependencies)  
 
 ---
 
@@ -33,7 +34,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.1.4
+  unified_fields: ^0.1.5
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -89,7 +90,7 @@ dependencies:
 
 ### One visual language
 
-Fields share **`UnifiedInputDecoration`** (label, placeholder, radii, validation colors, prefix/suffix) and **`UnifiedInputBrightness`** (light / dark palette). Use **`UnifiedInputThemeScope`** to push a palette or brightness subtree without threading parameters everywhere.
+Fields share **`UnifiedInputDecoration`** (label, placeholder, radii, validation colors, prefix/suffix) and **`UnifiedInputBrightness`** (light / dark palette). For colors that should be the same on every field (disabled chrome, required `*`, validation red, picker sheet background), wrap your app or a screen in **`UnifiedInputThemeScope`** — see [Global theme](#global-theme-unifiedinputthemescope).
 
 ### Two usage modes
 
@@ -190,7 +191,7 @@ UnifiedFormTextField(
 - **`showUnifiedFieldsDatePicker`** — returns **`DateTime?`**.  
 - **`showUnifiedFieldsDatePickerRange`** — returns **`DateTimeRange?`**.  
 
-Presentation: **bottom sheet** on smaller widths; **centered dialog** when **`context.isDesktop`** is true (see **`UnifiedFieldsContextX`** — width ≥ 900).
+Presentation: **bottom sheet** on smaller widths; **centered dialog** when **`context.unifiedFieldsUseDialogLayout`** is true (see **`UnifiedFieldsContextX`** — width ≥ 900).
 
 ### Granularity (`UnifiedFieldsDatePickerGranularity`)
 
@@ -436,8 +437,97 @@ Multi-picker titles use **`multiPickerTitle(label)`** (default `"Pick $label"`).
 
 - **`UnifiedColors`** — default static palette used by built-in styles (replace over time with your design tokens or override via **`UnifiedInputDecoration`** / **`Theme`**).  
 - **`resolveUnifiedDecoration(context, overrides: …, brightness: …)`** — merges theme + field overrides (used internally by several fields).  
-- **`UnifiedFieldsContextX`** on **`BuildContext`**: **`width`**, **`height`**, **`isDesktop`**, **`mainColor`** — no dependency on routing or app-specific l10n.  
+- **`UnifiedFieldsContextX`** on **`BuildContext`**: **`unifiedFieldsScreenWidth`**, **`unifiedFieldsScreenHeight`**, **`unifiedFieldsUseDialogLayout`**, **`unifiedFieldsPrimaryColor`** (prefixed to avoid clashing with app extensions).  
 - **`UnifiedSheetButton`** — compact primary / outlined actions used inside picker sheets.
+
+---
+
+## Global theme (`UnifiedInputThemeScope`)
+
+Only **`child`** is required. Pass a **`UnifiedInputThemeData`** to set shared chrome for every unified field in that subtree (labels, values, placeholders, required icon, errors, suffix icons, picker sheets).
+
+### App-wide (recommended)
+
+Wrap **`runApp`** so settings screens and forms inherit the same rules:
+
+```dart
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    UnifiedInputThemeScope(
+      data: const UnifiedInputThemeData(
+        requiredIconColor: Color(0xFF1565C0),
+        requiredIconSize: 9,
+        validationColor: Color(0xFFD32F2F),
+        disabledFieldOpacity: 0.38,
+        placeholderOpacityWhenDisabled: 0.38,
+        pickerSheetBackgroundColor: Color(0xFFF5F7FA),
+        defaultSuffixIcons: UnifiedInputDefaultSuffixIcons(
+          date: Icons.calendar_month_outlined,
+          time: Icons.access_time,
+          duration: Icons.timelapse_outlined,
+          picker: Icons.unfold_more,
+        ),
+      ),
+      child: const MyApp(),
+    ),
+  );
+}
+```
+
+The runnable **`example/`** app uses this pattern in `example/lib/main.dart`.
+
+### Nested scope (one screen or card)
+
+Inner scopes **merge** over ancestors — useful for a settings subsection or A/B styling:
+
+```dart
+UnifiedInputThemeScope(
+  data: const UnifiedInputThemeData(
+    requiredIconColor: Colors.orange,
+    disabledFieldColor: Colors.grey,
+    disabledFieldOpacity: 0.5,
+  ),
+  child: Column(
+    children: [
+      UnifiedFormTextField(
+        label: 'Nickname',
+        isRequired: true, // orange * from this scope
+      ),
+      UnifiedFormTextField(
+        label: 'Archived',
+        isDisabled: true,
+        resetValue: () => 'Read-only',
+      ),
+    ],
+  ),
+)
+```
+
+### Common `UnifiedInputThemeData` fields
+
+| Field | Effect |
+|-------|--------|
+| `brightnessOverride` / `paletteOverride` | Force light/dark or a full custom palette |
+| `disabledLabelColor` / `disabledLabelOpacity` | Label when `isDisabled` / `disabled` |
+| `disabledFieldColor` / `disabledFieldOpacity` | Input text when disabled |
+| `disabledFieldBackgroundOpacity` | Field body fade when disabled |
+| `lockedLabelColor` / `lockedLabelOpacity` | Label when `locked` |
+| `lockedFieldColor` / `lockedFieldOpacity` | Input text when locked |
+| `lockedFieldBackgroundOpacity` | Body fade when locked |
+| `placeholderColor` / `placeholderOpacity` | Hint when enabled |
+| `placeholderOpacityWhenDisabled` | Hint when disabled |
+| `requiredIcon` / `requiredIconColor` / `requiredIconSize` | Required `*` marker |
+| `validationColor` | Inline errors and error border |
+| `clearButtonColor` | Clear (×) button |
+| `suffixIconColor` / `suffixIconOpacity` | Lock, password, default picker suffixes |
+| `loadingIndicatorColor` | Loading spinner on fields |
+| `pickerSheetBackgroundColor` | Date/time/duration sheets (else `bottomSheetTheme` → palette) |
+| `defaultSuffixIcons` | Default suffix per field type (`date`, `time`, `duration`, `picker`, …) |
+
+Field-level **`UnifiedInputDecoration`** and per-widget params still win for one-off overrides.
+
+Live demos: **`example/lib/main.dart`** (app + nested card) and **`UnifiedInputsShowcasePage`** (scoped block near the top of the gallery).
 
 ---
 
@@ -479,7 +569,7 @@ Navigator.of(context).push(
 );
 ```
 
-A runnable example app lives in **`example/`** — open it with `flutter run` from that folder to interact with every field in isolation.
+A runnable example app lives in **`example/`** — open it with `flutter run` from that folder. It wraps the app in **`UnifiedInputThemeScope`**, shows a nested-scope demo card on the home form, and opens **`UnifiedInputsShowcasePage`** from the app bar (includes a dedicated theme-scope section).
 
 ---
 
@@ -519,9 +609,9 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.1.4`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.1.5`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
 
-### Upgrading to 0.1.4
+### Upgrading to 0.1.5
 
 - **Duration wheels** are the default (`UnifiedFieldsDurationPickerStyle.wheels`). Pass **`pickerStyle: UnifiedFieldsDurationPickerStyle.cupertino`** to keep the old Cupertino sheet.  
 - **`unifiedFormatDuration`** / **`unifiedTryParseDuration`** now use **named** parameters: `granularity:` and optional `pickerColumns:` / `calendarKind:`.  

@@ -47,7 +47,9 @@ class UnifiedSheetButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           side: borderSide,
           foregroundColor: textColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          ),
         ),
         onPressed: onPressed,
         child: effectiveChild,
@@ -57,7 +59,9 @@ class UnifiedSheetButton extends StatelessWidget {
       style: FilledButton.styleFrom(
         backgroundColor: color,
         foregroundColor: textColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
       ),
       onPressed: onPressed,
       child: effectiveChild,

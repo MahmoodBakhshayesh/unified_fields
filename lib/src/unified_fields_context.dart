@@ -1,16 +1,32 @@
 import 'package:flutter/material.dart';
 
-/// Minimal [BuildContext] helpers for unified field widgets (no app routing / l10n).
+/// [BuildContext] helpers for unified field layout (prefixed to avoid clashing with app extensions).
 extension UnifiedFieldsContextX on BuildContext {
-  /// Convenience for `MediaQuery.sizeOf(context).width`.
-  double get width => MediaQuery.sizeOf(this).width;
+  /// `MediaQuery.sizeOf(this).width`
+  double get unifiedFieldsScreenWidth => MediaQuery.sizeOf(this).width;
 
-  /// Convenience for `MediaQuery.sizeOf(context).height`.
-  double get height => MediaQuery.sizeOf(this).height;
+  /// `MediaQuery.sizeOf(this).height`
+  double get unifiedFieldsScreenHeight => MediaQuery.sizeOf(this).height;
 
-  /// Wide layout: use dialog instead of bottom sheet (desktop-style branch).
-  bool get isDesktop => width >= 900;
+  /// Wide layout: dialog instead of bottom sheet (width ≥ 900).
+  bool get unifiedFieldsUseDialogLayout => unifiedFieldsScreenWidth >= 900;
 
-  /// Shortcut to the ambient primary color from [Theme.of].
-  Color get mainColor => Theme.of(this).colorScheme.primary;
+  /// [Theme.of(this).colorScheme.primary]
+  Color get unifiedFieldsPrimaryColor => Theme.of(this).colorScheme.primary;
+
+  /// Deprecated: use [unifiedFieldsScreenWidth].
+  @Deprecated('Use unifiedFieldsScreenWidth')
+  double get width => unifiedFieldsScreenWidth;
+
+  /// Deprecated: use [unifiedFieldsScreenHeight].
+  @Deprecated('Use unifiedFieldsScreenHeight')
+  double get height => unifiedFieldsScreenHeight;
+
+  /// Deprecated: use [unifiedFieldsUseDialogLayout].
+  @Deprecated('Use unifiedFieldsUseDialogLayout')
+  bool get isDesktop => unifiedFieldsUseDialogLayout;
+
+  /// Deprecated: use [unifiedFieldsPrimaryColor].
+  @Deprecated('Use unifiedFieldsPrimaryColor')
+  Color get mainColor => unifiedFieldsPrimaryColor;
 }

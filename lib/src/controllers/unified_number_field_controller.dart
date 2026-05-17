@@ -17,11 +17,11 @@ class UnifiedNumberFieldController extends BaseUnifiedFieldController<num> {
     this.min,
     this.max,
     this.fractionDigits,
-  })  : text = UnifiedTextFieldController(
-          initialValue: initialValue?.toString(),
-          focusNode: focusNode,
-        ),
-        super(initialValue: initialValue) {
+  }) : text = UnifiedTextFieldController(
+         initialValue: initialValue?.toString(),
+         focusNode: focusNode,
+       ),
+       super(initialValue: initialValue) {
     text.addListener(_syncFromText);
   }
 
@@ -44,7 +44,8 @@ class UnifiedNumberFieldController extends BaseUnifiedFieldController<num> {
   final int? fractionDigits;
 
   void _syncFromText() {
-    final parsed = num.tryParse(text.textController.text.trim()) ??
+    final parsed =
+        num.tryParse(text.textController.text.trim()) ??
         double.tryParse(text.textController.text.trim());
     silentSetValue(parsed);
     notifyListeners();

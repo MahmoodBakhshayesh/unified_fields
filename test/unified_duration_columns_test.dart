@@ -17,15 +17,27 @@ void main() {
     ];
     const shortMax = Duration(hours: 2);
     expect(
-      unifiedDurationColumnMaxIndex(UnifiedFieldsDurationColumn.year, columns, shortMax),
+      unifiedDurationColumnMaxIndex(
+        UnifiedFieldsDurationColumn.year,
+        columns,
+        shortMax,
+      ),
       999,
     );
     expect(
-      unifiedDurationColumnMaxIndex(UnifiedFieldsDurationColumn.month, columns, shortMax),
+      unifiedDurationColumnMaxIndex(
+        UnifiedFieldsDurationColumn.month,
+        columns,
+        shortMax,
+      ),
       11,
     );
     expect(
-      unifiedDurationColumnMaxIndex(UnifiedFieldsDurationColumn.week, columns, shortMax),
+      unifiedDurationColumnMaxIndex(
+        UnifiedFieldsDurationColumn.week,
+        columns,
+        shortMax,
+      ),
       4,
     );
   });
@@ -35,7 +47,10 @@ void main() {
       UnifiedFieldsDurationColumnPresets.hoursMinutesSeconds,
       [1, 2, 3],
     );
-    final text = formatUnifiedDurationColumns(d, UnifiedFieldsDurationColumnPresets.hoursMinutesSeconds);
+    final text = formatUnifiedDurationColumns(
+      d,
+      UnifiedFieldsDurationColumnPresets.hoursMinutesSeconds,
+    );
     expect(text, '01:02:03');
   });
 }

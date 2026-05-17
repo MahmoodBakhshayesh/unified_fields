@@ -105,7 +105,11 @@ class UnifiedNumberField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(context, overrides: decoration, brightness: brightness);
+    final d = resolveUnifiedDecoration(
+      context,
+      overrides: decoration,
+      brightness: brightness,
+    );
 
     return UnifiedNumericStepField(
       controller: fieldController?.text.textController ?? controller,
@@ -117,7 +121,9 @@ class UnifiedNumberField extends StatelessWidget {
       padding: d.contentPadding,
       borderRadius:
           d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
-      borderSide: d.borderSide ?? const BorderSide(color: Color(0xff58514C), width: 0.5),
+      borderSide:
+          d.borderSide ??
+          const BorderSide(color: Color(0xff58514C), width: 0.5),
       backgroundColor: d.backgroundColor ?? Colors.black26,
       headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor,
       height: d.height,

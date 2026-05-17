@@ -129,11 +129,14 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
   final bool shakeOnError;
 
   @override
-  State<UnifiedFormMultiPickerField<T>> createState() => _UnifiedFormMultiPickerFieldState<T>();
+  State<UnifiedFormMultiPickerField<T>> createState() =>
+      _UnifiedFormMultiPickerFieldState<T>();
 }
 
-class _UnifiedFormMultiPickerFieldState<T> extends State<UnifiedFormMultiPickerField<T>> {
-  final GlobalKey<FormFieldState<List<T>>> _formFieldKey = GlobalKey<FormFieldState<List<T>>>();
+class _UnifiedFormMultiPickerFieldState<T>
+    extends State<UnifiedFormMultiPickerField<T>> {
+  final GlobalKey<FormFieldState<List<T>>> _formFieldKey =
+      GlobalKey<FormFieldState<List<T>>>();
   late List<T> _echoWhenNoReset;
   late List<T> _frozenResetList;
 
@@ -141,11 +144,13 @@ class _UnifiedFormMultiPickerFieldState<T> extends State<UnifiedFormMultiPickerF
     _applyExternalList(List<T>.from(widget.binding?.value ?? const []));
   }
 
-  List<T> _displayList() => List<T>.from(unifiedEffectiveListValue(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.values,
-      ));
+  List<T> _displayList() => List<T>.from(
+    unifiedEffectiveListValue(
+      fieldController: widget.fieldController,
+      binding: widget.binding,
+      direct: widget.values,
+    ),
+  );
 
   void _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -189,12 +194,17 @@ class _UnifiedFormMultiPickerFieldState<T> extends State<UnifiedFormMultiPickerF
       widget.fieldController?.addListener(_onFieldControllerChanged);
     }
     final resetFnChanged = !identical(widget.resetValue, oldWidget.resetValue);
-    final resetPayloadChanged = widget.resetValue != null &&
+    final resetPayloadChanged =
+        widget.resetValue != null &&
         oldWidget.resetValue != null &&
         !_unifiedListsEqual(widget.resetValue!(), oldWidget.resetValue!());
     final bindingChanged = widget.binding != oldWidget.binding;
-    final fieldControllerChanged = widget.fieldController != oldWidget.fieldController;
-    if (resetFnChanged || resetPayloadChanged || bindingChanged || fieldControllerChanged) {
+    final fieldControllerChanged =
+        widget.fieldController != oldWidget.fieldController;
+    if (resetFnChanged ||
+        resetPayloadChanged ||
+        bindingChanged ||
+        fieldControllerChanged) {
       if (widget.resetValue != null) {
         if (resetFnChanged || resetPayloadChanged) {
           _frozenResetList = List<T>.from(widget.resetValue!());
@@ -212,11 +222,13 @@ class _UnifiedFormMultiPickerFieldState<T> extends State<UnifiedFormMultiPickerF
       }
     } else if (widget.resetValue == null) {
       final display = _displayList();
-      final oldDisplay = List<T>.from(unifiedEffectiveListValue(
-        fieldController: oldWidget.fieldController,
-        binding: oldWidget.binding,
-        direct: oldWidget.values,
-      ));
+      final oldDisplay = List<T>.from(
+        unifiedEffectiveListValue(
+          fieldController: oldWidget.fieldController,
+          binding: oldWidget.binding,
+          direct: oldWidget.values,
+        ),
+      );
       if (!_unifiedListsEqual(display, oldDisplay)) {
         if (!_unifiedListsEqual(_echoWhenNoReset, display)) {
           setState(() => _echoWhenNoReset = List<T>.from(display));
@@ -228,11 +240,13 @@ class _UnifiedFormMultiPickerFieldState<T> extends State<UnifiedFormMultiPickerF
       }
     } else {
       final display = _displayList();
-      final oldDisplay = List<T>.from(unifiedEffectiveListValue(
-        fieldController: oldWidget.fieldController,
-        binding: oldWidget.binding,
-        direct: oldWidget.values,
-      ));
+      final oldDisplay = List<T>.from(
+        unifiedEffectiveListValue(
+          fieldController: oldWidget.fieldController,
+          binding: oldWidget.binding,
+          direct: oldWidget.values,
+        ),
+      );
       if (!_unifiedListsEqual(display, oldDisplay)) {
         final s = _formFieldKey.currentState;
         if (s != null && !_unifiedListsEqual(s.value ?? [], display)) {
@@ -252,7 +266,8 @@ class _UnifiedFormMultiPickerFieldState<T> extends State<UnifiedFormMultiPickerF
       value: display,
       fieldController: widget.fieldController,
     );
-    if (widget.resetValue == null && !_unifiedListsEqual(_echoWhenNoReset, display)) {
+    if (widget.resetValue == null &&
+        !_unifiedListsEqual(_echoWhenNoReset, display)) {
       setState(() => _echoWhenNoReset = List<T>.from(display));
     } else {
       setState(() {});
@@ -279,7 +294,9 @@ class _UnifiedFormMultiPickerFieldState<T> extends State<UnifiedFormMultiPickerF
   Widget build(BuildContext context) {
     return UnifiedFormField<List<T>>(
       formFieldKey: _formFieldKey,
-      initialValue: widget.resetValue != null ? _frozenResetList : _echoWhenNoReset,
+      initialValue: widget.resetValue != null
+          ? _frozenResetList
+          : _echoWhenNoReset,
       validator: widget.validator,
       onSaved: widget.onSaved,
       onReset: _syncBindingFromForm,
@@ -289,7 +306,9 @@ class _UnifiedFormMultiPickerFieldState<T> extends State<UnifiedFormMultiPickerF
           items: widget.items,
           label: widget.label,
           fieldController: widget.fieldController,
-          values: widget.fieldController == null ? (fieldState.value ?? []) : const [],
+          values: widget.fieldController == null
+              ? (fieldState.value ?? [])
+              : const [],
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           decoration: widget.decoration,
@@ -476,15 +495,16 @@ class UnifiedFormDateField extends StatefulWidget {
 }
 
 class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
-  final GlobalKey<FormFieldState<DateTime?>> _formFieldKey = GlobalKey<FormFieldState<DateTime?>>();
+  final GlobalKey<FormFieldState<DateTime?>> _formFieldKey =
+      GlobalKey<FormFieldState<DateTime?>>();
   late DateTime? _echoWhenNoReset;
   DateTime? _cachedResetTarget;
 
   DateTime? _displayValue() => unifiedEffectiveValue(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.value,
-      );
+    fieldController: widget.fieldController,
+    binding: widget.binding,
+    direct: widget.value,
+  );
 
   void _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -527,7 +547,8 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
     }
     final resetChanged = widget.resetValue != oldWidget.resetValue;
     final bindingChanged = widget.binding != oldWidget.binding;
-    final fieldControllerChanged = widget.fieldController != oldWidget.fieldController;
+    final fieldControllerChanged =
+        widget.fieldController != oldWidget.fieldController;
     if (resetChanged || bindingChanged || fieldControllerChanged) {
       if (widget.resetValue != null) {
         _cachedResetTarget = widget.resetValue!();
@@ -615,7 +636,8 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
         dt,
         widget.valueFormat,
         granularity: widget.pickerGranularity,
-        calendarKind: widget.fieldController?.calendarKind ?? widget.initialCalendarKind,
+        calendarKind:
+            widget.fieldController?.calendarKind ?? widget.initialCalendarKind,
       );
       if (c.text != text) {
         c.text = text;
@@ -627,7 +649,9 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
   Widget build(BuildContext context) {
     return UnifiedFormField<DateTime?>(
       formFieldKey: _formFieldKey,
-      initialValue: widget.resetValue != null ? _cachedResetTarget : _echoWhenNoReset,
+      initialValue: widget.resetValue != null
+          ? _cachedResetTarget
+          : _echoWhenNoReset,
       validator: widget.validator,
       onSaved: widget.onSaved,
       onReset: _syncControllerAndBindingFromForm,
@@ -661,7 +685,8 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
           onSubmit: widget.onSubmit,
           min: widget.min ?? widget.fieldController?.min,
           max: widget.max ?? widget.fieldController?.max,
-          valueFormat: widget.valueFormat ?? widget.fieldController?.valueFormat,
+          valueFormat:
+              widget.valueFormat ?? widget.fieldController?.valueFormat,
           mode: widget.fieldController?.mode ?? widget.mode,
           suffixIcon: widget.suffixIcon,
           prefix: widget.prefix,
@@ -672,13 +697,20 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
           autofocus: widget.autofocus,
           textAlign: widget.textAlign,
           showCalendarKindToggle:
-              widget.fieldController?.showCalendarKindToggle ?? widget.showCalendarKindToggle,
-          pickerGranularity: widget.fieldController?.pickerGranularity ?? widget.pickerGranularity,
-          pickerStyle: widget.fieldController?.pickerStyle ?? widget.pickerStyle,
-          initialCalendarKind: widget.fieldController?.calendarKind ?? widget.initialCalendarKind,
+              widget.fieldController?.showCalendarKindToggle ??
+              widget.showCalendarKindToggle,
+          pickerGranularity:
+              widget.fieldController?.pickerGranularity ??
+              widget.pickerGranularity,
+          pickerStyle:
+              widget.fieldController?.pickerStyle ?? widget.pickerStyle,
+          initialCalendarKind:
+              widget.fieldController?.calendarKind ??
+              widget.initialCalendarKind,
           wheelStyle: widget.fieldController?.wheelStyle ?? widget.wheelStyle,
           showWeekdayInWheel:
-              widget.fieldController?.showWeekdayInWheel ?? widget.showWeekdayInWheel,
+              widget.fieldController?.showWeekdayInWheel ??
+              widget.showWeekdayInWheel,
         );
       },
     );
@@ -773,11 +805,13 @@ class UnifiedFormDateRangeField extends StatefulWidget {
   final bool shakeOnError;
 
   @override
-  State<UnifiedFormDateRangeField> createState() => _UnifiedFormDateRangeFieldState();
+  State<UnifiedFormDateRangeField> createState() =>
+      _UnifiedFormDateRangeFieldState();
 }
 
 class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
-  final GlobalKey<FormFieldState<DateTimeRange?>> _formFieldKey = GlobalKey<FormFieldState<DateTimeRange?>>();
+  final GlobalKey<FormFieldState<DateTimeRange?>> _formFieldKey =
+      GlobalKey<FormFieldState<DateTimeRange?>>();
   late DateTimeRange? _echoWhenNoReset;
   DateTimeRange? _cachedResetTarget;
 
@@ -786,10 +820,10 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
   }
 
   DateTimeRange? _displayValue() => unifiedEffectiveValue(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.rangeValue,
-      );
+    fieldController: widget.fieldController,
+    binding: widget.binding,
+    direct: widget.rangeValue,
+  );
 
   void _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -832,7 +866,8 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
     }
     final resetChanged = widget.resetValue != oldWidget.resetValue;
     final bindingChanged = widget.binding != oldWidget.binding;
-    final fieldControllerChanged = widget.fieldController != oldWidget.fieldController;
+    final fieldControllerChanged =
+        widget.fieldController != oldWidget.fieldController;
     if (resetChanged || bindingChanged || fieldControllerChanged) {
       if (widget.resetValue != null) {
         _cachedResetTarget = widget.resetValue!();
@@ -923,7 +958,9 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
   Widget build(BuildContext context) {
     return UnifiedFormField<DateTimeRange?>(
       formFieldKey: _formFieldKey,
-      initialValue: widget.resetValue != null ? _cachedResetTarget : _echoWhenNoReset,
+      initialValue: widget.resetValue != null
+          ? _cachedResetTarget
+          : _echoWhenNoReset,
       validator: widget.validator,
       onSaved: widget.onSaved,
       onReset: _syncControllerAndBindingFromForm,
@@ -1039,11 +1076,13 @@ class UnifiedFormTimeOfDayField extends StatefulWidget {
   final bool shakeOnError;
 
   @override
-  State<UnifiedFormTimeOfDayField> createState() => _UnifiedFormTimeOfDayFieldState();
+  State<UnifiedFormTimeOfDayField> createState() =>
+      _UnifiedFormTimeOfDayFieldState();
 }
 
 class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
-  final GlobalKey<FormFieldState<TimeOfDay?>> _formFieldKey = GlobalKey<FormFieldState<TimeOfDay?>>();
+  final GlobalKey<FormFieldState<TimeOfDay?>> _formFieldKey =
+      GlobalKey<FormFieldState<TimeOfDay?>>();
   late TimeOfDay? _echoWhenNoReset;
   TimeOfDay? _cachedResetTarget;
 
@@ -1052,10 +1091,10 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
   }
 
   TimeOfDay? _displayValue() => unifiedEffectiveValue(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.value,
-      );
+    fieldController: widget.fieldController,
+    binding: widget.binding,
+    direct: widget.value,
+  );
 
   void _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1098,7 +1137,8 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
     }
     final resetChanged = widget.resetValue != oldWidget.resetValue;
     final bindingChanged = widget.binding != oldWidget.binding;
-    final fieldControllerChanged = widget.fieldController != oldWidget.fieldController;
+    final fieldControllerChanged =
+        widget.fieldController != oldWidget.fieldController;
     if (resetChanged || bindingChanged || fieldControllerChanged) {
       if (widget.resetValue != null) {
         _cachedResetTarget = widget.resetValue!();
@@ -1181,7 +1221,9 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
   Widget build(BuildContext context) {
     return UnifiedFormField<TimeOfDay?>(
       formFieldKey: _formFieldKey,
-      initialValue: widget.resetValue != null ? _cachedResetTarget : _echoWhenNoReset,
+      initialValue: widget.resetValue != null
+          ? _cachedResetTarget
+          : _echoWhenNoReset,
       validator: widget.validator,
       onSaved: widget.onSaved,
       onReset: _syncBindingFromForm,
@@ -1323,11 +1365,13 @@ class UnifiedFormDurationField extends StatefulWidget {
   final bool shakeOnError;
 
   @override
-  State<UnifiedFormDurationField> createState() => _UnifiedFormDurationFieldState();
+  State<UnifiedFormDurationField> createState() =>
+      _UnifiedFormDurationFieldState();
 }
 
 class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
-  final GlobalKey<FormFieldState<Duration?>> _formFieldKey = GlobalKey<FormFieldState<Duration?>>();
+  final GlobalKey<FormFieldState<Duration?>> _formFieldKey =
+      GlobalKey<FormFieldState<Duration?>>();
   late Duration? _echoWhenNoReset;
   Duration? _cachedResetTarget;
 
@@ -1336,10 +1380,10 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
   }
 
   Duration? _displayValue() => unifiedEffectiveValue(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.value,
-      );
+    fieldController: widget.fieldController,
+    binding: widget.binding,
+    direct: widget.value,
+  );
 
   void _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1382,7 +1426,8 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
     }
     final resetChanged = widget.resetValue != oldWidget.resetValue;
     final bindingChanged = widget.binding != oldWidget.binding;
-    final fieldControllerChanged = widget.fieldController != oldWidget.fieldController;
+    final fieldControllerChanged =
+        widget.fieldController != oldWidget.fieldController;
     if (resetChanged || bindingChanged || fieldControllerChanged) {
       if (widget.resetValue != null) {
         _cachedResetTarget = widget.resetValue!();
@@ -1465,7 +1510,9 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
   Widget build(BuildContext context) {
     return UnifiedFormField<Duration?>(
       formFieldKey: _formFieldKey,
-      initialValue: widget.resetValue != null ? _cachedResetTarget : _echoWhenNoReset,
+      initialValue: widget.resetValue != null
+          ? _cachedResetTarget
+          : _echoWhenNoReset,
       validator: widget.validator,
       onSaved: widget.onSaved,
       onReset: _syncBindingFromForm,
@@ -1609,11 +1656,14 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
   final bool shakeOnError;
 
   @override
-  State<UnifiedFormAsyncPickerField<T>> createState() => _UnifiedFormAsyncPickerFieldState<T>();
+  State<UnifiedFormAsyncPickerField<T>> createState() =>
+      _UnifiedFormAsyncPickerFieldState<T>();
 }
 
-class _UnifiedFormAsyncPickerFieldState<T> extends State<UnifiedFormAsyncPickerField<T>> {
-  final GlobalKey<FormFieldState<T?>> _formFieldKey = GlobalKey<FormFieldState<T?>>();
+class _UnifiedFormAsyncPickerFieldState<T>
+    extends State<UnifiedFormAsyncPickerField<T>> {
+  final GlobalKey<FormFieldState<T?>> _formFieldKey =
+      GlobalKey<FormFieldState<T?>>();
   late T? _echoInitialWhenNoReset;
   late T _cachedResetTarget;
 
@@ -1622,10 +1672,10 @@ class _UnifiedFormAsyncPickerFieldState<T> extends State<UnifiedFormAsyncPickerF
   }
 
   T? _displayValue() => unifiedEffectiveValue(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.value,
-      );
+    fieldController: widget.fieldController,
+    binding: widget.binding,
+    direct: widget.value,
+  );
 
   void _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1668,7 +1718,8 @@ class _UnifiedFormAsyncPickerFieldState<T> extends State<UnifiedFormAsyncPickerF
     }
     final resetChanged = widget.resetValue != oldWidget.resetValue;
     final bindingChanged = widget.binding != oldWidget.binding;
-    final fieldControllerChanged = widget.fieldController != oldWidget.fieldController;
+    final fieldControllerChanged =
+        widget.fieldController != oldWidget.fieldController;
     if (resetChanged || bindingChanged || fieldControllerChanged) {
       if (widget.resetValue != null) {
         _cachedResetTarget = widget.resetValue!();
@@ -1751,7 +1802,9 @@ class _UnifiedFormAsyncPickerFieldState<T> extends State<UnifiedFormAsyncPickerF
   Widget build(BuildContext context) {
     return UnifiedFormField<T?>(
       formFieldKey: _formFieldKey,
-      initialValue: widget.resetValue != null ? _cachedResetTarget : _echoInitialWhenNoReset,
+      initialValue: widget.resetValue != null
+          ? _cachedResetTarget
+          : _echoInitialWhenNoReset,
       validator: widget.validator,
       onSaved: widget.onSaved,
       onReset: _syncBindingFromForm,
@@ -1896,11 +1949,14 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
   final bool shakeOnError;
 
   @override
-  State<UnifiedFormAsyncMultiPickerField<T>> createState() => _UnifiedFormAsyncMultiPickerFieldState<T>();
+  State<UnifiedFormAsyncMultiPickerField<T>> createState() =>
+      _UnifiedFormAsyncMultiPickerFieldState<T>();
 }
 
-class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMultiPickerField<T>> {
-  final GlobalKey<FormFieldState<List<T>>> _formFieldKey = GlobalKey<FormFieldState<List<T>>>();
+class _UnifiedFormAsyncMultiPickerFieldState<T>
+    extends State<UnifiedFormAsyncMultiPickerField<T>> {
+  final GlobalKey<FormFieldState<List<T>>> _formFieldKey =
+      GlobalKey<FormFieldState<List<T>>>();
   late List<T> _echoWhenNoReset;
   late List<T> _frozenResetList;
 
@@ -1908,11 +1964,13 @@ class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMu
     _applyExternalList(List<T>.from(widget.binding?.value ?? const []));
   }
 
-  List<T> _displayList() => List<T>.from(unifiedEffectiveListValue(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.values,
-      ));
+  List<T> _displayList() => List<T>.from(
+    unifiedEffectiveListValue(
+      fieldController: widget.fieldController,
+      binding: widget.binding,
+      direct: widget.values,
+    ),
+  );
 
   void _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1945,7 +2003,9 @@ class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMu
   }
 
   @override
-  void didUpdateWidget(covariant UnifiedFormAsyncMultiPickerField<T> oldWidget) {
+  void didUpdateWidget(
+    covariant UnifiedFormAsyncMultiPickerField<T> oldWidget,
+  ) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.binding != widget.binding) {
       oldWidget.binding?.removeListener(_onBindingChanged);
@@ -1956,12 +2016,17 @@ class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMu
       widget.fieldController?.addListener(_onFieldControllerChanged);
     }
     final resetFnChanged = !identical(widget.resetValue, oldWidget.resetValue);
-    final resetPayloadChanged = widget.resetValue != null &&
+    final resetPayloadChanged =
+        widget.resetValue != null &&
         oldWidget.resetValue != null &&
         !_unifiedListsEqual(widget.resetValue!(), oldWidget.resetValue!());
     final bindingChanged = widget.binding != oldWidget.binding;
-    final fieldControllerChanged = widget.fieldController != oldWidget.fieldController;
-    if (resetFnChanged || resetPayloadChanged || bindingChanged || fieldControllerChanged) {
+    final fieldControllerChanged =
+        widget.fieldController != oldWidget.fieldController;
+    if (resetFnChanged ||
+        resetPayloadChanged ||
+        bindingChanged ||
+        fieldControllerChanged) {
       if (widget.resetValue != null) {
         if (resetFnChanged || resetPayloadChanged) {
           _frozenResetList = List<T>.from(widget.resetValue!());
@@ -1979,11 +2044,13 @@ class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMu
       }
     } else if (widget.resetValue == null) {
       final display = _displayList();
-      final oldDisplay = List<T>.from(unifiedEffectiveListValue(
-        fieldController: oldWidget.fieldController,
-        binding: oldWidget.binding,
-        direct: oldWidget.values,
-      ));
+      final oldDisplay = List<T>.from(
+        unifiedEffectiveListValue(
+          fieldController: oldWidget.fieldController,
+          binding: oldWidget.binding,
+          direct: oldWidget.values,
+        ),
+      );
       if (!_unifiedListsEqual(display, oldDisplay)) {
         if (!_unifiedListsEqual(_echoWhenNoReset, display)) {
           setState(() => _echoWhenNoReset = List<T>.from(display));
@@ -1995,11 +2062,13 @@ class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMu
       }
     } else {
       final display = _displayList();
-      final oldDisplay = List<T>.from(unifiedEffectiveListValue(
-        fieldController: oldWidget.fieldController,
-        binding: oldWidget.binding,
-        direct: oldWidget.values,
-      ));
+      final oldDisplay = List<T>.from(
+        unifiedEffectiveListValue(
+          fieldController: oldWidget.fieldController,
+          binding: oldWidget.binding,
+          direct: oldWidget.values,
+        ),
+      );
       if (!_unifiedListsEqual(display, oldDisplay)) {
         final s = _formFieldKey.currentState;
         if (s != null && !_unifiedListsEqual(s.value ?? [], display)) {
@@ -2019,7 +2088,8 @@ class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMu
       value: display,
       fieldController: widget.fieldController,
     );
-    if (widget.resetValue == null && !_unifiedListsEqual(_echoWhenNoReset, display)) {
+    if (widget.resetValue == null &&
+        !_unifiedListsEqual(_echoWhenNoReset, display)) {
       setState(() => _echoWhenNoReset = List<T>.from(display));
     } else {
       setState(() {});
@@ -2046,7 +2116,9 @@ class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMu
   Widget build(BuildContext context) {
     return UnifiedFormField<List<T>>(
       formFieldKey: _formFieldKey,
-      initialValue: widget.resetValue != null ? _frozenResetList : _echoWhenNoReset,
+      initialValue: widget.resetValue != null
+          ? _frozenResetList
+          : _echoWhenNoReset,
       validator: widget.validator,
       onSaved: widget.onSaved,
       onReset: _syncBindingFromForm,
@@ -2056,7 +2128,9 @@ class _UnifiedFormAsyncMultiPickerFieldState<T> extends State<UnifiedFormAsyncMu
           itemProvider: widget.itemProvider,
           label: widget.label,
           fieldController: widget.fieldController,
-          values: widget.fieldController == null ? (fieldState.value ?? []) : const [],
+          values: widget.fieldController == null
+              ? (fieldState.value ?? [])
+              : const [],
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           decoration: widget.decoration,
@@ -2213,7 +2287,8 @@ class UnifiedFormNumberField extends StatefulWidget {
 class _UnifiedFormNumberFieldState extends State<UnifiedFormNumberField> {
   late TextEditingController _effectiveController;
   bool _ownsController = false;
-  final GlobalKey<FormFieldState<String>> _formFieldKey = GlobalKey<FormFieldState<String>>();
+  final GlobalKey<FormFieldState<String>> _formFieldKey =
+      GlobalKey<FormFieldState<String>>();
 
   /// Stable [FormField.initialValue] for [FormState.reset]; not live controller text each build.
   late String _formResetBaseline;
@@ -2240,7 +2315,11 @@ class _UnifiedFormNumberFieldState extends State<UnifiedFormNumberField> {
       _ownsController = false;
       return;
     }
-    _effectiveController = widget.controller ?? TextEditingController(text: widget.binding?.value ?? widget.initialText);
+    _effectiveController =
+        widget.controller ??
+        TextEditingController(
+          text: widget.binding?.value ?? widget.initialText,
+        );
     _ownsController = widget.controller == null;
   }
 

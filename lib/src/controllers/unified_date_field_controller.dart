@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
-import '../unified_date_picker_types.dart';
 import '../unified_date_picker_sheet.dart';
-import '../unified_date_wheel_style.dart';
 import '../fields/unified_date_field.dart' show formatUnifiedDateFieldText;
 import 'base_unified_field_controller.dart';
 
@@ -16,7 +13,8 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
     super.focusNode,
     this.valueFormat,
     this.pickerGranularity = UnifiedFieldsDatePickerGranularity.day,
-    UnifiedFieldsCalendarKind calendarKind = UnifiedFieldsCalendarKind.gregorian,
+    UnifiedFieldsCalendarKind calendarKind =
+        UnifiedFieldsCalendarKind.gregorian,
     this.min,
     this.max,
     this.showCalendarKindToggle = true,
@@ -24,8 +22,8 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
     this.pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
     this.wheelStyle,
     this.showWeekdayInWheel = true,
-  })  : _calendarKind = calendarKind,
-        super(initialValue: initialValue);
+  }) : _calendarKind = calendarKind,
+       super(initialValue: initialValue);
 
   /// Format passed to [formatUnifiedDateFieldText].
   final Object? valueFormat;

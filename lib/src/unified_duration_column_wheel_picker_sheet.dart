@@ -64,11 +64,11 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
   late UnifiedFieldsCalendarKind _kind;
   late List<FixedExtentScrollController> _controllers;
 
-  String _digitText(String text) =>
-      UnifiedFieldsTypography.instance.localizeDigits(text, calendarKind: _kind);
+  String _digitText(String text) => UnifiedFieldsTypography.instance
+      .localizeDigits(text, calendarKind: _kind);
 
-  TextStyle _digitStyle(TextStyle style) =>
-      UnifiedFieldsTypography.instance.mergeDigitStyle(style, calendarKind: _kind);
+  TextStyle _digitStyle(TextStyle style) => UnifiedFieldsTypography.instance
+      .mergeDigitStyle(style, calendarKind: _kind);
 
   @override
   void initState() {
@@ -76,7 +76,11 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
     _kind = widget.initialCalendarKind;
     _values = decomposeUnifiedDuration(widget.initial, widget.columns);
     _controllers = List.generate(widget.columns.length, (i) {
-      final max = unifiedDurationColumnMaxIndex(widget.columns[i], widget.columns, widget.maxDuration);
+      final max = unifiedDurationColumnMaxIndex(
+        widget.columns[i],
+        widget.columns,
+        widget.maxDuration,
+      );
       final initial = _values[i].clamp(0, max);
       _values[i] = initial;
       return FixedExtentScrollController(initialItem: initial);
@@ -98,7 +102,9 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
 
   UnifiedInputPalette _palette(Brightness b) =>
       UnifiedInputThemeResolver.paletteFor(
-        b == Brightness.dark ? UnifiedInputBrightness.dark : UnifiedInputBrightness.light,
+        b == Brightness.dark
+            ? UnifiedInputBrightness.dark
+            : UnifiedInputBrightness.light,
       );
 
   static const double _kHeaderHeight = 36;
@@ -137,7 +143,9 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
         child: Text(
           _digitText(label),
           textAlign: TextAlign.center,
-          style: _digitStyle(TextStyle(fontSize: 17, height: 1.0, color: color)),
+          style: _digitStyle(
+            TextStyle(fontSize: 17, height: 1.0, color: color),
+          ),
           maxLines: 1,
         ),
       ),
@@ -178,7 +186,10 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
     );
   }
 
-  Widget _wheelFade({required UnifiedFieldsDateWheelStyle style, required bool top}) {
+  Widget _wheelFade({
+    required UnifiedFieldsDateWheelStyle style,
+    required bool top,
+  }) {
     return IgnorePointer(
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -217,7 +228,9 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
               children: [
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(color: style.headerDivider!, width: 1)),
+                    border: Border(
+                      bottom: BorderSide(color: style.headerDivider!, width: 1),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -228,12 +241,18 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
                             decoration: BoxDecoration(
                               border: i < colCount - 1
                                   ? BorderDirectional(
-                                      end: BorderSide(color: style.columnDivider!, width: 1),
+                                      end: BorderSide(
+                                        color: style.columnDivider!,
+                                        width: 1,
+                                      ),
                                     )
                                   : null,
                             ),
                             child: _columnHeader(
-                              strings.durationColumnHeader(widget.columns[i], _kind),
+                              strings.durationColumnHeader(
+                                widget.columns[i],
+                                _kind,
+                              ),
                               style,
                             ),
                           ),
@@ -254,20 +273,25 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
                                 decoration: BoxDecoration(
                                   border: i < colCount - 1
                                       ? BorderDirectional(
-                                          end: BorderSide(color: style.columnDivider!, width: 1),
+                                          end: BorderSide(
+                                            color: style.columnDivider!,
+                                            width: 1,
+                                          ),
                                         )
                                       : null,
                                 ),
                                 child: _wheel(
                                   context: context,
                                   controller: _controllers[i],
-                                  count: unifiedDurationColumnMaxIndex(
+                                  count:
+                                      unifiedDurationColumnMaxIndex(
                                         widget.columns[i],
                                         widget.columns,
                                         widget.maxDuration,
                                       ) +
                                       1,
-                                  onSelected: (index) => setState(() => _values[i] = index),
+                                  onSelected: (index) =>
+                                      setState(() => _values[i] = index),
                                   style: style,
                                 ),
                               ),
@@ -282,7 +306,9 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
                             margin: const EdgeInsets.symmetric(horizontal: 6),
                             decoration: BoxDecoration(
                               color: style.selectionFill!,
-                              borderRadius: BorderRadius.circular(style.selectionRadius!),
+                              borderRadius: BorderRadius.circular(
+                                style.selectionRadius!,
+                              ),
                             ),
                           ),
                         ),
@@ -296,8 +322,14 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(height: 1.5, color: style.selectionBorder!),
-                                Container(height: 1.5, color: style.selectionBorder!),
+                                Container(
+                                  height: 1.5,
+                                  color: style.selectionBorder!,
+                                ),
+                                Container(
+                                  height: 1.5,
+                                  color: style.selectionBorder!,
+                                ),
                               ],
                             ),
                           ),
@@ -333,11 +365,19 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
     final theme = Theme.of(context);
     final palette = _palette(theme.brightness);
     final strings = UnifiedFieldsStrings.instance;
-    final wheelStyle = UnifiedFieldsDateWheelStyle.forPicker(palette, theme, widget.wheelStyle);
+    final wheelStyle = UnifiedFieldsDateWheelStyle.forPicker(
+      palette,
+      theme,
+      overrides: widget.wheelStyle,
+      context: context,
+    );
     final titleText = (widget.title ?? '').trim();
 
     return Material(
-      color: theme.bottomSheetTheme.backgroundColor,
+      color: UnifiedInputThemeResolver.resolvePickerSheetBackground(
+        context,
+        palette: palette,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -348,7 +388,9 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
               children: [
                 Expanded(
                   child: Text(
-                    titleText.isEmpty ? strings.defaultDurationTitle : titleText,
+                    titleText.isEmpty
+                        ? strings.defaultDurationTitle
+                        : titleText,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: palette.fieldTextColor,
                       fontWeight: FontWeight.w600,
@@ -357,7 +399,10 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
                 ),
                 IconButton(
                   tooltip: strings.cancel,
-                  icon: Icon(Icons.close_rounded, color: palette.fieldTextColor.withValues(alpha: 0.85)),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: palette.fieldTextColor.withValues(alpha: 0.85),
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -396,7 +441,11 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
                 onSelectionChanged: (s) => _onKindChanged(s.first),
               ),
             ),
-          _styledWheelPanel(context: context, style: wheelStyle, strings: strings),
+          _styledWheelPanel(
+            context: context,
+            style: wheelStyle,
+            strings: strings,
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Row(
@@ -409,7 +458,9 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
                 FilledButton(
                   onPressed: () {
                     widget.onConfirmedCalendarKind?.call(_kind);
-                    Navigator.of(context).pop(composeUnifiedDuration(widget.columns, _values));
+                    Navigator.of(
+                      context,
+                    ).pop(composeUnifiedDuration(widget.columns, _values));
                   },
                   child: Text(widget.confirmLabel ?? strings.done),
                 ),

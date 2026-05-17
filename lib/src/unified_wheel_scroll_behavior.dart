@@ -7,14 +7,15 @@ class UnifiedFieldsWheelScrollBehavior extends MaterialScrollBehavior {
   const UnifiedFieldsWheelScrollBehavior();
 
   /// Scroll behavior for unified wheel pickers in [context].
-  static ScrollBehavior of(BuildContext context) => const UnifiedFieldsWheelScrollBehavior();
+  static ScrollBehavior of(BuildContext context) =>
+      const UnifiedFieldsWheelScrollBehavior();
 
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.trackpad,
-        PointerDeviceKind.stylus,
-        PointerDeviceKind.unknown,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.unknown,
+  };
 }

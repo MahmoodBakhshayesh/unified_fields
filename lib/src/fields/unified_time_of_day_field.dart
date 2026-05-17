@@ -11,6 +11,7 @@ import '../controllers/unified_time_field_controller.dart';
 import 'unified_input_picker.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
+import 'unified_input_theme.dart';
 
 /// Time-of-day picker using unified chrome + dial or wheel picker.
 class UnifiedTimeOfDayField extends StatefulWidget {
@@ -113,7 +114,11 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
   int get _effectiveSecond => widget.fieldController?.second ?? _second;
 
   void _syncFieldController(BuildContext context) {
-    final d = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final d = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
     widget.fieldController?.bindPickerTitle(widget.label ?? d.label ?? '');
     attachUnifiedFieldHandles(
       opener: (context) => _pick(context),
@@ -129,7 +134,8 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
   @override
   void initState() {
     super.initState();
-    _calendarKind = widget.fieldController?.calendarKind ?? widget.initialCalendarKind;
+    _calendarKind =
+        widget.fieldController?.calendarKind ?? widget.initialCalendarKind;
     _second = widget.fieldController?.second ?? 0;
     _syncText();
     widget.binding?.addListener(_onBinding);
@@ -152,13 +158,15 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
         fieldController: oldWidget.fieldController,
       );
     }
-    if (oldWidget.binding != widget.binding || oldWidget.fieldController != widget.fieldController) {
+    if (oldWidget.binding != widget.binding ||
+        oldWidget.fieldController != widget.fieldController) {
       oldWidget.binding?.removeListener(_onBinding);
       oldWidget.fieldController?.removeListener(_onBinding);
       widget.binding?.addListener(_onBinding);
       widget.fieldController?.addListener(_onBinding);
     }
-    if (oldWidget.initialCalendarKind != widget.initialCalendarKind && widget.fieldController == null) {
+    if (oldWidget.initialCalendarKind != widget.initialCalendarKind &&
+        widget.fieldController == null) {
       _calendarKind = widget.initialCalendarKind;
     }
     if (oldWidget.value != widget.value ||
@@ -216,7 +224,8 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
       title: widget.label ?? widget.decoration?.label,
       initialTime: initial,
       initialSecond: _effectiveSecond,
-      timePickerEntryMode: fc?.timePickerEntryMode ?? widget.timePickerEntryMode,
+      timePickerEntryMode:
+          fc?.timePickerEntryMode ?? widget.timePickerEntryMode,
       pickerStyle: fc?.pickerStyle ?? widget.pickerStyle,
       granularity: _granularity,
       showCalendarKindToggle: widget.showCalendarKindToggle,
@@ -224,7 +233,8 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
       wheelStyle: fc?.wheelStyle ?? widget.wheelStyle,
       onConfirmedCalendarKind: (kind) {
         _onPickerConfirmedCalendarKind(kind);
-        if (fc != null && _granularity == UnifiedFieldsTimeGranularity.hoursMinutesSeconds) {
+        if (fc != null &&
+            _granularity == UnifiedFieldsTimeGranularity.hoursMinutesSeconds) {
           // second updated when pick completes
         }
       },
@@ -250,14 +260,18 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
   }
 
   TimeOfDay? get _effective => unifiedEffectiveValue(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.value,
-      );
+    fieldController: widget.fieldController,
+    binding: widget.binding,
+    direct: widget.value,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final d = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
 
     return GestureDetector(
       onTap: widget.locked || widget.isDisabled ? null : () => _pick(context),
@@ -278,8 +292,10 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
           labelStyle: d.labelStyle,
           style: d.fieldStyle,
           backgroundColor: d.backgroundColor ?? Colors.black26,
-          headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26,
-          borderRadius: d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+          headerBackgroundColor:
+              d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26,
+          borderRadius:
+              d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
           borderSide: d.borderSide,
           height: d.height,
           rowLabelRatio: d.rowLabelRatio,
@@ -290,7 +306,14 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
           validationIcon: d.validationIcon,
           prefix: d.prefix,
           prefixIcon: d.prefixIcon,
-          suffixIcon: widget.isDisabled || widget.locked ? null : (d.suffixIcon ?? const Icon(Icons.schedule)),
+          suffixIcon: widget.isDisabled || widget.locked
+              ? null
+              : (d.suffixIcon ??
+                    UnifiedInputThemeResolver.defaultSuffixIcon(
+                      context,
+                      UnifiedInputFieldSuffixKind.time,
+                      UnifiedInputThemeResolver.resolvePalette(context),
+                    )),
           padding: d.contentPadding,
           validator: widget.validator,
           textAlign: TextAlign.center,

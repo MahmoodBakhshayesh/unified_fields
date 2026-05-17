@@ -54,7 +54,8 @@ class MultiPickerSheetWidget<T> extends StatefulWidget {
   });
 
   @override
-  State<MultiPickerSheetWidget<T>> createState() => _MultiPickerSheetWidgetState<T>();
+  State<MultiPickerSheetWidget<T>> createState() =>
+      _MultiPickerSheetWidgetState<T>();
 }
 
 class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
@@ -86,13 +87,31 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
   List<T> _filteredSorted() {
     final query = searchC.text.toLowerCase();
 
-    final filtered = widget.items.where((a) => query.isEmpty || (widget.searchBuilder?.call(a) ?? a.toString()).toLowerCase().split(' ').any((sp) => sp.startsWith(query))).toList();
+    final filtered = widget.items
+        .where(
+          (a) =>
+              query.isEmpty ||
+              (widget.searchBuilder?.call(a) ?? a.toString())
+                  .toLowerCase()
+                  .split(' ')
+                  .any((sp) => sp.startsWith(query)),
+        )
+        .toList();
 
     if (query.isNotEmpty) {
       filtered.sort((a, b) {
-        var comp = (widget.searchBuilder?.call(a) ?? a.toString()).toLowerCase().indexOf(query).compareTo((widget.searchBuilder?.call(b) ?? b.toString()).toLowerCase().indexOf(query));
+        var comp = (widget.searchBuilder?.call(a) ?? a.toString())
+            .toLowerCase()
+            .indexOf(query)
+            .compareTo(
+              (widget.searchBuilder?.call(b) ?? b.toString())
+                  .toLowerCase()
+                  .indexOf(query),
+            );
         if (comp == 0) {
-          return (widget.searchBuilder?.call(a) ?? a.toString()).compareTo((widget.searchBuilder?.call(b) ?? b.toString()));
+          return (widget.searchBuilder?.call(a) ?? a.toString()).compareTo(
+            (widget.searchBuilder?.call(b) ?? b.toString()),
+          );
         }
         return comp;
       });
@@ -122,7 +141,9 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
       child: BottomSheet(
         backgroundColor: const Color(0xffEAECF2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        constraints: BoxConstraints(maxHeight: context.height * 0.9),
+        constraints: BoxConstraints(
+          maxHeight: context.unifiedFieldsScreenHeight * 0.9,
+        ),
         // The outer showModalBottomSheet already owns drag-to-dismiss and the
         // animation controller. Disabling drag here avoids the
         // `BottomSheet.animationController cannot be null` assertion.
@@ -142,9 +163,23 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(UnifiedFieldsStrings.instance.multiPickerTitle(widget.label), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        UnifiedFieldsStrings.instance.multiPickerTitle(
+                          widget.label,
+                        ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    if (widget.hasClear) UnifiedSheetButton(label: UnifiedFieldsStrings.instance.clear, reverse: true, color: Colors.blueAccent, onPressed: () => Navigator.of(context).pop(Null)),
+                    if (widget.hasClear)
+                      UnifiedSheetButton(
+                        label: UnifiedFieldsStrings.instance.clear,
+                        reverse: true,
+                        color: Colors.blueAccent,
+                        onPressed: () => Navigator.of(context).pop(Null),
+                      ),
                     const CloseButton(),
                   ],
                 ),
@@ -153,10 +188,16 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
               // Search
               if (widget.hasSearch)
                 CupertinoTextField(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   controller: searchC,
                   autofocus: widget.searchAutoFocus,
-                  prefix: const Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.search)),
+                  prefix: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.search),
+                  ),
                 ),
 
               // List
@@ -167,13 +208,28 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: UnifiedColors.mainGreen.withValues(alpha: 0.18),
-                        border: const Border(bottom: BorderSide(color: Colors.white)),
+                        border: const Border(
+                          bottom: BorderSide(color: Colors.white),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0,
+                        vertical: 12,
+                      ),
                       child: Row(
                         children: [
-                          Expanded(child: widget.itemToWidget?.call(s) ?? Text(s.toString())),
-                          Text(UnifiedFieldsStrings.instance.suggestion, style: TextStyle(color: Colors.black45, fontSize: 10)),
+                          Expanded(
+                            child:
+                                widget.itemToWidget?.call(s) ??
+                                Text(s.toString()),
+                          ),
+                          Text(
+                            UnifiedFieldsStrings.instance.suggestion,
+                            style: TextStyle(
+                              color: Colors.black45,
+                              fontSize: 10,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -200,17 +256,37 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.blueAccent.withValues(alpha: 0.3) : const Color(0xffF2F3F6),
-                          border: const Border(bottom: BorderSide(color: Colors.white)),
+                          color: isSelected
+                              ? Colors.blueAccent.withValues(alpha: 0.3)
+                              : const Color(0xffF2F3F6),
+                          border: const Border(
+                            bottom: BorderSide(color: Colors.white),
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
-                        child: Row(children: [
-                          IgnorePointer(child: SizedBox(
-                              width:20,
-                              height: 20,
-                              child: Checkbox(value: isSelected, onChanged: (v){}))),
-                          const SizedBox(width: 8),
-                          Expanded(child: widget.itemToWidget?.call(item) ?? Text(item.toString()))]),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0,
+                          vertical: 12,
+                        ),
+                        child: Row(
+                          children: [
+                            IgnorePointer(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: Checkbox(
+                                  value: isSelected,
+                                  onChanged: (v) {},
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child:
+                                  widget.itemToWidget?.call(item) ??
+                                  Text(item.toString()),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },

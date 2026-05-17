@@ -125,7 +125,8 @@ class UnifiedPickerFieldController<T> extends BaseUnifiedFieldController<T> {
 }
 
 /// Controller for multi-select picker fields.
-class UnifiedMultiPickerFieldController<T> extends BaseUnifiedFieldController<List<T>> {
+class UnifiedMultiPickerFieldController<T>
+    extends BaseUnifiedFieldController<List<T>> {
   /// Creates a multi-select picker controller.
   UnifiedMultiPickerFieldController({
     List<T> initialValue = const [],

@@ -4,8 +4,9 @@ import 'unified_field_validation.dart';
 /// Groups unified field controllers for submit-time validation.
 class UnifiedFormController {
   /// Creates a form controller with an optional initial [fields] list.
-  UnifiedFormController([List<BaseUnifiedFieldController<Object?>> fields = const []])
-      : fields = List<BaseUnifiedFieldController<Object?>>.from(fields);
+  UnifiedFormController([
+    List<BaseUnifiedFieldController<Object?>> fields = const [],
+  ]) : fields = List<BaseUnifiedFieldController<Object?>>.from(fields);
 
   /// Registered field controllers (add via [register]).
   final List<BaseUnifiedFieldController<Object?>> fields;

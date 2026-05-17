@@ -61,7 +61,8 @@ class PickerSheetWidget<T> extends StatefulWidget {
 class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
   final TextEditingController searchC = TextEditingController();
   final ItemScrollController _itemScrollController = ItemScrollController();
-  final ItemPositionsListener _positionsListener = ItemPositionsListener.create();
+  final ItemPositionsListener _positionsListener =
+      ItemPositionsListener.create();
   bool autoPop = false;
 
   @override
@@ -96,14 +97,32 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
     // dev.log(widget.searchBuilder!(widget.items.first));
     // dev.log((widget.searchBuilder?.call(widget.items.first) ?? widget.items.first.toString()).toLowerCase().indexOf(query).toString());
 
-    final filtered = widget.items.where((a) => query.isEmpty || (widget.searchBuilder?.call(a) ?? a.toString()).toLowerCase().split(' ').any((sp) => sp.startsWith(query))).toList();
+    final filtered = widget.items
+        .where(
+          (a) =>
+              query.isEmpty ||
+              (widget.searchBuilder?.call(a) ?? a.toString())
+                  .toLowerCase()
+                  .split(' ')
+                  .any((sp) => sp.startsWith(query)),
+        )
+        .toList();
 
     // same sort rule you had: by match position
     if (query.isNotEmpty) {
       filtered.sort((a, b) {
-        var comp = (widget.searchBuilder?.call(a) ?? a.toString()).toLowerCase().indexOf(query).compareTo((widget.searchBuilder?.call(b) ?? b.toString()).toLowerCase().indexOf(query));
+        var comp = (widget.searchBuilder?.call(a) ?? a.toString())
+            .toLowerCase()
+            .indexOf(query)
+            .compareTo(
+              (widget.searchBuilder?.call(b) ?? b.toString())
+                  .toLowerCase()
+                  .indexOf(query),
+            );
         if (comp == 0) {
-          return (widget.searchBuilder?.call(a) ?? a.toString()).compareTo((widget.searchBuilder?.call(b) ?? b.toString()));
+          return (widget.searchBuilder?.call(a) ?? a.toString()).compareTo(
+            (widget.searchBuilder?.call(b) ?? b.toString()),
+          );
         }
         return comp;
       });
@@ -122,7 +141,8 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
     if (idx < 0) return;
 
     // Defer until laid out so positions are available
-    if (!_itemScrollController.isAttached || _positionsListener.itemPositions.value.isEmpty) {
+    if (!_itemScrollController.isAttached ||
+        _positionsListener.itemPositions.value.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
       return;
     }
@@ -137,7 +157,12 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
       return;
     }
 
-    _itemScrollController.scrollTo(index: idx, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut, alignment: 0.1);
+    _itemScrollController.scrollTo(
+      index: idx,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      alignment: 0.1,
+    );
   }
 
   void _scrollToTop() {
@@ -146,7 +171,8 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
     final items = _filteredSorted(); // <- your filtered list
     final idx = 0;
     // Defer until laid out so positions are available
-    if (!_itemScrollController.isAttached || _positionsListener.itemPositions.value.isEmpty) {
+    if (!_itemScrollController.isAttached ||
+        _positionsListener.itemPositions.value.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
       return;
     }
@@ -161,7 +187,12 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
       return;
     }
 
-    _itemScrollController.scrollTo(index: idx, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut, alignment: 0.1);
+    _itemScrollController.scrollTo(
+      index: idx,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      alignment: 0.1,
+    );
   }
 
   bool _listFitsInViewport(int itemCount) {
@@ -174,8 +205,12 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
     final last = positions.where((p) => p.index == itemCount - 1).toList();
 
     if (first.isNotEmpty && last.isNotEmpty) {
-      final firstFullyVisible = first.any((p) => p.itemLeadingEdge >= 0 && p.itemTrailingEdge <= 1);
-      final lastFullyVisible = last.any((p) => p.itemLeadingEdge >= 0 && p.itemTrailingEdge <= 1);
+      final firstFullyVisible = first.any(
+        (p) => p.itemLeadingEdge >= 0 && p.itemTrailingEdge <= 1,
+      );
+      final lastFullyVisible = last.any(
+        (p) => p.itemLeadingEdge >= 0 && p.itemTrailingEdge <= 1,
+      );
       return firstFullyVisible && lastFullyVisible;
     }
     return false;
@@ -184,7 +219,10 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
   bool _isIndexFullyVisible(int index) {
     final positions = _positionsListener.itemPositions.value;
     if (positions.isEmpty) return false;
-    return positions.any((p) => p.index == index && p.itemLeadingEdge >= 0 && p.itemTrailingEdge <= 1);
+    return positions.any(
+      (p) =>
+          p.index == index && p.itemLeadingEdge >= 0 && p.itemTrailingEdge <= 1,
+    );
   }
 
   @override
@@ -198,7 +236,20 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
     // }
     if (widget.suggestion.isNotEmpty &&
         items.isEmpty &&
-        widget.suggestion.where((a) => searchC.text.toLowerCase().isEmpty || (widget.searchBuilder?.call(a) ?? a.toString()).toLowerCase().split(' ').any((sp) => sp.startsWith(searchC.text.toLowerCase()))).toList().length == 1 &&
+        widget.suggestion
+                .where(
+                  (a) =>
+                      searchC.text.toLowerCase().isEmpty ||
+                      (widget.searchBuilder?.call(a) ?? a.toString())
+                          .toLowerCase()
+                          .split(' ')
+                          .any(
+                            (sp) => sp.startsWith(searchC.text.toLowerCase()),
+                          ),
+                )
+                .toList()
+                .length ==
+            1 &&
         !autoPop) {
       autoPop = true;
       Future.delayed(const Duration(milliseconds: 300), () {
@@ -210,7 +261,9 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
       child: BottomSheet(
         backgroundColor: const Color(0xffEAECF2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        constraints: BoxConstraints(maxHeight: context.height * 0.9),
+        constraints: BoxConstraints(
+          maxHeight: context.unifiedFieldsScreenHeight * 0.9,
+        ),
         // The outer showModalBottomSheet already owns drag-to-dismiss and the
         // animation controller. Disabling drag here avoids the
         // `BottomSheet.animationController cannot be null` assertion.
@@ -232,10 +285,22 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text(widget.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: Text(
+                          widget.label,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                    if (widget.hasClear) UnifiedSheetButton(label: UnifiedFieldsStrings.instance.clear, reverse: true, color: Colors.blueAccent, onPressed: () => Navigator.of(context).pop(Null)),
+                    if (widget.hasClear)
+                      UnifiedSheetButton(
+                        label: UnifiedFieldsStrings.instance.clear,
+                        reverse: true,
+                        color: Colors.blueAccent,
+                        onPressed: () => Navigator.of(context).pop(Null),
+                      ),
                     const CloseButton(),
                   ],
                 ),
@@ -244,7 +309,10 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
               // Search
               if (widget.hasSearch)
                 CupertinoTextField(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   controller: searchC,
                   autofocus: widget.searchAutoFocus,
                   onSubmitted: (a) {
@@ -252,7 +320,10 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
                       Navigator.of(context).pop(widget.suggestion.first);
                     }
                   },
-                  prefix: const Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.search)),
+                  prefix: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(Icons.search),
+                  ),
                 ),
 
               // List
@@ -263,13 +334,28 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.green.withAlpha(8),
-                        border: const Border(bottom: BorderSide(color: Colors.white)),
+                        border: const Border(
+                          bottom: BorderSide(color: Colors.white),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12.0,
+                        vertical: 12,
+                      ),
                       child: Row(
                         children: [
-                          Expanded(child: widget.itemToWidget?.call(s) ?? Text(s.toString())),
-                          Text(UnifiedFieldsStrings.instance.suggestion, style: TextStyle(color: Colors.black45, fontSize: 10)),
+                          Expanded(
+                            child:
+                                widget.itemToWidget?.call(s) ??
+                                Text(s.toString()),
+                          ),
+                          Text(
+                            UnifiedFieldsStrings.instance.suggestion,
+                            style: TextStyle(
+                              color: Colors.black45,
+                              fontSize: 10,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -289,11 +375,26 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
                       onTap: () => Navigator.of(context).pop(item),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.blueAccent.withValues(alpha: 0.3) : const Color(0xffF2F3F6),
-                          border: const Border(bottom: BorderSide(color: Colors.white)),
+                          color: isSelected
+                              ? Colors.blueAccent.withValues(alpha: 0.3)
+                              : const Color(0xffF2F3F6),
+                          border: const Border(
+                            bottom: BorderSide(color: Colors.white),
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
-                        child: Row(children: [Expanded(child: widget.itemToWidget?.call(item) ?? Text(item.toString()))]),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0,
+                          vertical: 12,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child:
+                                  widget.itemToWidget?.call(item) ??
+                                  Text(item.toString()),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },

@@ -5,7 +5,8 @@ import '../fields/unified_date_field.dart' show formatUnifiedDateRangeFieldText;
 import 'base_unified_field_controller.dart';
 
 /// Controller for [UnifiedDateRangeField].
-class UnifiedDateRangeFieldController extends BaseUnifiedFieldController<DateTimeRange> {
+class UnifiedDateRangeFieldController
+    extends BaseUnifiedFieldController<DateTimeRange> {
   /// Creates a date-range field controller.
   UnifiedDateRangeFieldController({
     DateTimeRange? initialValue,
@@ -33,7 +34,8 @@ class UnifiedDateRangeFieldController extends BaseUnifiedFieldController<DateTim
   }
 
   /// Formats [value] (or [range]) for display.
-  String format([DateTimeRange? range]) => formatUnifiedDateRangeFieldText(range ?? value);
+  String format([DateTimeRange? range]) =>
+      formatUnifiedDateRangeFieldText(range ?? value);
 
   /// Opens the unified date-range picker and updates [value] when confirmed.
   Future<DateTimeRange?> openPicker(

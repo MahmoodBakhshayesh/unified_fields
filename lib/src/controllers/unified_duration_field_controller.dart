@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../fields/unified_duration_field.dart';
+import '../fields/unified_input_brightness.dart';
 import '../unified_date_picker_types.dart';
 import '../unified_date_wheel_style.dart';
-import '../unified_duration_columns.dart';
 import '../unified_fields_strings.dart';
-import '../unified_time_picker_types.dart';
-import '../fields/unified_input_brightness.dart';
 import 'base_unified_field_controller.dart';
 
 /// Controller for [UnifiedDurationField].
-class UnifiedDurationFieldController extends BaseUnifiedFieldController<Duration> {
+class UnifiedDurationFieldController
+    extends BaseUnifiedFieldController<Duration> {
   /// Creates a duration field controller.
   UnifiedDurationFieldController({
     super.initialValue,
@@ -19,7 +18,8 @@ class UnifiedDurationFieldController extends BaseUnifiedFieldController<Duration
     this.granularity = UnifiedDurationGranularity.hoursMinutesSeconds,
     this.pickerColumns,
     this.pickerStyle = UnifiedFieldsDurationPickerStyle.wheels,
-    UnifiedFieldsCalendarKind calendarKind = UnifiedFieldsCalendarKind.gregorian,
+    UnifiedFieldsCalendarKind calendarKind =
+        UnifiedFieldsCalendarKind.gregorian,
     this.min,
     this.max,
     this.brightness,
@@ -62,7 +62,8 @@ class UnifiedDurationFieldController extends BaseUnifiedFieldController<Duration
     notifyListeners();
   }
 
-  List<UnifiedFieldsDurationColumn> get _columns => resolveUnifiedDurationColumns(
+  List<UnifiedFieldsDurationColumn> get _columns =>
+      resolveUnifiedDurationColumns(
         pickerColumns: pickerColumns,
         granularity: granularity,
       );
@@ -76,11 +77,11 @@ class UnifiedDurationFieldController extends BaseUnifiedFieldController<Duration
 
   /// Formats [value] for display.
   String format([Duration? d]) => unifiedFormatDuration(
-        d ?? value ?? Duration.zero,
-        granularity: granularity,
-        pickerColumns: _columns,
-        calendarKind: calendarKind,
-      );
+    d ?? value ?? Duration.zero,
+    granularity: granularity,
+    pickerColumns: _columns,
+    calendarKind: calendarKind,
+  );
 
   /// Opens the duration picker sheet and updates [value] when confirmed.
   Future<Duration?> openPicker(
@@ -97,7 +98,11 @@ class UnifiedDurationFieldController extends BaseUnifiedFieldController<Duration
     final result = await showUnifiedFieldsDurationPicker(
       context: context,
       title: title ?? _boundTitle,
-      initial: unifiedClampDuration(initial ?? value ?? Duration.zero, min, max),
+      initial: unifiedClampDuration(
+        initial ?? value ?? Duration.zero,
+        min,
+        max,
+      ),
       min: min ?? Duration.zero,
       max: max ?? const Duration(hours: 999),
       granularity: granularity,

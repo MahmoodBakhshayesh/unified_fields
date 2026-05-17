@@ -89,7 +89,11 @@ class UnifiedFieldsStrings {
     UnifiedFieldsCalendarKind kind,
   ) {
     if (kind == UnifiedFieldsCalendarKind.jalali) {
-      return (year: shamsiYearLabel, month: shamsiMonthLabel, day: shamsiDayLabel);
+      return (
+        year: shamsiYearLabel,
+        month: shamsiMonthLabel,
+        day: shamsiDayLabel,
+      );
     }
     return (year: yearLabel, month: monthLabel, day: dayLabel);
   }
@@ -131,7 +135,10 @@ class UnifiedFieldsStrings {
   final String shamsiWeekLabel;
 
   /// Column header for [column] on duration wheels.
-  String durationColumnHeader(UnifiedFieldsDurationColumn column, UnifiedFieldsCalendarKind kind) {
+  String durationColumnHeader(
+    UnifiedFieldsDurationColumn column,
+    UnifiedFieldsCalendarKind kind,
+  ) {
     if (kind == UnifiedFieldsCalendarKind.jalali) {
       return switch (column) {
         UnifiedFieldsDurationColumn.year => shamsiYearLabel,
@@ -159,7 +166,11 @@ class UnifiedFieldsStrings {
     UnifiedFieldsCalendarKind kind,
   ) {
     if (kind == UnifiedFieldsCalendarKind.jalali) {
-      return (hour: shamsiHourLabel, minute: shamsiMinuteLabel, second: shamsiSecondLabel);
+      return (
+        hour: shamsiHourLabel,
+        minute: shamsiMinuteLabel,
+        second: shamsiSecondLabel,
+      );
     }
     return (hour: hourLabel, minute: minuteLabel, second: secondLabel);
   }
@@ -195,17 +206,21 @@ abstract final class UnifiedDatePickerStrings {
 
   /// @deprecated Use [UnifiedFieldsStrings.instance.jumpToMonthYear].
   @Deprecated('Use UnifiedFieldsStrings.instance.jumpToMonthYear')
-  static String get jumpToMonthYear => UnifiedFieldsStrings.instance.jumpToMonthYear;
+  static String get jumpToMonthYear =>
+      UnifiedFieldsStrings.instance.jumpToMonthYear;
 
   /// @deprecated Use [UnifiedFieldsStrings.instance.pickDateRangeHint].
   @Deprecated('Use UnifiedFieldsStrings.instance.pickDateRangeHint')
-  static String get pickDateRangeHint => UnifiedFieldsStrings.instance.pickDateRangeHint;
+  static String get pickDateRangeHint =>
+      UnifiedFieldsStrings.instance.pickDateRangeHint;
 
   /// @deprecated Use [UnifiedFieldsStrings.instance.calendarGregorian].
   @Deprecated('Use UnifiedFieldsStrings.instance.calendarGregorian')
-  static String get calendarGregorian => UnifiedFieldsStrings.instance.calendarGregorian;
+  static String get calendarGregorian =>
+      UnifiedFieldsStrings.instance.calendarGregorian;
 
   /// @deprecated Use [UnifiedFieldsStrings.instance.calendarShamsi].
   @Deprecated('Use UnifiedFieldsStrings.instance.calendarShamsi')
-  static String get calendarShamsi => UnifiedFieldsStrings.instance.calendarShamsi;
+  static String get calendarShamsi =>
+      UnifiedFieldsStrings.instance.calendarShamsi;
 }

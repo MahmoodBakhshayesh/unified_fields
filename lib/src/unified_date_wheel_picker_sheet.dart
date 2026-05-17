@@ -61,7 +61,8 @@ class UnifiedFieldsDateWheelPickerSheet extends StatefulWidget {
   final ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind;
 
   @override
-  State<UnifiedFieldsDateWheelPickerSheet> createState() => _UnifiedFieldsDateWheelPickerSheetState();
+  State<UnifiedFieldsDateWheelPickerSheet> createState() =>
+      _UnifiedFieldsDateWheelPickerSheetState();
 }
 
 /// Day row in the wheel picker (fixed-width layout when [weekday] is set).
@@ -77,12 +78,13 @@ class UnifiedWheelDayRow {
   final String? weekday;
 }
 
-class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWheelPickerSheet> {
-  String _digitText(String text) =>
-      UnifiedFieldsTypography.instance.localizeDigits(text, calendarKind: _kind);
+class _UnifiedFieldsDateWheelPickerSheetState
+    extends State<UnifiedFieldsDateWheelPickerSheet> {
+  String _digitText(String text) => UnifiedFieldsTypography.instance
+      .localizeDigits(text, calendarKind: _kind);
 
-  TextStyle _digitStyle(TextStyle style) =>
-      UnifiedFieldsTypography.instance.mergeDigitStyle(style, calendarKind: _kind);
+  TextStyle _digitStyle(TextStyle style) => UnifiedFieldsTypography.instance
+      .mergeDigitStyle(style, calendarKind: _kind);
 
   late DateTime _first;
   late DateTime _last;
@@ -97,7 +99,8 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
   List<int> _months = [];
   List<int> _days = [];
 
-  bool get _showDay => widget.granularity == UnifiedFieldsDatePickerGranularity.day;
+  bool get _showDay =>
+      widget.granularity == UnifiedFieldsDatePickerGranularity.day;
   bool get _showMonth =>
       widget.granularity == UnifiedFieldsDatePickerGranularity.day ||
       widget.granularity == UnifiedFieldsDatePickerGranularity.month;
@@ -150,7 +153,9 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
       final y = _selected.year.clamp(_years.first, _years.last);
       _months = _buildGregorianMonths(y);
-      final m = _months.contains(_selected.month) ? _selected.month : _months.last;
+      final m = _months.contains(_selected.month)
+          ? _selected.month
+          : _months.last;
       _days = _showDay ? _buildGregorianDays(y, m) : [];
       _selected = _composeGregorian(y, m, _showDay ? _selected.day : 1);
     } else {
@@ -174,14 +179,20 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
     _monthCtrl?.dispose();
     _dayCtrl?.dispose();
 
-    final yIdx = _years.indexOf(_currentYear()).clamp(0, _years.isEmpty ? 0 : _years.length - 1);
-    final mIdx = _months.indexOf(_currentMonth()).clamp(0, _months.isEmpty ? 0 : _months.length - 1);
+    final yIdx = _years
+        .indexOf(_currentYear())
+        .clamp(0, _years.isEmpty ? 0 : _years.length - 1);
+    final mIdx = _months
+        .indexOf(_currentMonth())
+        .clamp(0, _months.isEmpty ? 0 : _months.length - 1);
     _yearCtrl = FixedExtentScrollController(initialItem: yIdx);
     _monthCtrl = FixedExtentScrollController(initialItem: mIdx);
 
     if (_showDay) {
       final d = _currentDay();
-      final dIdx = _days.indexOf(d).clamp(0, _days.isEmpty ? 0 : _days.length - 1);
+      final dIdx = _days
+          .indexOf(d)
+          .clamp(0, _days.isEmpty ? 0 : _days.length - 1);
       _dayCtrl = FixedExtentScrollController(initialItem: dIdx);
     } else {
       _dayCtrl = null;
@@ -263,7 +274,11 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
     if (index < 0 || index >= _years.length) return;
     final y = _years[index];
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
-      _selected = _composeGregorian(y, _currentMonth(), _showDay ? _currentDay() : 1);
+      _selected = _composeGregorian(
+        y,
+        _currentMonth(),
+        _showDay ? _currentDay() : 1,
+      );
     } else {
       _selected = PersianJalaliCalendar.toGregorianDate(
         y,
@@ -280,7 +295,11 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
     if (index < 0 || index >= _months.length) return;
     final m = _months[index];
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
-      _selected = _composeGregorian(_currentYear(), m, _showDay ? _currentDay() : 1);
+      _selected = _composeGregorian(
+        _currentYear(),
+        m,
+        _showDay ? _currentDay() : 1,
+      );
     } else {
       _selected = PersianJalaliCalendar.toGregorianDate(
         _currentYear(),
@@ -299,7 +318,11 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
       _selected = _composeGregorian(_currentYear(), _currentMonth(), d);
     } else {
-      _selected = PersianJalaliCalendar.toGregorianDate(_currentYear(), _currentMonth(), d);
+      _selected = PersianJalaliCalendar.toGregorianDate(
+        _currentYear(),
+        _currentMonth(),
+        d,
+      );
     }
     _selected = _clamp(_selected);
     setState(() {});
@@ -317,11 +340,17 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
   UnifiedWheelDayRow _dayRow(int day) {
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
       final dt = DateTime(_currentYear(), _currentMonth(), day);
-      final weekday = widget.showWeekdayInWheel ? DateFormat('EEEE').format(dt) : null;
+      final weekday = widget.showWeekdayInWheel
+          ? DateFormat('EEEE').format(dt)
+          : null;
       return UnifiedWheelDayRow(day: dt.day, weekday: weekday);
     }
     final weekday = widget.showWeekdayInWheel
-        ? PersianJalaliCalendar.persianWeekdayName(_currentYear(), _currentMonth(), day)
+        ? PersianJalaliCalendar.persianWeekdayName(
+            _currentYear(),
+            _currentMonth(),
+            day,
+          )
         : null;
     return UnifiedWheelDayRow(day: day, weekday: weekday);
   }
@@ -335,7 +364,9 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
 
   UnifiedInputPalette _palette(Brightness b) =>
       UnifiedInputThemeResolver.paletteFor(
-        b == Brightness.dark ? UnifiedInputBrightness.dark : UnifiedInputBrightness.light,
+        b == Brightness.dark
+            ? UnifiedInputBrightness.dark
+            : UnifiedInputBrightness.light,
       );
 
   static const double _kHeaderHeight = 36;
@@ -345,7 +376,8 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
     return 2;
   }
 
-  int _flexForMonth() => widget.granularity == UnifiedFieldsDatePickerGranularity.year ? 0 : 3;
+  int _flexForMonth() =>
+      widget.granularity == UnifiedFieldsDatePickerGranularity.year ? 0 : 3;
 
   int _flexForDay() => _showDay ? 4 : 0;
 
@@ -382,11 +414,7 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
           _digitText(label),
           textAlign: TextAlign.center,
           style: _digitStyle(
-            TextStyle(
-              fontSize: 17,
-              height: 1.0,
-              color: color,
-            ),
+            TextStyle(fontSize: 17, height: 1.0, color: color),
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -402,7 +430,9 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
     required double dayNumberWidth,
     required double weekdayWidth,
   }) {
-    final textStyle = _digitStyle(TextStyle(fontSize: 17, height: 1.0, color: color));
+    final textStyle = _digitStyle(
+      TextStyle(fontSize: 17, height: 1.0, color: color),
+    );
     if (row.weekday == null) {
       return SizedBox(
         width: double.infinity,
@@ -524,7 +554,9 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
         decoration: BoxDecoration(
           color: columnBackground,
           border: showTrailingDivider
-              ? BorderDirectional(end: BorderSide(color: style.columnDivider!, width: 1))
+              ? BorderDirectional(
+                  end: BorderSide(color: style.columnDivider!, width: 1),
+                )
               : null,
         ),
         child: _columnHeader(label, style),
@@ -546,7 +578,9 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
         decoration: BoxDecoration(
           color: columnBackground,
           border: showTrailingDivider
-              ? BorderDirectional(end: BorderSide(color: style.columnDivider!, width: 1))
+              ? BorderDirectional(
+                  end: BorderSide(color: style.columnDivider!, width: 1),
+                )
               : null,
         ),
         child: wheel,
@@ -564,10 +598,7 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
           gradient: LinearGradient(
             begin: top ? Alignment.topCenter : Alignment.bottomCenter,
             end: top ? Alignment.bottomCenter : Alignment.topCenter,
-            colors: [
-              style.fadeColor!,
-              style.fadeColor!.withValues(alpha: 0),
-            ],
+            colors: [style.fadeColor!, style.fadeColor!.withValues(alpha: 0)],
             stops: const [0.0, 1.0],
           ),
         ),
@@ -636,7 +667,9 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
               children: [
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(color: style.headerDivider!, width: 1)),
+                    border: Border(
+                      bottom: BorderSide(color: style.headerDivider!, width: 1),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -699,7 +732,9 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
                             margin: const EdgeInsets.symmetric(horizontal: 6),
                             decoration: BoxDecoration(
                               color: style.selectionFill!,
-                              borderRadius: BorderRadius.circular(style.selectionRadius!),
+                              borderRadius: BorderRadius.circular(
+                                style.selectionRadius!,
+                              ),
                             ),
                           ),
                         ),
@@ -713,8 +748,14 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(height: 1.5, color: style.selectionBorder!),
-                                Container(height: 1.5, color: style.selectionBorder!),
+                                Container(
+                                  height: 1.5,
+                                  color: style.selectionBorder!,
+                                ),
+                                Container(
+                                  height: 1.5,
+                                  color: style.selectionBorder!,
+                                ),
                               ],
                             ),
                           ),
@@ -750,12 +791,23 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
     final theme = Theme.of(context);
     final palette = _palette(theme.brightness);
     final strings = UnifiedFieldsStrings.instance;
-    final wheelStyle = UnifiedFieldsDateWheelStyle.forPicker(palette, theme, widget.wheelStyle);
+    final wheelStyle = UnifiedFieldsDateWheelStyle.forPicker(
+      palette,
+      theme,
+      overrides: widget.wheelStyle,
+      context: context,
+    );
     final titleText = (widget.title ?? '').trim();
-    final hasJalali = PersianJalaliCalendar.enumerateMonthsBetween(_first, _last).isNotEmpty;
+    final hasJalali = PersianJalaliCalendar.enumerateMonthsBetween(
+      _first,
+      _last,
+    ).isNotEmpty;
 
     return Material(
-      color: theme.bottomSheetTheme.backgroundColor,
+      color: UnifiedInputThemeResolver.resolvePickerSheetBackground(
+        context,
+        palette: palette,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -775,7 +827,10 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
                 ),
                 IconButton(
                   tooltip: strings.cancel,
-                  icon: Icon(Icons.close_rounded, color: palette.fieldTextColor.withValues(alpha: 0.85)),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: palette.fieldTextColor.withValues(alpha: 0.85),
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -814,7 +869,11 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
                 onSelectionChanged: (s) => _onKindChanged(s.first),
               ),
             ),
-          _styledWheelPanel(context: context, style: wheelStyle, strings: strings),
+          _styledWheelPanel(
+            context: context,
+            style: wheelStyle,
+            strings: strings,
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Row(
@@ -844,14 +903,15 @@ class _UnifiedFieldsDateWheelPickerSheetState extends State<UnifiedFieldsDateWhe
 class _UnifiedDateWheelScrollBehavior extends MaterialScrollBehavior {
   const _UnifiedDateWheelScrollBehavior();
 
-  static ScrollBehavior of(BuildContext context) => const _UnifiedDateWheelScrollBehavior();
+  static ScrollBehavior of(BuildContext context) =>
+      const _UnifiedDateWheelScrollBehavior();
 
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.trackpad,
-        PointerDeviceKind.stylus,
-        PointerDeviceKind.unknown,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.unknown,
+  };
 }

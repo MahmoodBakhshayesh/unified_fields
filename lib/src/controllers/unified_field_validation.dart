@@ -5,7 +5,9 @@ abstract final class UnifiedFieldValidation {
   /// Runs [BaseUnifiedFieldController.validate] on each controller.
   ///
   /// Returns `true` when every controller is valid.
-  static bool validateFields(Iterable<BaseUnifiedFieldController<Object?>> controllers) {
+  static bool validateFields(
+    Iterable<BaseUnifiedFieldController<Object?>> controllers,
+  ) {
     var ok = true;
     for (final c in controllers) {
       if (c.validate() != null) {

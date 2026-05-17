@@ -20,21 +20,21 @@ import 'unified_input_decoration.dart';
 class CustomizableSinglePickerSnapshot<T> {
   /// Snapshot describing typed text mode.
   const CustomizableSinglePickerSnapshot.typed(String text)
-      : kind = CustomizablePickerInputKind.typed,
-        selectedItem = null,
-        typedText = text;
+    : kind = CustomizablePickerInputKind.typed,
+      selectedItem = null,
+      typedText = text;
 
   /// Snapshot describing a single selection (may be `null` to clear).
   const CustomizableSinglePickerSnapshot.selected(T? selected)
-      : kind = CustomizablePickerInputKind.selected,
-        selectedItem = selected,
-        typedText = '';
+    : kind = CustomizablePickerInputKind.selected,
+      selectedItem = selected,
+      typedText = '';
 
   /// Empty snapshot (selected mode, `null` value).
   const CustomizableSinglePickerSnapshot.empty()
-      : kind = CustomizablePickerInputKind.selected,
-        selectedItem = null,
-        typedText = '';
+    : kind = CustomizablePickerInputKind.selected,
+      selectedItem = null,
+      typedText = '';
 
   /// Whether the snapshot represents typed text or a selection.
   final CustomizablePickerInputKind kind;
@@ -51,21 +51,21 @@ class CustomizableSinglePickerSnapshot<T> {
 class CustomizableMultiPickerSnapshot<T> {
   /// Snapshot describing typed text mode.
   const CustomizableMultiPickerSnapshot.typed(String text)
-      : kind = CustomizablePickerInputKind.typed,
-        selectedItems = const [],
-        typedText = text;
+    : kind = CustomizablePickerInputKind.typed,
+      selectedItems = const [],
+      typedText = text;
 
   /// Snapshot describing a multi selection.
   const CustomizableMultiPickerSnapshot.selected(List<T> items)
-      : kind = CustomizablePickerInputKind.selected,
-        selectedItems = items,
-        typedText = '';
+    : kind = CustomizablePickerInputKind.selected,
+      selectedItems = items,
+      typedText = '';
 
   /// Empty snapshot (selected mode, empty list).
   const CustomizableMultiPickerSnapshot.empty()
-      : kind = CustomizablePickerInputKind.selected,
-        selectedItems = const [],
-        typedText = '';
+    : kind = CustomizablePickerInputKind.selected,
+      selectedItems = const [],
+      typedText = '';
 
   /// Whether the snapshot represents typed text or a multi selection.
   final CustomizablePickerInputKind kind;
@@ -189,7 +189,8 @@ class UnifiedFormCustomizablePickerField<T> extends StatefulWidget {
 
 class _UnifiedFormCustomizablePickerFieldState<T>
     extends State<UnifiedFormCustomizablePickerField<T>> {
-  final GlobalKey<FormFieldState<CustomizableSinglePickerController<T>>> _fieldKey =
+  final GlobalKey<FormFieldState<CustomizableSinglePickerController<T>>>
+  _fieldKey =
       GlobalKey<FormFieldState<CustomizableSinglePickerController<T>>>();
 
   void _onControllerChanged() {
@@ -203,7 +204,9 @@ class _UnifiedFormCustomizablePickerFieldState<T>
   }
 
   @override
-  void didUpdateWidget(covariant UnifiedFormCustomizablePickerField<T> oldWidget) {
+  void didUpdateWidget(
+    covariant UnifiedFormCustomizablePickerField<T> oldWidget,
+  ) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pickerController != widget.pickerController) {
       oldWidget.pickerController.removeListener(_onControllerChanged);
@@ -370,8 +373,8 @@ class UnifiedFormCustomizableMultiPickerField<T> extends StatefulWidget {
 
 class _UnifiedFormCustomizableMultiPickerFieldState<T>
     extends State<UnifiedFormCustomizableMultiPickerField<T>> {
-  final GlobalKey<FormFieldState<CustomizableMultiPickerController<T>>> _fieldKey =
-      GlobalKey<FormFieldState<CustomizableMultiPickerController<T>>>();
+  final GlobalKey<FormFieldState<CustomizableMultiPickerController<T>>>
+  _fieldKey = GlobalKey<FormFieldState<CustomizableMultiPickerController<T>>>();
 
   void _onControllerChanged() {
     _fieldKey.currentState?.didChange(widget.pickerController);
@@ -384,7 +387,9 @@ class _UnifiedFormCustomizableMultiPickerFieldState<T>
   }
 
   @override
-  void didUpdateWidget(covariant UnifiedFormCustomizableMultiPickerField<T> oldWidget) {
+  void didUpdateWidget(
+    covariant UnifiedFormCustomizableMultiPickerField<T> oldWidget,
+  ) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pickerController != widget.pickerController) {
       oldWidget.pickerController.removeListener(_onControllerChanged);
@@ -551,7 +556,8 @@ class UnifiedFormCustomizableAsyncPickerField<T> extends StatefulWidget {
 
 class _UnifiedFormCustomizableAsyncPickerFieldState<T>
     extends State<UnifiedFormCustomizableAsyncPickerField<T>> {
-  final GlobalKey<FormFieldState<CustomizableSinglePickerController<T>>> _fieldKey =
+  final GlobalKey<FormFieldState<CustomizableSinglePickerController<T>>>
+  _fieldKey =
       GlobalKey<FormFieldState<CustomizableSinglePickerController<T>>>();
 
   void _onControllerChanged() {
@@ -565,7 +571,9 @@ class _UnifiedFormCustomizableAsyncPickerFieldState<T>
   }
 
   @override
-  void didUpdateWidget(covariant UnifiedFormCustomizableAsyncPickerField<T> oldWidget) {
+  void didUpdateWidget(
+    covariant UnifiedFormCustomizableAsyncPickerField<T> oldWidget,
+  ) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pickerController != widget.pickerController) {
       oldWidget.pickerController.removeListener(_onControllerChanged);
@@ -732,8 +740,8 @@ class UnifiedFormCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
 
 class _UnifiedFormCustomizableAsyncMultiPickerFieldState<T>
     extends State<UnifiedFormCustomizableAsyncMultiPickerField<T>> {
-  final GlobalKey<FormFieldState<CustomizableMultiPickerController<T>>> _fieldKey =
-      GlobalKey<FormFieldState<CustomizableMultiPickerController<T>>>();
+  final GlobalKey<FormFieldState<CustomizableMultiPickerController<T>>>
+  _fieldKey = GlobalKey<FormFieldState<CustomizableMultiPickerController<T>>>();
 
   void _onControllerChanged() {
     _fieldKey.currentState?.didChange(widget.pickerController);
@@ -747,7 +755,8 @@ class _UnifiedFormCustomizableAsyncMultiPickerFieldState<T>
 
   @override
   void didUpdateWidget(
-      covariant UnifiedFormCustomizableAsyncMultiPickerField<T> oldWidget) {
+    covariant UnifiedFormCustomizableAsyncMultiPickerField<T> oldWidget,
+  ) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pickerController != widget.pickerController) {
       oldWidget.pickerController.removeListener(_onControllerChanged);

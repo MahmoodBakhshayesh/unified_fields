@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../fields/unified_input_picker.dart';
@@ -9,8 +8,7 @@ FocusNode? unifiedEffectiveFocusNode<T>({
   BaseUnifiedFieldController<T>? fieldController,
   UnifiedInputPicker<T>? binding,
   FocusNode? direct,
-}) =>
-    fieldController?.focusNode ?? binding?.focusNode ?? direct;
+}) => fieldController?.focusNode ?? binding?.focusNode ?? direct;
 
 /// Opens a picker sheet the same way as tapping the bound field.
 typedef UnifiedFieldOpener = Future<void> Function(BuildContext context);
@@ -38,10 +36,7 @@ void attachUnifiedFieldHandles({
 }
 
 /// Clears opener/focus attachments. Call from [State.dispose].
-void detachUnifiedFieldHandles({
-  Object? binding,
-  Object? fieldController,
-}) {
+void detachUnifiedFieldHandles({Object? binding, Object? fieldController}) {
   _attachHandles(binding, null, null);
   _attachHandles(fieldController, null, null);
 }
@@ -80,7 +75,8 @@ void syncFormFieldFromExternalList<T>({
   if (formState != null && !unifiedListsEqual(formState.value, value)) {
     formState.didChange(value);
   }
-  if (fieldController != null && !unifiedListsEqual(fieldController.value, value)) {
+  if (fieldController != null &&
+      !unifiedListsEqual(fieldController.value, value)) {
     fieldController.value = value;
   }
 }
@@ -122,13 +118,11 @@ T? unifiedEffectiveValue<T>({
   BaseUnifiedFieldController<T>? fieldController,
   UnifiedInputPicker<T>? binding,
   T? direct,
-}) =>
-    fieldController?.value ?? binding?.value ?? direct;
+}) => fieldController?.value ?? binding?.value ?? direct;
 
 /// Effective list value for multi-select fields.
 List<T> unifiedEffectiveListValue<T>({
   BaseUnifiedFieldController<List<T>>? fieldController,
   UnifiedInputPicker<List<T>>? binding,
   List<T> direct = const [],
-}) =>
-    fieldController?.value ?? binding?.value ?? direct;
+}) => fieldController?.value ?? binding?.value ?? direct;

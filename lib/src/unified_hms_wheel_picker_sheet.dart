@@ -80,10 +80,12 @@ class UnifiedFieldsHmsWheelPickerSheet extends StatefulWidget {
   final ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind;
 
   @override
-  State<UnifiedFieldsHmsWheelPickerSheet> createState() => _UnifiedFieldsHmsWheelPickerSheetState();
+  State<UnifiedFieldsHmsWheelPickerSheet> createState() =>
+      _UnifiedFieldsHmsWheelPickerSheetState();
 }
 
-class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheelPickerSheet> {
+class _UnifiedFieldsHmsWheelPickerSheetState
+    extends State<UnifiedFieldsHmsWheelPickerSheet> {
   late int _h;
   late int _m;
   late int _s;
@@ -93,11 +95,11 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
   FixedExtentScrollController? _mCtrl;
   FixedExtentScrollController? _sCtrl;
 
-  String _digitText(String text) =>
-      UnifiedFieldsTypography.instance.localizeDigits(text, calendarKind: _kind);
+  String _digitText(String text) => UnifiedFieldsTypography.instance
+      .localizeDigits(text, calendarKind: _kind);
 
-  TextStyle _digitStyle(TextStyle style) =>
-      UnifiedFieldsTypography.instance.mergeDigitStyle(style, calendarKind: _kind);
+  TextStyle _digitStyle(TextStyle style) => UnifiedFieldsTypography.instance
+      .mergeDigitStyle(style, calendarKind: _kind);
 
   @override
   void initState() {
@@ -134,7 +136,9 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
 
   UnifiedInputPalette _palette(Brightness b) =>
       UnifiedInputThemeResolver.paletteFor(
-        b == Brightness.dark ? UnifiedInputBrightness.dark : UnifiedInputBrightness.light,
+        b == Brightness.dark
+            ? UnifiedInputBrightness.dark
+            : UnifiedInputBrightness.light,
       );
 
   static const double _kHeaderHeight = 36;
@@ -171,7 +175,9 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
         child: Text(
           _digitText(label),
           textAlign: TextAlign.center,
-          style: _digitStyle(TextStyle(fontSize: 17, height: 1.0, color: color)),
+          style: _digitStyle(
+            TextStyle(fontSize: 17, height: 1.0, color: color),
+          ),
           maxLines: 1,
         ),
       ),
@@ -224,7 +230,9 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
       child: DecoratedBox(
         decoration: BoxDecoration(
           border: showTrailingDivider
-              ? BorderDirectional(end: BorderSide(color: style.columnDivider!, width: 1))
+              ? BorderDirectional(
+                  end: BorderSide(color: style.columnDivider!, width: 1),
+                )
               : null,
         ),
         child: wheel,
@@ -232,7 +240,10 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
     );
   }
 
-  Widget _wheelFade({required UnifiedFieldsDateWheelStyle style, required bool top}) {
+  Widget _wheelFade({
+    required UnifiedFieldsDateWheelStyle style,
+    required bool top,
+  }) {
     return IgnorePointer(
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -302,13 +313,30 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
               children: [
                 DecoratedBox(
                   decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(color: style.headerDivider!, width: 1)),
+                    border: Border(
+                      bottom: BorderSide(color: style.headerDivider!, width: 1),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      _headerCell(label: headers.hour, flex: hFlex, style: style, divider: mFlex > 0 || sFlex > 0),
-                      _headerCell(label: headers.minute, flex: mFlex, style: style, divider: sFlex > 0),
-                      _headerCell(label: headers.second, flex: sFlex, style: style, divider: false),
+                      _headerCell(
+                        label: headers.hour,
+                        flex: hFlex,
+                        style: style,
+                        divider: mFlex > 0 || sFlex > 0,
+                      ),
+                      _headerCell(
+                        label: headers.minute,
+                        flex: mFlex,
+                        style: style,
+                        divider: sFlex > 0,
+                      ),
+                      _headerCell(
+                        label: headers.second,
+                        flex: sFlex,
+                        style: style,
+                        divider: false,
+                      ),
                     ],
                   ),
                 ),
@@ -318,9 +346,24 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
                     children: [
                       Row(
                         children: [
-                          _wheelCell(flex: hFlex, style: style, showTrailingDivider: mFlex > 0 || sFlex > 0, wheel: hourWheel),
-                          _wheelCell(flex: mFlex, style: style, showTrailingDivider: sFlex > 0, wheel: minuteWheel),
-                          _wheelCell(flex: sFlex, style: style, showTrailingDivider: false, wheel: secondWheel),
+                          _wheelCell(
+                            flex: hFlex,
+                            style: style,
+                            showTrailingDivider: mFlex > 0 || sFlex > 0,
+                            wheel: hourWheel,
+                          ),
+                          _wheelCell(
+                            flex: mFlex,
+                            style: style,
+                            showTrailingDivider: sFlex > 0,
+                            wheel: minuteWheel,
+                          ),
+                          _wheelCell(
+                            flex: sFlex,
+                            style: style,
+                            showTrailingDivider: false,
+                            wheel: secondWheel,
+                          ),
                         ],
                       ),
                       IgnorePointer(
@@ -331,7 +374,9 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
                             margin: const EdgeInsets.symmetric(horizontal: 6),
                             decoration: BoxDecoration(
                               color: style.selectionFill!,
-                              borderRadius: BorderRadius.circular(style.selectionRadius!),
+                              borderRadius: BorderRadius.circular(
+                                style.selectionRadius!,
+                              ),
                             ),
                           ),
                         ),
@@ -345,8 +390,14 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(height: 1.5, color: style.selectionBorder!),
-                                Container(height: 1.5, color: style.selectionBorder!),
+                                Container(
+                                  height: 1.5,
+                                  color: style.selectionBorder!,
+                                ),
+                                Container(
+                                  height: 1.5,
+                                  color: style.selectionBorder!,
+                                ),
                               ],
                             ),
                           ),
@@ -389,7 +440,9 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
       child: DecoratedBox(
         decoration: BoxDecoration(
           border: divider
-              ? BorderDirectional(end: BorderSide(color: style.columnDivider!, width: 1))
+              ? BorderDirectional(
+                  end: BorderSide(color: style.columnDivider!, width: 1),
+                )
               : null,
         ),
         child: _columnHeader(label, style),
@@ -402,11 +455,19 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
     final theme = Theme.of(context);
     final palette = _palette(theme.brightness);
     final strings = UnifiedFieldsStrings.instance;
-    final wheelStyle = UnifiedFieldsDateWheelStyle.forPicker(palette, theme, widget.wheelStyle);
+    final wheelStyle = UnifiedFieldsDateWheelStyle.forPicker(
+      palette,
+      theme,
+      overrides: widget.wheelStyle,
+      context: context,
+    );
     final titleText = (widget.title ?? '').trim();
 
     return Material(
-      color: theme.bottomSheetTheme.backgroundColor,
+      color: UnifiedInputThemeResolver.resolvePickerSheetBackground(
+        context,
+        palette: palette,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -417,7 +478,9 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
               children: [
                 Expanded(
                   child: Text(
-                    titleText.isEmpty ? strings.defaultDurationTitle : titleText,
+                    titleText.isEmpty
+                        ? strings.defaultDurationTitle
+                        : titleText,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: palette.fieldTextColor,
                       fontWeight: FontWeight.w600,
@@ -426,7 +489,10 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
                 ),
                 IconButton(
                   tooltip: strings.cancel,
-                  icon: Icon(Icons.close_rounded, color: palette.fieldTextColor.withValues(alpha: 0.85)),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: palette.fieldTextColor.withValues(alpha: 0.85),
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],
@@ -465,7 +531,11 @@ class _UnifiedFieldsHmsWheelPickerSheetState extends State<UnifiedFieldsHmsWheel
                 onSelectionChanged: (s) => _onKindChanged(s.first),
               ),
             ),
-          _styledWheelPanel(context: context, style: wheelStyle, strings: strings),
+          _styledWheelPanel(
+            context: context,
+            style: wheelStyle,
+            strings: strings,
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Row(

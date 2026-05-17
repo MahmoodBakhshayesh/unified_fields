@@ -19,7 +19,8 @@ import 'unified_input_palette.dart';
 import 'unified_input_theme.dart';
 
 export '../unified_duration_columns.dart';
-export '../unified_time_picker_types.dart' show UnifiedFieldsDurationPickerStyle;
+export '../unified_time_picker_types.dart'
+    show UnifiedFieldsDurationPickerStyle;
 
 /// Formats [d] for display using [pickerColumns] or [granularity].
 String unifiedFormatDuration(
@@ -63,11 +64,14 @@ Future<Duration?> showUnifiedFieldsDurationPicker({
   Duration min = Duration.zero,
   Duration max = const Duration(hours: 999),
   String? title,
-  UnifiedDurationGranularity granularity = UnifiedDurationGranularity.hoursMinutesSeconds,
+  UnifiedDurationGranularity granularity =
+      UnifiedDurationGranularity.hoursMinutesSeconds,
   List<UnifiedFieldsDurationColumn>? pickerColumns,
-  UnifiedFieldsDurationPickerStyle pickerStyle = UnifiedFieldsDurationPickerStyle.wheels,
+  UnifiedFieldsDurationPickerStyle pickerStyle =
+      UnifiedFieldsDurationPickerStyle.wheels,
   bool showCalendarKindToggle = true,
-  UnifiedFieldsCalendarKind initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
+  UnifiedFieldsCalendarKind initialCalendarKind =
+      UnifiedFieldsCalendarKind.gregorian,
   UnifiedFieldsDateWheelStyle? wheelStyle,
   ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind,
   bool barrierDismissible = true,
@@ -110,7 +114,7 @@ Future<Duration?> showUnifiedFieldsDurationPicker({
     onConfirmedCalendarKind: onConfirmedCalendarKind,
   );
 
-  if (context.isDesktop) {
+  if (context.unifiedFieldsUseDialogLayout) {
     return showDialog<Duration>(
       context: context,
       barrierDismissible: barrierDismissible,
@@ -119,7 +123,10 @@ Future<Duration?> showUnifiedFieldsDurationPicker({
         insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 420, maxHeight: MediaQuery.sizeOf(ctx).height * 0.92),
+          constraints: BoxConstraints(
+            maxWidth: 420,
+            maxHeight: MediaQuery.sizeOf(ctx).height * 0.92,
+          ),
           child: sheet,
         ),
       ),
@@ -133,7 +140,9 @@ Future<Duration?> showUnifiedFieldsDurationPicker({
     enableDrag: false,
     useSafeArea: true,
     clipBehavior: Clip.antiAlias,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+    ),
     builder: (ctx) => Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
       child: sheet,
@@ -252,26 +261,29 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
   UnifiedFieldsCalendarKind get _effectiveCalendarKind =>
       widget.fieldController?.calendarKind ?? _calendarKind;
 
-  List<UnifiedFieldsDurationColumn> get _effectiveColumns => resolveUnifiedDurationColumns(
-        pickerColumns: widget.pickerColumns ?? widget.fieldController?.pickerColumns,
+  List<UnifiedFieldsDurationColumn> get _effectiveColumns =>
+      resolveUnifiedDurationColumns(
+        pickerColumns:
+            widget.pickerColumns ?? widget.fieldController?.pickerColumns,
         granularity: widget.granularity,
       );
 
   Duration get _effective => unifiedClampDuration(
-        unifiedEffectiveValue(
-              fieldController: widget.fieldController,
-              binding: widget.binding,
-              direct: widget.value,
-            ) ??
-            Duration.zero,
-        widget.min,
-        widget.max,
-      );
+    unifiedEffectiveValue(
+          fieldController: widget.fieldController,
+          binding: widget.binding,
+          direct: widget.value,
+        ) ??
+        Duration.zero,
+    widget.min,
+    widget.max,
+  );
 
   @override
   void initState() {
     super.initState();
-    _calendarKind = widget.fieldController?.calendarKind ?? widget.initialCalendarKind;
+    _calendarKind =
+        widget.fieldController?.calendarKind ?? widget.initialCalendarKind;
     _fn = widget.focusNode ?? FocusNode();
     _ownsFn = widget.focusNode == null;
     _fn.addListener(_onFocus);
@@ -290,7 +302,8 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
       _ownsFn = widget.focusNode == null;
       _fn.addListener(_onFocus);
     }
-    if (oldWidget.binding != widget.binding || oldWidget.fieldController != widget.fieldController) {
+    if (oldWidget.binding != widget.binding ||
+        oldWidget.fieldController != widget.fieldController) {
       oldWidget.binding?.removeListener(_onBinding);
       oldWidget.fieldController?.removeListener(_onBinding);
       widget.binding?.addListener(_onBinding);
@@ -374,12 +387,24 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
     super.dispose();
   }
 
-  Future<void> _openSheet(BuildContext context, UnifiedInputDecoration d) async {
+  Future<void> _openSheet(
+    BuildContext context,
+    UnifiedInputDecoration d,
+  ) async {
     if (widget.isDisabled || widget.locked) return;
     final fc = widget.fieldController;
     if (fc != null) {
-      final title = widget.placeholder ?? d.placeholder ?? widget.label ?? d.label ?? UnifiedFieldsStrings.instance.defaultDurationTitle;
-      final picked = await fc.openPicker(context, title: title, initial: _effective);
+      final title =
+          widget.placeholder ??
+          d.placeholder ??
+          widget.label ??
+          d.label ??
+          UnifiedFieldsStrings.instance.defaultDurationTitle;
+      final picked = await fc.openPicker(
+        context,
+        title: title,
+        initial: _effective,
+      );
       if (!context.mounted || picked == null) return;
       _txt.text = unifiedFormatDuration(
         picked,
@@ -396,13 +421,20 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
       setState(() {});
       return;
     }
-    final palette = widget.brightness != null ? UnifiedInputThemeResolver.paletteFor(widget.brightness!) : UnifiedInputThemeResolver.resolvePalette(context);
+    final palette = widget.brightness != null
+        ? UnifiedInputThemeResolver.paletteFor(widget.brightness!)
+        : UnifiedInputThemeResolver.resolvePalette(context);
 
     final title =
-        widget.placeholder ?? d.placeholder ?? widget.label ?? d.label ?? UnifiedFieldsStrings.instance.defaultDurationTitle;
+        widget.placeholder ??
+        d.placeholder ??
+        widget.label ??
+        d.label ??
+        UnifiedFieldsStrings.instance.defaultDurationTitle;
     final minDur = widget.min ?? Duration.zero;
     final maxDur = widget.max ?? const Duration(hours: 999);
-    final pickerStyle = widget.fieldController?.pickerStyle ?? widget.pickerStyle;
+    final pickerStyle =
+        widget.fieldController?.pickerStyle ?? widget.pickerStyle;
 
     final Duration? result;
     if (pickerStyle == UnifiedFieldsDurationPickerStyle.wheels) {
@@ -424,7 +456,9 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
         context: context,
         isScrollControlled: true,
         backgroundColor: palette.sheetBackground,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
         builder: (ctx) {
           return UnifiedDurationPickerSheet(
             title: title,
@@ -459,10 +493,16 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final d = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
 
     return GestureDetector(
-      onTap: widget.locked || widget.isDisabled ? null : () => _openSheet(context, d),
+      onTap: widget.locked || widget.isDisabled
+          ? null
+          : () => _openSheet(context, d),
       child: AbsorbPointer(
         absorbing: true,
         child: UnifiedBaseTextField(
@@ -477,8 +517,10 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
           labelStyle: d.labelStyle,
           style: d.fieldStyle,
           backgroundColor: d.backgroundColor ?? Colors.black26,
-          headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26,
-          borderRadius: d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+          headerBackgroundColor:
+              d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26,
+          borderRadius:
+              d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
           borderSide: d.borderSide,
           height: d.height,
           rowLabelRatio: d.rowLabelRatio,
@@ -489,7 +531,14 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
           validationIcon: d.validationIcon,
           prefix: d.prefix,
           prefixIcon: d.prefixIcon,
-          suffixIcon: widget.isDisabled || widget.locked ? null : (d.suffixIcon ?? const Icon(Icons.timer)),
+          suffixIcon: widget.isDisabled || widget.locked
+              ? null
+              : (d.suffixIcon ??
+                    UnifiedInputThemeResolver.defaultSuffixIcon(
+                      context,
+                      UnifiedInputFieldSuffixKind.duration,
+                      UnifiedInputThemeResolver.resolvePalette(context),
+                    )),
           padding: d.contentPadding,
           validator: widget.validator,
           textAlign: TextAlign.center,
@@ -508,6 +557,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
 class UnifiedDurationPickerSheet extends StatefulWidget {
   /// Creates the duration picker sheet content.
   const UnifiedDurationPickerSheet({
+    super.key,
     required this.title,
     required this.palette,
     required this.initial,
@@ -539,10 +589,12 @@ class UnifiedDurationPickerSheet extends StatefulWidget {
   final UnifiedFieldsCalendarKind? calendarKind;
 
   @override
-  State<UnifiedDurationPickerSheet> createState() => _UnifiedDurationPickerSheetState();
+  State<UnifiedDurationPickerSheet> createState() =>
+      _UnifiedDurationPickerSheetState();
 }
 
-class _UnifiedDurationPickerSheetState extends State<UnifiedDurationPickerSheet> {
+class _UnifiedDurationPickerSheetState
+    extends State<UnifiedDurationPickerSheet> {
   late List<int> _values;
   late List<FixedExtentScrollController> _controllers;
 
@@ -567,7 +619,11 @@ class _UnifiedDurationPickerSheetState extends State<UnifiedDurationPickerSheet>
     _values = decomposeUnifiedDuration(d, widget.columns);
     _controllers = List.generate(widget.columns.length, (i) {
       final col = widget.columns[i];
-      final max = unifiedDurationColumnMaxIndex(col, widget.columns, widget.max);
+      final max = unifiedDurationColumnMaxIndex(
+        col,
+        widget.columns,
+        widget.max,
+      );
       final initial = _values[i].clamp(0, max);
       _values[i] = initial;
       return FixedExtentScrollController(initialItem: initial);
@@ -596,7 +652,13 @@ class _UnifiedDurationPickerSheetState extends State<UnifiedDurationPickerSheet>
       flex: flex,
       child: Column(
         children: [
-          Text(suffix, style: TextStyle(fontSize: 12, color: pal.fieldTextColor.withValues(alpha: 0.7))),
+          Text(
+            suffix,
+            style: TextStyle(
+              fontSize: 12,
+              color: pal.fieldTextColor.withValues(alpha: 0.7),
+            ),
+          ),
           Expanded(
             child: CupertinoPicker(
               scrollController: controller,
@@ -609,7 +671,10 @@ class _UnifiedDurationPickerSheetState extends State<UnifiedDurationPickerSheet>
                 maxIndex + 1,
                 (i) => Center(
                   child: Text(
-                    UnifiedFieldsTypography.instance.localizeDigits('$i', calendarKind: _digitKind),
+                    UnifiedFieldsTypography.instance.localizeDigits(
+                      '$i',
+                      calendarKind: _digitKind,
+                    ),
                     style: UnifiedFieldsTypography.instance.mergeDigitStyle(
                       TextStyle(color: pal.fieldTextColor),
                       calendarKind: _digitKind,
@@ -632,29 +697,43 @@ class _UnifiedDurationPickerSheetState extends State<UnifiedDurationPickerSheet>
 
     return SafeArea(
       child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               decoration: BoxDecoration(
                 color: pal.sheetHeaderBackground,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  TextButton(onPressed: () => Navigator.pop(context), child: Text(UnifiedFieldsStrings.instance.cancel)),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(UnifiedFieldsStrings.instance.cancel),
+                  ),
                   Expanded(
                     child: Text(
                       widget.title,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontWeight: FontWeight.w600, color: pal.fieldTextColor),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: pal.fieldTextColor,
+                      ),
                     ),
                   ),
                   TextButton(
                     onPressed: () {
-                      final composed = unifiedClampDuration(_compose(), minDur, maxDur);
+                      final composed = unifiedClampDuration(
+                        _compose(),
+                        minDur,
+                        maxDur,
+                      );
                       Navigator.pop(context, composed);
                     },
                     child: Text(UnifiedFieldsStrings.instance.done),
@@ -669,7 +748,11 @@ class _UnifiedDurationPickerSheetState extends State<UnifiedDurationPickerSheet>
                   for (var i = 0; i < widget.columns.length; i++)
                     _wheel(
                       flex: 2,
-                      maxIndex: unifiedDurationColumnMaxIndex(widget.columns[i], widget.columns, maxDur),
+                      maxIndex: unifiedDurationColumnMaxIndex(
+                        widget.columns[i],
+                        widget.columns,
+                        maxDur,
+                      ),
                       controller: _controllers[i],
                       onPick: (v) => _values[i] = v,
                       suffix: _suffixFor(widget.columns[i]),

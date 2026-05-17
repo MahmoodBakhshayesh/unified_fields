@@ -44,7 +44,8 @@ class UnifiedFieldsTypography {
   /// Whether Persian digit rules apply for [calendarKind].
   bool shouldUsePersianDigits({UnifiedFieldsCalendarKind? calendarKind}) {
     if (usePersianDigitsGlobally) return true;
-    if (calendarKind == UnifiedFieldsCalendarKind.jalali && usePersianDigitsInShamsi) {
+    if (calendarKind == UnifiedFieldsCalendarKind.jalali &&
+        usePersianDigitsInShamsi) {
       return true;
     }
     return false;

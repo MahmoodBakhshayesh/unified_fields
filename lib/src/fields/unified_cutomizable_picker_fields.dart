@@ -95,10 +95,12 @@ class UnifiedCustomizablePickerField<T> extends StatefulWidget {
   final ValueChanged<CustomizableSinglePickerController<T>>? onChanged;
 
   @override
-  State<UnifiedCustomizablePickerField<T>> createState() => _UnifiedCustomizablePickerFieldState<T>();
+  State<UnifiedCustomizablePickerField<T>> createState() =>
+      _UnifiedCustomizablePickerFieldState<T>();
 }
 
-class _UnifiedCustomizablePickerFieldState<T> extends State<UnifiedCustomizablePickerField<T>> {
+class _UnifiedCustomizablePickerFieldState<T>
+    extends State<UnifiedCustomizablePickerField<T>> {
   late final TextEditingController _txt = TextEditingController();
 
   /// [UnifiedBaseTextField] calls [onChanged] for programmatic [TextEditingController] updates too;
@@ -107,7 +109,9 @@ class _UnifiedCustomizablePickerFieldState<T> extends State<UnifiedCustomizableP
 
   T? get _sheetSeedValue {
     final pc = widget.pickerController;
-    return pc.inputKind == CustomizablePickerInputKind.selected ? pc.selectedItem : null;
+    return pc.inputKind == CustomizablePickerInputKind.selected
+        ? pc.selectedItem
+        : null;
   }
 
   void _syncText() {
@@ -159,7 +163,11 @@ class _UnifiedCustomizablePickerFieldState<T> extends State<UnifiedCustomizableP
 
   Future<void> _open(BuildContext context) async {
     if (widget.locked || widget.isDisabled) return;
-    final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
       context: context,
@@ -173,7 +181,11 @@ class _UnifiedCustomizablePickerFieldState<T> extends State<UnifiedCustomizableP
           hasClear: widget.showClearButton,
           searchBuilder: widget.searchBuilder,
           items: widget.items,
-          label: widget.placeholder ?? dec.placeholder ?? dec.label ?? widget.label,
+          label:
+              widget.placeholder ??
+              dec.placeholder ??
+              dec.label ??
+              widget.label,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
         ),
@@ -198,8 +210,13 @@ class _UnifiedCustomizablePickerFieldState<T> extends State<UnifiedCustomizableP
 
   @override
   Widget build(BuildContext context) {
-    final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
-    final readOnly = widget.locked || widget.isDisabled || !widget.allowFreeText;
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
+    final readOnly =
+        widget.locked || widget.isDisabled || !widget.allowFreeText;
 
     final field = UnifiedBaseTextField(
       controller: _txt,
@@ -214,8 +231,10 @@ class _UnifiedCustomizablePickerFieldState<T> extends State<UnifiedCustomizableP
       labelStyle: dec.labelStyle,
       style: dec.fieldStyle,
       backgroundColor: dec.backgroundColor ?? Colors.black26,
-      headerBackgroundColor: dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
-      borderRadius: dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+      headerBackgroundColor:
+          dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
+      borderRadius:
+          dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
       borderSide: dec.borderSide,
       height: dec.height,
       rowLabelRatio: dec.rowLabelRatio,
@@ -333,10 +352,12 @@ class UnifiedCustomizableMultiPickerField<T> extends StatefulWidget {
   final ValueChanged<CustomizableMultiPickerController<T>>? onChanged;
 
   @override
-  State<UnifiedCustomizableMultiPickerField<T>> createState() => _UnifiedCustomizableMultiPickerFieldState<T>();
+  State<UnifiedCustomizableMultiPickerField<T>> createState() =>
+      _UnifiedCustomizableMultiPickerFieldState<T>();
 }
 
-class _UnifiedCustomizableMultiPickerFieldState<T> extends State<UnifiedCustomizableMultiPickerField<T>> {
+class _UnifiedCustomizableMultiPickerFieldState<T>
+    extends State<UnifiedCustomizableMultiPickerField<T>> {
   late final TextEditingController _txt = TextEditingController();
 
   /// See [_UnifiedCustomizablePickerFieldState._applyingDisplayText].
@@ -344,7 +365,9 @@ class _UnifiedCustomizableMultiPickerFieldState<T> extends State<UnifiedCustomiz
 
   List<T> get _sheetSeedValues {
     final pc = widget.pickerController;
-    return pc.inputKind == CustomizablePickerInputKind.selected ? List<T>.from(pc.selectedItems) : <T>[];
+    return pc.inputKind == CustomizablePickerInputKind.selected
+        ? List<T>.from(pc.selectedItems)
+        : <T>[];
   }
 
   void _syncText() {
@@ -369,7 +392,9 @@ class _UnifiedCustomizableMultiPickerFieldState<T> extends State<UnifiedCustomiz
   }
 
   @override
-  void didUpdateWidget(covariant UnifiedCustomizableMultiPickerField<T> oldWidget) {
+  void didUpdateWidget(
+    covariant UnifiedCustomizableMultiPickerField<T> oldWidget,
+  ) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pickerController != widget.pickerController) {
       oldWidget.pickerController.removeListener(_onPickerController);
@@ -409,7 +434,11 @@ class _UnifiedCustomizableMultiPickerFieldState<T> extends State<UnifiedCustomiz
           hasClear: widget.showClearButton,
           searchBuilder: widget.searchBuilder,
           items: widget.items,
-          label: widget.placeholder ?? dec.placeholder ?? dec.label ?? widget.label,
+          label:
+              widget.placeholder ??
+              dec.placeholder ??
+              dec.label ??
+              widget.label,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
         ),
@@ -435,8 +464,13 @@ class _UnifiedCustomizableMultiPickerFieldState<T> extends State<UnifiedCustomiz
 
   @override
   Widget build(BuildContext context) {
-    final dec = resolveUnifiedDecoration(context, overrides: widget.decoration, brightness: widget.brightness);
-    final readOnly = widget.locked || widget.isDisabled || !widget.allowFreeText;
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
+    final readOnly =
+        widget.locked || widget.isDisabled || !widget.allowFreeText;
 
     final field = UnifiedBaseTextField(
       controller: _txt,
@@ -451,8 +485,10 @@ class _UnifiedCustomizableMultiPickerFieldState<T> extends State<UnifiedCustomiz
       labelStyle: dec.labelStyle,
       style: dec.fieldStyle,
       backgroundColor: dec.backgroundColor ?? Colors.black26,
-      headerBackgroundColor: dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
-      borderRadius: dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+      headerBackgroundColor:
+          dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
+      borderRadius:
+          dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
       borderSide: dec.borderSide,
       height: dec.height,
       rowLabelRatio: dec.rowLabelRatio,
@@ -478,7 +514,9 @@ class _UnifiedCustomizableMultiPickerFieldState<T> extends State<UnifiedCustomiz
 
     if (!widget.allowFreeText) {
       return GestureDetector(
-        onTap: widget.locked || widget.isDisabled ? null : () => _open(context, dec),
+        onTap: widget.locked || widget.isDisabled
+            ? null
+            : () => _open(context, dec),
         child: field,
       );
     }
