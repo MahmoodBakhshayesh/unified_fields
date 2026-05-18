@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 
+import '../controllers/field_controller_sync.dart';
 import 'unified_base_text_field.dart';
 import 'unified_customizable_picker_controller.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
+import 'unified_picker_item_builders.dart';
 import 'unified_picker_sheet.dart';
 
 /// Like [UnifiedAsyncPickerField] but supports free typing vs sheet selection via
 /// [pickerController], same model as [UnifiedCustomizablePickerField].
 ///
-/// Choices come from [itemProvider] when the dropdown [IconButton] is pressed.
+/// Choices come from [itemProvider] when the field or suffix is pressed.
 class UnifiedCustomizableAsyncPickerField<T> extends StatefulWidget {
   /// Creates a customizable async single-select picker field.
   const UnifiedCustomizableAsyncPickerField({
@@ -25,11 +27,14 @@ class UnifiedCustomizableAsyncPickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.disabled = false,
     this.isDisabled = false,
     this.validator,
     this.placeholder,
@@ -64,8 +69,14 @@ class UnifiedCustomizableAsyncPickerField<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
 
-  /// Custom row builder inside the sheet.
+  /// Custom row builder inside the sheet (list layout).
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Optional suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -81,6 +92,9 @@ class UnifiedCustomizableAsyncPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool disabled;
 
   /// When true, greys out the label and shows a forbid suffix icon.
   final bool isDisabled;
@@ -107,6 +121,8 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
 
   bool _applyingDisplayText = false;
 
+  bool get _inactive => widget.disabled || widget.isDisabled;
+
   T? get _sheetSeedValue {
     final pc = widget.pickerController;
     return pc.inputKind == CustomizablePickerInputKind.selected
@@ -127,6 +143,29 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
     }
   }
 
+  String _sheetLabel(UnifiedInputDecoration dec) =>
+      widget.placeholder ?? dec.placeholder ?? dec.label ?? widget.label;
+
+  void _syncFieldController(UnifiedInputDecoration dec) {
+    widget.pickerController.bindAsyncPicker(
+      itemProvider: widget.itemProvider,
+      label: _sheetLabel(dec),
+      suggestion: widget.suggestion,
+      hasSearch: widget.hasSearch,
+      searchAutoFocus: widget.searchAutoFocus,
+      showClearButton: widget.showClearButton,
+      searchBuilder: widget.searchBuilder,
+      itemToWidget: widget.itemToWidget,
+      gridItemBuilder: widget.gridItemBuilder,
+      gridDelegate: widget.gridDelegate,
+    );
+    attachUnifiedFieldHandles(
+      opener: _presentPicker,
+      focusNode: widget.pickerController.focusNode,
+      fieldController: widget.pickerController,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -136,17 +175,42 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncFieldController(
+      resolveUnifiedDecoration(
+        context,
+        overrides: widget.decoration,
+        brightness: widget.brightness,
+      ),
+    );
+  }
+
+  @override
   void didUpdateWidget(
     covariant UnifiedCustomizableAsyncPickerField<T> oldWidget,
   ) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pickerController != widget.pickerController) {
+      detachUnifiedFieldHandles(fieldController: oldWidget.pickerController);
       oldWidget.pickerController.removeListener(_onPickerController);
       oldWidget.pickerController.valueToString = null;
       widget.pickerController.valueToString = widget.valueToString;
       widget.pickerController.addListener(_onPickerController);
     } else {
       widget.pickerController.valueToString = widget.valueToString;
+    }
+    if (oldWidget.pickerController != widget.pickerController ||
+        oldWidget.label != widget.label ||
+        oldWidget.decoration != widget.decoration ||
+        oldWidget.itemProvider != widget.itemProvider) {
+      _syncFieldController(
+        resolveUnifiedDecoration(
+          context,
+          overrides: widget.decoration,
+          brightness: widget.brightness,
+        ),
+      );
     }
     _syncText();
   }
@@ -158,13 +222,14 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
 
   @override
   void dispose() {
+    detachUnifiedFieldHandles(fieldController: widget.pickerController);
     widget.pickerController.removeListener(_onPickerController);
     _txt.dispose();
     super.dispose();
   }
 
-  Future<void> _open() async {
-    if (widget.locked || widget.isDisabled || _loading) return;
+  Future<void> _presentPicker(BuildContext context) async {
+    if (widget.locked || _inactive || _loading) return;
     if (!mounted) return;
 
     final dec = resolveUnifiedDecoration(
@@ -179,7 +244,7 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
     } finally {
       if (mounted) setState(() => _loading = false);
     }
-    if (!mounted) return;
+    if (!mounted || !context.mounted) return;
 
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
@@ -194,13 +259,11 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
           hasClear: widget.showClearButton,
           searchBuilder: widget.searchBuilder,
           items: _items,
-          label:
-              widget.placeholder ??
-              dec.placeholder ??
-              dec.label ??
-              widget.label,
+          label: _sheetLabel(dec),
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
         ),
       ),
     );
@@ -216,6 +279,11 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
     setState(() {});
   }
 
+  Future<void> _open() async {
+    if (!mounted) return;
+    await _presentPicker(context);
+  }
+
   void _onFieldTextChanged(String raw) {
     if (_applyingDisplayText) return;
     widget.pickerController.applyTyped(raw);
@@ -228,11 +296,10 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
       overrides: widget.decoration,
       brightness: widget.brightness,
     );
-    final readOnly =
-        widget.locked || widget.isDisabled || !widget.allowFreeText;
+    final readOnly = widget.locked || _inactive || !widget.allowFreeText;
 
     final palette = UnifiedInputThemeResolver.resolvePalette(context);
-    final Widget? suffix = widget.isDisabled || widget.locked || _loading
+    final Widget? suffix = widget.locked || _inactive || _loading
         ? dec.suffixIcon
         : (dec.suffixIcon ??
               UnifiedInputThemeResolver.defaultSuffixIcon(
@@ -242,48 +309,43 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
                 onPressed: _open,
               ));
 
-    final field = UnifiedBaseTextField(
-      controller: _txt,
-      readOnly: readOnly,
-      interactionBlocked: true,
-      loading: _loading,
-      focusNode: widget.pickerController.focusNode,
-      errorText: widget.pickerController.errorText,
-      isDisabled: widget.isDisabled,
-      locked: widget.locked,
-      onChanged: widget.allowFreeText ? _onFieldTextChanged : null,
-      label: dec.label ?? widget.label,
-      placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
-      labelStyle: dec.labelStyle,
-      style: dec.fieldStyle,
-      backgroundColor: dec.backgroundColor ?? Colors.black26,
-      headerBackgroundColor:
-          dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
-      borderRadius:
-          dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
-      borderSide: dec.borderSide,
-      height: dec.height,
-      rowLabelRatio: dec.rowLabelRatio,
-      labelInRow: dec.labelInRow,
-      labelMode: dec.labelMode,
-      requiredField: widget.isRequired || dec.requiredField,
-      showError: dec.showError,
-      validationColor: dec.validationColor,
-      validationIcon: dec.validationIcon,
-      prefix: dec.prefix,
-      prefixIcon: dec.prefixIcon,
-      suffixIcon: suffix,
-      padding: dec.contentPadding,
-      validator: widget.validator,
+    return GestureDetector(
+      onTap: widget.locked || _inactive || _loading ? null : _open,
+      child: UnifiedBaseTextField(
+        controller: _txt,
+        readOnly: readOnly,
+        interactionBlocked: true,
+        loading: _loading,
+        focusNode: widget.pickerController.focusNode,
+        errorText: widget.pickerController.errorText,
+        isDisabled: _inactive,
+        locked: widget.locked,
+        onChanged: widget.allowFreeText ? _onFieldTextChanged : null,
+        label: dec.label ?? widget.label,
+        placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
+        labelStyle: dec.labelStyle,
+        style: dec.fieldStyle,
+        backgroundColor: dec.backgroundColor ?? Colors.black26,
+        headerBackgroundColor:
+            dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
+        borderRadius:
+            dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+        borderSide: dec.borderSide,
+        height: dec.height,
+        rowLabelRatio: dec.rowLabelRatio,
+        labelInRow: dec.labelInRow,
+        labelMode: dec.labelMode,
+        requiredField: widget.isRequired || dec.requiredField,
+        showError: dec.showError,
+        validationColor: dec.validationColor,
+        validationIcon: dec.validationIcon,
+        prefix: dec.prefix,
+        prefixIcon: dec.prefixIcon,
+        suffixIcon: suffix,
+        padding: dec.contentPadding,
+        validator: widget.validator,
+      ),
     );
-
-    if (!widget.allowFreeText) {
-      return GestureDetector(
-        onTap: widget.locked || widget.isDisabled || _loading ? null : _open,
-        child: field,
-      );
-    }
-    return field;
   }
 }
 
@@ -302,11 +364,14 @@ class UnifiedCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
     this.showClearButton = true,
     this.locked = false,
+    this.disabled = false,
     this.isDisabled = false,
     this.validator,
     this.placeholder,
@@ -341,8 +406,14 @@ class UnifiedCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
 
-  /// Custom row builder inside the sheet.
+  /// Custom row builder inside the sheet (list layout).
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Optional suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -358,6 +429,9 @@ class UnifiedCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// When true, the field is non-interactive.
   final bool locked;
+
+  /// When true, greys out the label and shows a forbid suffix icon.
+  final bool disabled;
 
   /// When true, greys out the label and shows a forbid suffix icon.
   final bool isDisabled;
@@ -384,6 +458,8 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
 
   bool _applyingDisplayText = false;
 
+  bool get _inactive => widget.disabled || widget.isDisabled;
+
   List<T> get _sheetSeedValues {
     final pc = widget.pickerController;
     return pc.inputKind == CustomizablePickerInputKind.selected
@@ -404,6 +480,29 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
     }
   }
 
+  String _sheetLabel(UnifiedInputDecoration dec) =>
+      widget.placeholder ?? dec.placeholder ?? dec.label ?? widget.label;
+
+  void _syncFieldController(UnifiedInputDecoration dec) {
+    widget.pickerController.bindAsyncPicker(
+      itemProvider: widget.itemProvider,
+      label: _sheetLabel(dec),
+      suggestion: widget.suggestion,
+      hasSearch: widget.hasSearch,
+      searchAutoFocus: widget.searchAutoFocus,
+      showClearButton: widget.showClearButton,
+      searchBuilder: widget.searchBuilder,
+      itemToWidget: widget.itemToWidget,
+      gridItemBuilder: widget.gridItemBuilder,
+      gridDelegate: widget.gridDelegate,
+    );
+    attachUnifiedFieldHandles(
+      opener: _presentPicker,
+      focusNode: widget.pickerController.focusNode,
+      fieldController: widget.pickerController,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -413,17 +512,42 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncFieldController(
+      resolveUnifiedDecoration(
+        context,
+        overrides: widget.decoration,
+        brightness: widget.brightness,
+      ),
+    );
+  }
+
+  @override
   void didUpdateWidget(
     covariant UnifiedCustomizableAsyncMultiPickerField<T> oldWidget,
   ) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pickerController != widget.pickerController) {
+      detachUnifiedFieldHandles(fieldController: oldWidget.pickerController);
       oldWidget.pickerController.removeListener(_onPickerController);
       oldWidget.pickerController.valueToString = null;
       widget.pickerController.valueToString = widget.valueToString;
       widget.pickerController.addListener(_onPickerController);
     } else {
       widget.pickerController.valueToString = widget.valueToString;
+    }
+    if (oldWidget.pickerController != widget.pickerController ||
+        oldWidget.label != widget.label ||
+        oldWidget.decoration != widget.decoration ||
+        oldWidget.itemProvider != widget.itemProvider) {
+      _syncFieldController(
+        resolveUnifiedDecoration(
+          context,
+          overrides: widget.decoration,
+          brightness: widget.brightness,
+        ),
+      );
     }
     _syncText();
   }
@@ -435,14 +559,21 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
 
   @override
   void dispose() {
+    detachUnifiedFieldHandles(fieldController: widget.pickerController);
     widget.pickerController.removeListener(_onPickerController);
     _txt.dispose();
     super.dispose();
   }
 
-  Future<void> _open(UnifiedInputDecoration dec) async {
-    if (widget.locked || widget.isDisabled || _loading) return;
+  Future<void> _presentPicker(BuildContext context) async {
+    if (widget.locked || _inactive || _loading) return;
     if (!mounted) return;
+
+    final dec = resolveUnifiedDecoration(
+      context,
+      overrides: widget.decoration,
+      brightness: widget.brightness,
+    );
 
     setState(() => _loading = true);
     try {
@@ -450,7 +581,7 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
     } finally {
       if (mounted) setState(() => _loading = false);
     }
-    if (!mounted) return;
+    if (!mounted || !context.mounted) return;
 
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
@@ -465,13 +596,11 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
           hasClear: widget.showClearButton,
           searchBuilder: widget.searchBuilder,
           items: _items,
-          label:
-              widget.placeholder ??
-              dec.placeholder ??
-              dec.label ??
-              widget.label,
+          label: _sheetLabel(dec),
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
         ),
       ),
     );
@@ -488,6 +617,11 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
     setState(() {});
   }
 
+  Future<void> _open() async {
+    if (!mounted) return;
+    await _presentPicker(context);
+  }
+
   void _onFieldTextChanged(String raw) {
     if (_applyingDisplayText) return;
     widget.pickerController.applyTyped(raw);
@@ -500,63 +634,55 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
       overrides: widget.decoration,
       brightness: widget.brightness,
     );
-    final readOnly =
-        widget.locked || widget.isDisabled || !widget.allowFreeText;
+    final readOnly = widget.locked || _inactive || !widget.allowFreeText;
 
     final palette = UnifiedInputThemeResolver.resolvePalette(context);
-    final Widget? suffix = widget.isDisabled || widget.locked || _loading
+    final Widget? suffix = widget.locked || _inactive || _loading
         ? dec.suffixIcon
         : (dec.suffixIcon ??
               UnifiedInputThemeResolver.defaultSuffixIcon(
                 context,
                 UnifiedInputFieldSuffixKind.multiPicker,
                 palette,
-                onPressed: () => _open(dec),
+                onPressed: _open,
               ));
 
-    final field = UnifiedBaseTextField(
-      controller: _txt,
-      readOnly: readOnly,
-      interactionBlocked: true,
-      loading: _loading,
-      focusNode: widget.pickerController.focusNode,
-      errorText: widget.pickerController.errorText,
-      isDisabled: widget.isDisabled,
-      locked: widget.locked,
-      onChanged: widget.allowFreeText ? _onFieldTextChanged : null,
-      label: dec.label ?? widget.label,
-      placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
-      labelStyle: dec.labelStyle,
-      style: dec.fieldStyle,
-      backgroundColor: dec.backgroundColor ?? Colors.black26,
-      headerBackgroundColor:
-          dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
-      borderRadius:
-          dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
-      borderSide: dec.borderSide,
-      height: dec.height,
-      rowLabelRatio: dec.rowLabelRatio,
-      labelInRow: dec.labelInRow,
-      labelMode: dec.labelMode,
-      requiredField: widget.isRequired || dec.requiredField,
-      showError: dec.showError,
-      validationColor: dec.validationColor,
-      validationIcon: dec.validationIcon,
-      prefix: dec.prefix,
-      prefixIcon: dec.prefixIcon,
-      suffixIcon: suffix,
-      padding: dec.contentPadding,
-      validator: widget.validator,
+    return GestureDetector(
+      onTap: widget.locked || _inactive || _loading ? null : _open,
+      child: UnifiedBaseTextField(
+        controller: _txt,
+        readOnly: readOnly,
+        interactionBlocked: true,
+        loading: _loading,
+        focusNode: widget.pickerController.focusNode,
+        errorText: widget.pickerController.errorText,
+        isDisabled: _inactive,
+        locked: widget.locked,
+        onChanged: widget.allowFreeText ? _onFieldTextChanged : null,
+        label: dec.label ?? widget.label,
+        placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
+        labelStyle: dec.labelStyle,
+        style: dec.fieldStyle,
+        backgroundColor: dec.backgroundColor ?? Colors.black26,
+        headerBackgroundColor:
+            dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
+        borderRadius:
+            dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+        borderSide: dec.borderSide,
+        height: dec.height,
+        rowLabelRatio: dec.rowLabelRatio,
+        labelInRow: dec.labelInRow,
+        labelMode: dec.labelMode,
+        requiredField: widget.isRequired || dec.requiredField,
+        showError: dec.showError,
+        validationColor: dec.validationColor,
+        validationIcon: dec.validationIcon,
+        prefix: dec.prefix,
+        prefixIcon: dec.prefixIcon,
+        suffixIcon: suffix,
+        padding: dec.contentPadding,
+        validator: widget.validator,
+      ),
     );
-
-    if (!widget.allowFreeText) {
-      return GestureDetector(
-        onTap: widget.locked || widget.isDisabled || _loading
-            ? null
-            : () => _open(dec),
-        child: field,
-      );
-    }
-    return field;
   }
 }

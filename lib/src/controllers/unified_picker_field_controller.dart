@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../fields/unified_picker_sheet.dart';
 import '../fields/unified_multi_picker_sheet.dart';
+import '../fields/unified_picker_item_builders.dart';
+import '../fields/unified_picker_sheet.dart';
 import 'base_unified_field_controller.dart';
 
 /// Controller for single-select picker fields ([UnifiedSinglePickerField], async variant).
@@ -18,6 +19,8 @@ class UnifiedPickerFieldController<T> extends BaseUnifiedFieldController<T> {
     this.hasSearch = true,
     this.searchAutoFocus = false,
     this.showClearButton = true,
+    this.gridItemBuilder,
+    this.gridDelegate,
   });
 
   /// Renders a value as display text.
@@ -28,6 +31,12 @@ class UnifiedPickerFieldController<T> extends BaseUnifiedFieldController<T> {
 
   /// Custom row in the sheet.
   Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Pinned suggestions above the list.
   final List<T> suggestion;
@@ -106,6 +115,8 @@ class UnifiedPickerFieldController<T> extends BaseUnifiedFieldController<T> {
           label: label,
           itemToWidget: itemToWidget,
           hasSearch: hasSearch,
+          gridItemBuilder: gridItemBuilder,
+          gridDelegate: gridDelegate,
         ),
       ),
     );
@@ -139,6 +150,8 @@ class UnifiedMultiPickerFieldController<T>
     this.hasSearch = true,
     this.searchAutoFocus = false,
     this.showClearButton = true,
+    this.gridItemBuilder,
+    this.gridDelegate,
   }) : super(initialValue: List<T>.from(initialValue));
 
   /// Renders a value as display text.
@@ -149,6 +162,12 @@ class UnifiedMultiPickerFieldController<T>
 
   /// Custom row in the sheet.
   Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Pinned suggestions above the list.
   final List<T> suggestion;
@@ -236,6 +255,8 @@ class UnifiedMultiPickerFieldController<T>
           label: label,
           itemToWidget: itemToWidget,
           hasSearch: hasSearch,
+          gridItemBuilder: gridItemBuilder,
+          gridDelegate: gridDelegate,
         ),
       ),
     );

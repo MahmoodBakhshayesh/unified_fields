@@ -6,6 +6,7 @@ import 'unified_cutomizable_picker_fields.dart';
 import 'unified_form_fields.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
+import 'unified_picker_item_builders.dart';
 
 /// Reset-time snapshot for a [CustomizableSinglePickerController].
 ///
@@ -101,6 +102,8 @@ class UnifiedFormCustomizablePickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
@@ -143,8 +146,14 @@ class UnifiedFormCustomizablePickerField<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
 
-  /// Custom row builder inside the sheet.
+  /// Custom row builder inside the sheet (list layout).
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Optional suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -252,6 +261,8 @@ class _UnifiedFormCustomizablePickerFieldState<T>
           valueToString: widget.valueToString,
           searchBuilder: widget.searchBuilder,
           itemToWidget: widget.itemToWidget,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
           suggestion: widget.suggestion,
           hasSearch: widget.hasSearch,
           searchAutoFocus: widget.searchAutoFocus,
@@ -285,6 +296,8 @@ class UnifiedFormCustomizableMultiPickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
@@ -327,8 +340,14 @@ class UnifiedFormCustomizableMultiPickerField<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
 
-  /// Custom row builder inside the sheet.
+  /// Custom row builder inside the sheet (list layout).
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Optional suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -435,6 +454,8 @@ class _UnifiedFormCustomizableMultiPickerFieldState<T>
           valueToString: widget.valueToString,
           searchBuilder: widget.searchBuilder,
           itemToWidget: widget.itemToWidget,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
           suggestion: widget.suggestion,
           hasSearch: widget.hasSearch,
           searchAutoFocus: widget.searchAutoFocus,
@@ -468,6 +489,8 @@ class UnifiedFormCustomizableAsyncPickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
@@ -510,8 +533,14 @@ class UnifiedFormCustomizableAsyncPickerField<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
 
-  /// Custom row builder inside the sheet.
+  /// Custom row builder inside the sheet (list layout).
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Optional suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -619,6 +648,8 @@ class _UnifiedFormCustomizableAsyncPickerFieldState<T>
           valueToString: widget.valueToString,
           searchBuilder: widget.searchBuilder,
           itemToWidget: widget.itemToWidget,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
           suggestion: widget.suggestion,
           hasSearch: widget.hasSearch,
           searchAutoFocus: widget.searchAutoFocus,
@@ -652,6 +683,8 @@ class UnifiedFormCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
@@ -694,8 +727,14 @@ class UnifiedFormCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
 
-  /// Custom row builder inside the sheet.
+  /// Custom row builder inside the sheet (list layout).
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Optional suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -802,6 +841,8 @@ class _UnifiedFormCustomizableAsyncMultiPickerFieldState<T>
           valueToString: widget.valueToString,
           searchBuilder: widget.searchBuilder,
           itemToWidget: widget.itemToWidget,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
           suggestion: widget.suggestion,
           hasSearch: widget.hasSearch,
           searchAutoFocus: widget.searchAutoFocus,

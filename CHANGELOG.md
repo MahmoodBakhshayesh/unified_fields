@@ -1,3 +1,18 @@
+## 0.1.8
+
+### Features
+
+* **Picker grid layout** — optional `gridItemBuilder` on every list-based picker field and sheet. Pass a full [SliverGridDelegate] via `gridDelegate`, or use [unifiedPickerDefaultGridDelegate] for a fixed cross-axis count. Single-select tiles receive `(index, item, onSelect)`; multi-select adds `isSelected`.
+* **Form pickers** — `itemToWidget`, `searchBuilder`, `gridItemBuilder`, and `gridDelegate` on all `UnifiedForm*Picker*` wrappers (`UnifiedFormSinglePickerField`, `UnifiedFormMultiPickerField`, async and customizable variants).
+* **Standalone sheets** — [showUnifiedSinglePickerSheet] and [showUnifiedMultiPickerSheet] accept the same list/grid options.
+* **`CustomizableSinglePickerController` / `CustomizableMultiPickerController`** — [openPicker] via attached field or `bindPicker` / `bindAsyncPicker` (same pattern as [UnifiedPickerFieldController]).
+* **Exports** — [UnifiedPickerGridItemBuilder], [UnifiedPickerMultiGridItemBuilder], [unifiedPickerDefaultGridDelegate], [unifiedPickerResolveGridDelegate].
+
+### Fixes
+
+* **`UnifiedCustomizableAsyncPickerField`** (and sync customizable pickers) — sheet opens on full-field tap when `allowFreeText` is true, not only via the suffix icon.
+* **Customizable picker fields** — `disabled` alongside `isDisabled`; `GestureDetector` + `interactionBlocked` for reliable tap-to-open.
+
 ## 0.1.7
 
 ### Features

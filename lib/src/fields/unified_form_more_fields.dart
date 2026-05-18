@@ -18,6 +18,7 @@ import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 import 'unified_number_field.dart';
 import 'unified_picker_fields.dart';
+import 'unified_picker_item_builders.dart';
 import 'unified_time_of_day_field.dart';
 
 bool _unifiedListsEqual<T>(List<T>? a, List<T> b) {
@@ -46,6 +47,8 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
@@ -98,8 +101,14 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
 
-  /// Custom row builder inside the sheet.
+  /// Custom row builder inside the sheet (list layout).
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -329,6 +338,8 @@ class _UnifiedFormMultiPickerFieldState<T>
           valueToString: widget.valueToString,
           searchBuilder: widget.searchBuilder,
           itemToWidget: widget.itemToWidget,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
           suggestion: widget.suggestion,
           hasSearch: widget.hasSearch,
           searchAutoFocus: widget.searchAutoFocus,
@@ -1573,6 +1584,8 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
@@ -1625,8 +1638,14 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
 
-  /// Custom row builder inside the sheet.
+  /// Custom row builder inside the sheet (list layout).
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -1835,6 +1854,8 @@ class _UnifiedFormAsyncPickerFieldState<T>
           valueToString: widget.valueToString,
           searchBuilder: widget.searchBuilder,
           itemToWidget: widget.itemToWidget,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
           suggestion: widget.suggestion,
           hasSearch: widget.hasSearch,
           searchAutoFocus: widget.searchAutoFocus,
@@ -1866,6 +1887,8 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
@@ -1918,8 +1941,14 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
 
-  /// Custom row builder inside the sheet.
+  /// Custom row builder inside the sheet (list layout).
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -2151,6 +2180,8 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
           valueToString: widget.valueToString,
           searchBuilder: widget.searchBuilder,
           itemToWidget: widget.itemToWidget,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
           suggestion: widget.suggestion,
           hasSearch: widget.hasSearch,
           searchAutoFocus: widget.searchAutoFocus,

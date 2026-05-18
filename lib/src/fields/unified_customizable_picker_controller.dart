@@ -1,6 +1,9 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 import '../controllers/base_unified_field_controller.dart';
+import 'unified_multi_picker_sheet.dart';
+import 'unified_picker_item_builders.dart';
+import 'unified_picker_sheet.dart';
 
 /// Whether the field value came from free typing or from the picker sheet.
 enum CustomizablePickerInputKind {
@@ -127,6 +130,117 @@ class CustomizableSinglePickerController<T>
 
   /// Call after [silentReplace] to refresh bound widgets.
   void notifyView() => notifyListeners();
+
+  List<T> _boundItems = const [];
+  String _boundLabel = '';
+  Future<List<T>> Function()? _boundItemProvider;
+  List<T> _boundSuggestion = const [];
+  bool _boundHasSearch = true;
+  bool _boundSearchAutoFocus = false;
+  bool _boundShowClearButton = true;
+  String Function(T value)? _boundSearchBuilder;
+  Widget Function(T value)? _boundItemToWidget;
+  UnifiedPickerGridItemBuilder<T>? _boundGridItemBuilder;
+  SliverGridDelegate? _boundGridDelegate;
+
+  /// Registers static picker data for [openPicker] when no field is mounted.
+  void bindPicker({
+    required List<T> items,
+    required String label,
+    List<T> suggestion = const [],
+    bool hasSearch = true,
+    bool searchAutoFocus = false,
+    bool showClearButton = true,
+    String Function(T value)? searchBuilder,
+    Widget Function(T value)? itemToWidget,
+    UnifiedPickerGridItemBuilder<T>? gridItemBuilder,
+    SliverGridDelegate? gridDelegate,
+  }) {
+    _boundItems = items;
+    _boundLabel = label;
+    _boundItemProvider = null;
+    _boundSuggestion = suggestion;
+    _boundHasSearch = hasSearch;
+    _boundSearchAutoFocus = searchAutoFocus;
+    _boundShowClearButton = showClearButton;
+    _boundSearchBuilder = searchBuilder;
+    _boundItemToWidget = itemToWidget;
+    _boundGridItemBuilder = gridItemBuilder;
+    _boundGridDelegate = gridDelegate;
+  }
+
+  /// Registers async picker data for [openPicker] when no field is mounted.
+  void bindAsyncPicker({
+    required Future<List<T>> Function() itemProvider,
+    required String label,
+    List<T> suggestion = const [],
+    bool hasSearch = true,
+    bool searchAutoFocus = false,
+    bool showClearButton = true,
+    String Function(T value)? searchBuilder,
+    Widget Function(T value)? itemToWidget,
+    UnifiedPickerGridItemBuilder<T>? gridItemBuilder,
+    SliverGridDelegate? gridDelegate,
+  }) {
+    _boundItemProvider = itemProvider;
+    _boundLabel = label;
+    _boundItems = const [];
+    _boundSuggestion = suggestion;
+    _boundHasSearch = hasSearch;
+    _boundSearchAutoFocus = searchAutoFocus;
+    _boundShowClearButton = showClearButton;
+    _boundSearchBuilder = searchBuilder;
+    _boundItemToWidget = itemToWidget;
+    _boundGridItemBuilder = gridItemBuilder;
+    _boundGridDelegate = gridDelegate;
+  }
+
+  /// Sheet title used when opening without an attached field.
+  void bindPickerLabel(String label) => _boundLabel = label;
+
+  T? get _sheetSeedValue =>
+      _kind == CustomizablePickerInputKind.selected ? _selected : null;
+
+  /// Opens the picker sheet (same as tapping the bound field when mounted).
+  Future<T?> openPicker(BuildContext context, {String? label}) async {
+    final opener = attachedFieldOpener;
+    if (opener != null) {
+      await opener(context);
+      return selectedItem;
+    }
+    final resolvedLabel = label ?? _boundLabel;
+    List<T> items = _boundItems;
+    final provider = _boundItemProvider;
+    if (provider != null) {
+      items = await provider();
+      if (!context.mounted) return selectedItem;
+    }
+    assert(
+      items.isNotEmpty,
+      'CustomizableSinglePickerController.openPicker: mount the field first, '
+      'or call bindPicker / bindAsyncPicker with items.',
+    );
+    final result = await showUnifiedSinglePickerSheet<T>(
+      context: context,
+      items: items,
+      label: resolvedLabel,
+      value: _sheetSeedValue,
+      suggestion: _boundSuggestion,
+      hasSearch: _boundHasSearch,
+      hasClear: _boundShowClearButton,
+      searchAutoFocus: _boundSearchAutoFocus,
+      searchBuilder: _boundSearchBuilder,
+      itemToWidget: _boundItemToWidget,
+      gridItemBuilder: _boundGridItemBuilder,
+      gridDelegate: _boundGridDelegate,
+    );
+    if (result == null) {
+      applySelected(null);
+    } else {
+      applySelected(result);
+    }
+    return selectedItem;
+  }
 }
 
 /// Holds either a typed [String] or a multi selection [List] for
@@ -246,6 +360,117 @@ class CustomizableMultiPickerController<T>
 
   /// Call after [silentReplace] to refresh bound widgets.
   void notifyView() => notifyListeners();
+
+  List<T> _boundItems = const [];
+  String _boundLabel = '';
+  Future<List<T>> Function()? _boundItemProvider;
+  List<T> _boundSuggestion = const [];
+  bool _boundHasSearch = true;
+  bool _boundSearchAutoFocus = false;
+  bool _boundShowClearButton = true;
+  String Function(T value)? _boundSearchBuilder;
+  Widget Function(T value)? _boundItemToWidget;
+  UnifiedPickerMultiGridItemBuilder<T>? _boundGridItemBuilder;
+  SliverGridDelegate? _boundGridDelegate;
+
+  /// Registers static picker data for [openPicker] when no field is mounted.
+  void bindPicker({
+    required List<T> items,
+    required String label,
+    List<T> suggestion = const [],
+    bool hasSearch = true,
+    bool searchAutoFocus = false,
+    bool showClearButton = true,
+    String Function(T value)? searchBuilder,
+    Widget Function(T value)? itemToWidget,
+    UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder,
+    SliverGridDelegate? gridDelegate,
+  }) {
+    _boundItems = items;
+    _boundLabel = label;
+    _boundItemProvider = null;
+    _boundSuggestion = suggestion;
+    _boundHasSearch = hasSearch;
+    _boundSearchAutoFocus = searchAutoFocus;
+    _boundShowClearButton = showClearButton;
+    _boundSearchBuilder = searchBuilder;
+    _boundItemToWidget = itemToWidget;
+    _boundGridItemBuilder = gridItemBuilder;
+    _boundGridDelegate = gridDelegate;
+  }
+
+  /// Registers async picker data for [openPicker] when no field is mounted.
+  void bindAsyncPicker({
+    required Future<List<T>> Function() itemProvider,
+    required String label,
+    List<T> suggestion = const [],
+    bool hasSearch = true,
+    bool searchAutoFocus = false,
+    bool showClearButton = true,
+    String Function(T value)? searchBuilder,
+    Widget Function(T value)? itemToWidget,
+    UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder,
+    SliverGridDelegate? gridDelegate,
+  }) {
+    _boundItemProvider = itemProvider;
+    _boundLabel = label;
+    _boundItems = const [];
+    _boundSuggestion = suggestion;
+    _boundHasSearch = hasSearch;
+    _boundSearchAutoFocus = searchAutoFocus;
+    _boundShowClearButton = showClearButton;
+    _boundSearchBuilder = searchBuilder;
+    _boundItemToWidget = itemToWidget;
+    _boundGridItemBuilder = gridItemBuilder;
+    _boundGridDelegate = gridDelegate;
+  }
+
+  /// Sheet title used when opening without an attached field.
+  void bindPickerLabel(String label) => _boundLabel = label;
+
+  List<T> get _sheetSeedValues =>
+      _kind == CustomizablePickerInputKind.selected
+          ? List<T>.from(_selected)
+          : <T>[];
+
+  /// Opens the multi picker sheet (same as tapping the bound field when mounted).
+  Future<List<T>?> openPicker(BuildContext context, {String? label}) async {
+    final opener = attachedFieldOpener;
+    if (opener != null) {
+      await opener(context);
+      return selectedItems;
+    }
+    final resolvedLabel = label ?? _boundLabel;
+    List<T> items = _boundItems;
+    final provider = _boundItemProvider;
+    if (provider != null) {
+      items = await provider();
+      if (!context.mounted) return selectedItems;
+    }
+    assert(
+      items.isNotEmpty,
+      'CustomizableMultiPickerController.openPicker: mount the field first, '
+      'or call bindPicker / bindAsyncPicker with items.',
+    );
+    final result = await showUnifiedMultiPickerSheet<T>(
+      context: context,
+      items: items,
+      label: resolvedLabel,
+      values: _sheetSeedValues,
+      suggestion: _boundSuggestion,
+      hasSearch: _boundHasSearch,
+      hasClear: _boundShowClearButton,
+      searchAutoFocus: _boundSearchAutoFocus,
+      searchBuilder: _boundSearchBuilder,
+      itemToWidget: _boundItemToWidget,
+      gridItemBuilder: _boundGridItemBuilder,
+      gridDelegate: _boundGridDelegate,
+    );
+    if (result != null) {
+      applySelected(result);
+    }
+    return selectedItems;
+  }
 }
 
 /// Sets [controller] to **selected** when [selectedWhenNonEmpty] is non-empty,

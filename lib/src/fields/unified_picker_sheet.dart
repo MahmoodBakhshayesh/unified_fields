@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../unified_fields_context.dart';
 import '../unified_fields_strings.dart';
 import 'unified_input_theme.dart';
+import 'unified_picker_item_builders.dart';
 import '../scrollable_list/item_positions_listener.dart';
 import '../scrollable_list/scrollable_positioned_list.dart';
 
@@ -39,6 +40,12 @@ class PickerSheetWidget<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T)? searchBuilder;
 
+  /// When set, items render in a [GridView] via this builder instead of a list.
+  final UnifiedPickerGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
+
   /// Creates a single-picker sheet.
   const PickerSheetWidget({
     super.key,
@@ -52,6 +59,8 @@ class PickerSheetWidget<T> extends StatefulWidget {
     required this.searchAutoFocus,
     this.searchBuilder,
     required this.hasSearch,
+    this.gridItemBuilder,
+    this.gridDelegate,
   });
 
   @override
@@ -74,12 +83,15 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
       }
       setState(() {});
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
+    if (widget.gridItemBuilder == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
+    }
   }
 
   @override
   void didUpdateWidget(covariant PickerSheetWidget<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.gridItemBuilder != null) return;
     if (oldWidget.value != widget.value || oldWidget.items != widget.items) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
     }
@@ -335,48 +347,110 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
                   );
                 }).toList(),
               ),
-              Expanded(
-                child: ScrollablePositionedList.builder(
-                  padding: EdgeInsets.only(bottom: 400),
-                  itemScrollController: _itemScrollController,
-                  itemPositionsListener: _positionsListener,
-                  itemCount: items.length,
-                  itemBuilder: (c, i) {
-                    final item = items[i];
-                    final isSelected = widget.value == item;
-                    return InkWell(
-                      onTap: () => Navigator.of(context).pop(item),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Colors.blueAccent.withValues(alpha: 0.3)
-                              : const Color(0xffF2F3F6),
-                          border: const Border(
-                            bottom: BorderSide(color: Colors.white),
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 12,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child:
-                                  widget.itemToWidget?.call(item) ??
-                                  Text(item.toString()),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+              Expanded(child: _buildItemBody(context, items)),
             ],
           );
         },
       ),
     );
   }
+
+  Widget _buildItemBody(BuildContext context, List<T> items) {
+    final gridBuilder = widget.gridItemBuilder;
+    if (gridBuilder != null) {
+      return GridView.builder(
+        padding: const EdgeInsets.all(12),
+        gridDelegate: unifiedPickerResolveGridDelegate(widget.gridDelegate),
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          return gridBuilder(
+            context,
+            index,
+            item,
+            () => Navigator.of(context).pop(item),
+          );
+        },
+      );
+    }
+
+    return ScrollablePositionedList.builder(
+      padding: const EdgeInsets.only(bottom: 400),
+      itemScrollController: _itemScrollController,
+      itemPositionsListener: _positionsListener,
+      itemCount: items.length,
+      itemBuilder: (c, i) {
+        final item = items[i];
+        final isSelected = widget.value == item;
+        return InkWell(
+          onTap: () => Navigator.of(context).pop(item),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? Colors.blueAccent.withValues(alpha: 0.3)
+                  : const Color(0xffF2F3F6),
+              border: const Border(
+                bottom: BorderSide(color: Colors.white),
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12.0,
+              vertical: 12,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child:
+                      widget.itemToWidget?.call(item) ??
+                      Text(item.toString()),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Shows a single-select picker bottom sheet and returns the chosen value (or `null`).
+Future<T?> showUnifiedSinglePickerSheet<T>({
+  required BuildContext context,
+  required List<T> items,
+  required String label,
+  T? value,
+  List<T> suggestion = const [],
+  bool hasSearch = true,
+  bool hasClear = true,
+  bool searchAutoFocus = false,
+  String Function(T)? searchBuilder,
+  Widget Function(T)? itemToWidget,
+  UnifiedPickerGridItemBuilder<T>? gridItemBuilder,
+  SliverGridDelegate? gridDelegate,
+  Widget? headerWidget,
+}) async {
+  FocusScope.of(context).requestFocus(FocusNode());
+  final dynamic result = await showModalBottomSheet<dynamic>(
+    context: context,
+    isScrollControlled: true,
+    builder: (c) => Padding(
+      padding: EdgeInsets.zero,
+      child: PickerSheetWidget<T>(
+        items: items,
+        suggestion: suggestion,
+        value: value,
+        searchAutoFocus: searchAutoFocus,
+        hasClear: hasClear,
+        searchBuilder: searchBuilder,
+        label: label,
+        itemToWidget: itemToWidget,
+        hasSearch: hasSearch,
+        headerWidget: headerWidget,
+        gridItemBuilder: gridItemBuilder,
+        gridDelegate: gridDelegate,
+      ),
+    ),
+  );
+  if (result == Null) return null;
+  return result as T?;
 }

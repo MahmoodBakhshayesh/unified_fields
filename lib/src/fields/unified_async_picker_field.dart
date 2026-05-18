@@ -8,6 +8,7 @@ import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
+import 'unified_picker_item_builders.dart';
 import 'unified_picker_sheet.dart';
 
 /// Like [UnifiedSinglePickerField] but loads choices with [itemProvider] when the
@@ -27,6 +28,8 @@ class UnifiedAsyncPickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
@@ -75,6 +78,12 @@ class UnifiedAsyncPickerField<T> extends StatefulWidget {
 
   /// Custom row builder inside the sheet.
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Optional suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -255,6 +264,8 @@ class _UnifiedAsyncPickerFieldState<T>
           label: dec.placeholder ?? dec.label ?? widget.label,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
         ),
       ),
     );
@@ -368,6 +379,8 @@ class UnifiedAsyncMultiPickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
@@ -416,6 +429,12 @@ class UnifiedAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// Custom row builder inside the sheet.
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Optional suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -596,6 +615,8 @@ class _UnifiedAsyncMultiPickerFieldState<T>
           label: dec.placeholder ?? dec.label ?? widget.label,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
         ),
       ),
     );

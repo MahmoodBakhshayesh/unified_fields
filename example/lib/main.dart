@@ -78,7 +78,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
   static const _flavorChoices = <String>['Sweet', 'Acidic', 'Nutty', 'Floral', 'Chocolate'];
 
   String _savedSummary = '';
-
+  List<String> selectedGrid  = [];
   @override
   void initState() {
     super.initState();
@@ -98,7 +98,8 @@ class _DemoHomePageState extends State<DemoHomePage> {
     _customMulti.dispose();
     super.dispose();
   }
-
+  final testFC = CustomizableSinglePickerController<String>();
+  final gridPickFC = UnifiedMultiPickerFieldController<String>();
   Future<List<String>> _loadAsyncCountries() async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
     return _countries;
@@ -152,9 +153,13 @@ class _DemoHomePageState extends State<DemoHomePage> {
             tooltip: 'Open full showcase',
             icon: const Icon(Icons.clear),
 
+
             onPressed: () {
               // _nameC.requestFocus();
-              log(phoneC.value!.nationalDigits);
+              // log(phoneC.value!.nationalDigits);
+              // testFC.openPicker(context);
+              // gridPickFC.openPicker(context);
+              gridPickFC.clear();
               // _countryController.openPicker(context);
 
               // _country.clear();
@@ -185,6 +190,54 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   _ThemeScopeDemoCard(),
                   const SizedBox(height: 12),
                   Text(phoneC.dialCodeController.text),
+                  UnifiedCustomizablePickerField<String>(
+                    label: "Test",
+                    valueToString: (v) => v.toString(),
+                    gridDelegate: unifiedPickerDefaultGridDelegate(
+                      crossAxisCount: 3,
+                      childAspectRatio: 4,
+                    ),
+
+                    items:["1","2","3","4","5","6","7",],
+                    gridItemBuilder: (c,i,item,onselect){
+                      return TextButton(onPressed: (){
+                        onselect();
+                      }, child: Text("${i} -${item}"));
+                    },
+                    pickerController: testFC,
+                  ),
+                  UnifiedMultiPickerField<String>(
+                    label: "Test",
+                    isDisabled: true,
+                    gridItemBuilder: (context, index, item, isSelected, onSelect) {
+                      return GestureDetector(
+                        onTap: onSelect,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: isSelected ? Colors.blue : Colors.grey.shade200,
+                          ),
+                          child: Center(child: Text(item)),
+                        ),
+                      );
+                    },
+                    onChanged: (a){
+                      selectedGrid = [...a];
+                      setState((){});
+                    },
+                    fieldController: gridPickFC,
+                    valueToString: (v) => v.toString(),
+                    gridDelegate: unifiedPickerDefaultGridDelegate(
+                      crossAxisCount: 3,
+                      childAspectRatio: 4,
+                    ),
+                    items:["1","2","3","4","5","6","7",],
+                    // gridItemBuilder: (c,i,item,onselect){
+                    //   return TextButton(onPressed: (){
+                    //     onselect();
+                    //   }, child: Text("${i} -${item}"));
+                    // },
+                    values: selectedGrid,
+                  ),
                   UnifiedCountryWidget(country: UnifiedCountries.defaultCountry),
                   UnifiedPhoneField(
                     label: "Phone",
@@ -236,7 +289,9 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   ),
                   const SizedBox(height: 12),
 
-                  UnifiedFormMultiPickerField<String>(label: 'Flavors', placeholder: 'Add some', items: _flavorChoices, values: _flavors.value ?? const [], binding: _flavors, resetValue: () => const <String>[]),
+                  UnifiedFormMultiPickerField<String>(
+                      isDisabled: true,
+                      label: 'Flavors', placeholder: 'Add some', items: _flavorChoices, values: _flavors.value ?? const [], binding: _flavors, resetValue: () => const <String>[]),
                   const SizedBox(height: 12),
 
                   UnifiedFormDateField(

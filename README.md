@@ -35,7 +35,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.1.7
+  unified_fields: ^0.1.8
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -74,7 +74,7 @@ dependencies:
 |------|------------------|---------|
 | **Plain fields** | `UnifiedTextField`, `UnifiedNumberField`, `UnifiedNumericStepField`, `UnifiedPhoneField`, `UnifiedDurationField`, `UnifiedDateField`, `UnifiedDateRangeField`, `UnifiedTimeOfDayField` | Same visual system as form fields, without `FormField` |
 | **Phone** | `UnifiedPhoneField`, `UnifiedPhoneFieldController`, `UnifiedCountry`, `UnifiedCountries`, `UnifiedCountryWidget`, `UnifiedFlag`, `showUnifiedPhoneCountryPicker`, `UnifiedPhoneNumber` | Country flag, dial code, masked national number, ~250-country enum, Persian digits |
-| **Pickers** | `UnifiedSinglePickerField`, `UnifiedMultiPickerField`, `UnifiedAsyncPickerField`, `UnifiedAsyncMultiPickerField` | Bottom-sheet selection; async variants load items on demand |
+| **Pickers** | `UnifiedSinglePickerField`, `UnifiedMultiPickerField`, `UnifiedAsyncPickerField`, `UnifiedAsyncMultiPickerField` | Bottom-sheet list or grid (`gridItemBuilder`, `gridDelegate`); async variants load items on demand |
 | **Customizable pickers** | `UnifiedCustomizablePickerField`, `UnifiedCustomizableMultiPickerField`, `UnifiedCustomizableAsyncPickerField`, `UnifiedCustomizableAsyncMultiPickerField`, `CustomizableSinglePickerController`, `CustomizableMultiPickerController` | Controller-driven single or multi selection that also accepts free typed text |
 | **Form wrappers** | `UnifiedFormField`, `UnifiedFormTextField`, `UnifiedFormSinglePickerField`, `UnifiedFormMultiPickerField`, `UnifiedFormAsyncPickerField`, `UnifiedFormAsyncMultiPickerField`, `UnifiedFormDateField`, `UnifiedFormDateRangeField`, `UnifiedFormTimeOfDayField`, `UnifiedFormDurationField`, `UnifiedFormNumberField`, `UnifiedFormCustomizablePickerField`, `UnifiedFormCustomizableMultiPickerField`, `UnifiedFormCustomizableAsyncPickerField`, `UnifiedFormCustomizableAsyncMultiPickerField` | `Form` integration: `validate`, `save`, `reset`, validators |
 | **Form scope** | `UnifiedFormFieldScope` | Shared `AutovalidateMode` for all unified form descendants |
@@ -83,7 +83,7 @@ dependencies:
 | **Duration** | `UnifiedDurationField`, `showUnifiedFieldsDurationPicker`, `UnifiedFieldsDurationColumn`, `UnifiedFieldsDurationColumnPresets`, `UnifiedDurationGranularity`, `UnifiedFieldsDurationPickerStyle` | Wheel picker with fixed granularity or custom column order (year · week · day · hour, …) |
 | **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedFieldLabelMode`, `UnifiedInputDecoration`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPhoneStyle`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, phone/dial chrome, global theme scope, picker headers, aligned suffix icons |
 | **Controllers** | `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, `UnifiedAsyncPickerFieldController`, `UnifiedDateFieldController`, `UnifiedTimeOfDayFieldController`, `UnifiedDurationFieldController`, `UnifiedNumberFieldController`, `UnifiedPhoneFieldController`, `UnifiedFormController` | Listenable value + validation + imperative `openPicker` / `requestFocus` |
-| **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsTypography`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, Persian digits, layout helpers, default colors, sheet actions |
+| **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsTypography`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedPickerDefaultGridDelegate`, `showUnifiedSinglePickerSheet`, `showUnifiedMultiPickerSheet`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, Persian digits, picker grid helpers, layout helpers, default colors, sheet actions |
 | **Demo** | `UnifiedInputsShowcasePage` | Scrollable gallery of widgets + palette toggle |
 
 ---
@@ -346,7 +346,36 @@ Helpers: **`unifiedFormatDuration`**, **`unifiedTryParseDuration`**, **`composeU
 | **`UnifiedAsyncPickerField<T>`** | Items from `Future<List<T>> Function()` |
 | **`UnifiedAsyncMultiPickerField<T>`** | Same, multi-select |
 
-**`PickerSheetWidget`** / **`MultiPickerSheetWidget`** are the sheet implementations (scrollable list + search). Form variants mirror the same behavior with **`FormField`**.
+**`PickerSheetWidget`** / **`MultiPickerSheetWidget`** are the sheet implementations (scrollable list + search). Every picker field and **`UnifiedForm*Picker*`** wrapper supports the same sheet customization:
+
+| Parameter | Purpose |
+|-----------|---------|
+| **`itemToWidget`** | Custom list row (default: text from `valueToString`) |
+| **`searchBuilder`** | Custom searchable text per item |
+| **`gridItemBuilder`** | Custom grid tile; sheet uses **`GridView`** instead of a list |
+| **`gridDelegate`** | Full **`SliverGridDelegate`** (max extent, fixed count, spacing, aspect ratio, …). Omit to use **`unifiedPickerDefaultGridDelegate()`** |
+
+**Grid (single-select):** builder receives `(context, index, item, onSelect)` — call **`onSelect`** to choose and close.
+
+**Grid (multi-select):** builder receives `(context, index, item, isSelected, onSelect)` — **`onSelect`** toggles selection; user confirms in the sheet footer.
+
+```dart
+UnifiedMultiPickerField<String>(
+  label: 'Tags',
+  values: selected,
+  items: allTags,
+  gridDelegate: unifiedPickerDefaultGridDelegate(crossAxisCount: 3, childAspectRatio: 1.2),
+  gridItemBuilder: (context, index, item, isSelected, onSelect) => FilterChip(
+    label: Text(item),
+    selected: isSelected,
+    onSelected: (_) => onSelect(),
+  ),
+)
+```
+
+**Form:** use **`UnifiedFormMultiPickerField`** (or any other `UnifiedForm*Picker*`) with the same parameters. Imperative open: **`fieldController.openPicker(context)`** or **`pickerController.openPicker(context)`** on customizable controllers after **`bindPicker`**.
+
+**Standalone sheets:** **`showUnifiedSinglePickerSheet`** / **`showUnifiedMultiPickerSheet`**.
 
 **Customizable** APIs (`unified_cutomizable_picker_fields.dart` — filename keeps the historical typo **cutomizable**): single or multi selection with **`CustomizableSinglePickerController`** / **`CustomizableMultiPickerController`** plus async siblings for remote data. Each controller carries either typed text **or** the selected value(s); the matching **`UnifiedFormCustomizable…`** wrappers expose `resetValue` snapshots so `FormState.reset` restores both the mode and the payload in one step.
 
@@ -691,13 +720,22 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.1.7`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.1.8`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
 
-### Upgrading to 0.1.7
+### Upgrading to 0.1.8
+
+- **Picker grid / custom list** — pass **`itemToWidget`**, **`gridItemBuilder`**, and **`gridDelegate`** on any picker field or **`UnifiedForm*Picker*`** wrapper; see [Pickers](#pickers). Helpers: **`unifiedPickerDefaultGridDelegate`**, **`showUnifiedSinglePickerSheet`**, **`showUnifiedMultiPickerSheet`**.
+- **`CustomizableSinglePickerController.openPicker`** / **`CustomizableMultiPickerController.openPicker`** — call after the field is mounted, or **`bindPicker`** / **`bindAsyncPicker`** first.
+- Customizable async/sync pickers: full-field tap opens the sheet when **`allowFreeText`** is true; use **`disabled`** or **`isDisabled`** to block interaction.
+
+### Upgrading from 0.1.6 → 0.1.7
 
 - **`UnifiedPhoneField`**, **`UnifiedCountry`** enum, **`UnifiedFlag`**, and **`UnifiedCountryWidget`** — see [Phone](#phone-unifiedphonefield). Replace any `UnifiedPhoneCountry(...)` constructor with enum values (e.g. `UnifiedCountry.ir`; India: `UnifiedCountry.countryIN`). `UnifiedPhoneCountries` → **`UnifiedCountries`**.
+- **`UnifiedFieldLabelMode`** on fields; legacy decoration **`labelInRow: true`** still maps to row mode.
+
+### Upgrading from earlier 0.1.x
+
 - Wrap your app (or a screen) in **`UnifiedInputThemeScope`** for global disabled/placeholder/required/validation colors, picker sheet background, header padding, and multi-picker checkbox styling — see [Global theme](#global-theme-unifiedinputthemescope).  
-- **`labelMode`** on fields (`floatingLabel`, `labelInColumn`, `labelInRow`); legacy decoration **`labelInRow: true`** still works.  
 - Replace **`context.isDesktop`** / **`context.width`** with **`context.unifiedFieldsUseDialogLayout`** / **`context.unifiedFieldsScreenWidth`** (old names are deprecated).  
 - **Duration wheels** default to `UnifiedFieldsDurationPickerStyle.wheels`; use **`pickerColumns`** for year/month/week-style columns.  
 - **`unifiedFormatDuration`** / **`unifiedTryParseDuration`** use **named** `granularity:` and optional `pickerColumns:` / `calendarKind:`.  

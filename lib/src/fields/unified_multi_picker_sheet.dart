@@ -6,6 +6,7 @@ import '../unified_colors.dart';
 import '../unified_fields_strings.dart';
 import '../unified_sheet_button.dart';
 import 'unified_input_theme.dart';
+import 'unified_picker_item_builders.dart';
 
 /// Bottom-sheet content used by [UnifiedMultiPickerField] for multi-selection.
 class MultiPickerSheetWidget<T> extends StatefulWidget {
@@ -39,6 +40,12 @@ class MultiPickerSheetWidget<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T)? searchBuilder;
 
+  /// When set, items render in a [GridView] via this builder instead of a list.
+  final UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
+
   /// Creates a multi-picker sheet.
   const MultiPickerSheetWidget({
     super.key,
@@ -52,6 +59,8 @@ class MultiPickerSheetWidget<T> extends StatefulWidget {
     required this.searchAutoFocus,
     this.searchBuilder,
     required this.hasSearch,
+    this.gridItemBuilder,
+    this.gridDelegate,
   });
 
   @override
@@ -213,53 +222,7 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                   );
                 }).toList(),
               ),
-              Expanded(
-                child: ListView.builder(
-                  // itemScrollController: _itemScrollController,
-                  // itemPositionsListener: _positionsListener,
-                  itemCount: items.length,
-                  itemBuilder: (c, i) {
-                    final item = items[i];
-                    final isSelected = selected.contains(item);
-                    return InkWell(
-                      onTap: () {
-                        if (isSelected) {
-                          selected.remove(item);
-                        } else {
-                          selected.add(item);
-                        }
-                        setState(() {});
-                        // Navigator.of(context).pop(item);
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Colors.blueAccent.withValues(alpha: 0.3)
-                              : const Color(0xffF2F3F6),
-                          border: const Border(
-                            bottom: BorderSide(color: Colors.white),
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 12,
-                        ),
-                        child: Row(
-                          children: [
-                            UnifiedMultiPickerCheckbox(value: isSelected),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child:
-                                  widget.itemToWidget?.call(item) ??
-                                  Text(item.toString()),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+              Expanded(child: _buildItemBody(context, items)),
               Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Row(
@@ -296,4 +259,121 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
       ),
     );
   }
+
+  Widget _buildItemBody(BuildContext context, List<T> items) {
+    final gridBuilder = widget.gridItemBuilder;
+    if (gridBuilder != null) {
+      return GridView.builder(
+        padding: const EdgeInsets.all(12),
+        gridDelegate: unifiedPickerResolveGridDelegate(widget.gridDelegate),
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          final isSelected = selected.contains(item);
+          return gridBuilder(
+            context,
+            index,
+            item,
+            isSelected,
+            () {
+              setState(() {
+                if (isSelected) {
+                  selected.remove(item);
+                } else {
+                  selected.add(item);
+                }
+              });
+            },
+          );
+        },
+      );
+    }
+
+    return ListView.builder(
+      itemCount: items.length,
+      itemBuilder: (c, i) {
+        final item = items[i];
+        final isSelected = selected.contains(item);
+        return InkWell(
+          onTap: () {
+            if (isSelected) {
+              selected.remove(item);
+            } else {
+              selected.add(item);
+            }
+            setState(() {});
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? Colors.blueAccent.withValues(alpha: 0.3)
+                  : const Color(0xffF2F3F6),
+              border: const Border(
+                bottom: BorderSide(color: Colors.white),
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12.0,
+              vertical: 12,
+            ),
+            child: Row(
+              children: [
+                UnifiedMultiPickerCheckbox(value: isSelected),
+                const SizedBox(width: 8),
+                Expanded(
+                  child:
+                      widget.itemToWidget?.call(item) ??
+                      Text(item.toString()),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Shows a multi-select picker bottom sheet and returns the chosen values.
+Future<List<T>?> showUnifiedMultiPickerSheet<T>({
+  required BuildContext context,
+  required List<T> items,
+  required String label,
+  List<T> values = const [],
+  List<T> suggestion = const [],
+  bool hasSearch = true,
+  bool hasClear = true,
+  bool searchAutoFocus = false,
+  String Function(T)? searchBuilder,
+  Widget Function(T)? itemToWidget,
+  UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder,
+  SliverGridDelegate? gridDelegate,
+  Widget? headerWidget,
+}) async {
+  FocusScope.of(context).requestFocus(FocusNode());
+  final dynamic result = await showModalBottomSheet<dynamic>(
+    context: context,
+    isScrollControlled: true,
+    builder: (c) => Padding(
+      padding: EdgeInsets.zero,
+      child: MultiPickerSheetWidget<T>(
+        items: items,
+        suggestion: suggestion,
+        values: values,
+        searchAutoFocus: searchAutoFocus,
+        hasClear: hasClear,
+        searchBuilder: searchBuilder,
+        label: label,
+        itemToWidget: itemToWidget,
+        hasSearch: hasSearch,
+        headerWidget: headerWidget,
+        gridItemBuilder: gridItemBuilder,
+        gridDelegate: gridDelegate,
+      ),
+    ),
+  );
+  if (result == Null) return <T>[];
+  if (result is List<T>) return result;
+  if (result is List) return result.cast<T>().toList();
+  return null;
 }

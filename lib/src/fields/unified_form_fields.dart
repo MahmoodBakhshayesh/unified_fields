@@ -11,6 +11,7 @@ import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 import 'unified_picker_fields.dart';
+import 'unified_picker_item_builders.dart';
 
 /// Optional callback used by unified form fields for [FormState.reset].
 ///
@@ -627,6 +628,8 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
     this.valueToString,
     this.searchBuilder,
     this.itemToWidget,
+    this.gridItemBuilder,
+    this.gridDelegate,
     this.suggestion = const [],
     this.hasSearch = true,
     this.searchAutoFocus = false,
@@ -679,8 +682,14 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
   /// Custom searchable text per item.
   final String Function(T value)? searchBuilder;
 
-  /// Custom row builder inside the sheet.
+  /// Custom row builder inside the sheet (list layout).
   final Widget Function(T value)? itemToWidget;
+
+  /// Custom grid tile builder; when set, the sheet uses a [GridView].
+  final UnifiedPickerGridItemBuilder<T>? gridItemBuilder;
+
+  /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
+  final SliverGridDelegate? gridDelegate;
 
   /// Suggestion list pinned above the searchable list.
   final List<T> suggestion;
@@ -890,6 +899,8 @@ class _UnifiedFormSinglePickerFieldState<T>
           valueToString: widget.valueToString,
           searchBuilder: widget.searchBuilder,
           itemToWidget: widget.itemToWidget,
+          gridItemBuilder: widget.gridItemBuilder,
+          gridDelegate: widget.gridDelegate,
           suggestion: widget.suggestion,
           hasSearch: widget.hasSearch,
           searchAutoFocus: widget.searchAutoFocus,
