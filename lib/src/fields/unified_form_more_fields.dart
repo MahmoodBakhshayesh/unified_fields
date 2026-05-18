@@ -191,6 +191,10 @@ class _UnifiedFormMultiPickerFieldState<T>
     } else {
       _frozenResetList = [];
     }
+    syncWidgetValidatorToFieldController<List<T>>(
+      widget.fieldController,
+      widget.validator,
+    );
     widget.binding?.addListener(_onBindingChanged);
     widget.fieldController?.addListener(_onFieldControllerChanged);
   }
@@ -305,6 +309,10 @@ class _UnifiedFormMultiPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
+    syncWidgetValidatorToFieldController<List<T>>(
+      widget.fieldController,
+      widget.validator,
+    );
     return UnifiedFormField<List<T>>(
       formFieldKey: _formFieldKey,
       initialValue: widget.resetValue != null
@@ -550,6 +558,10 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
       _cachedResetTarget = widget.resetValue!();
       _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget();
     }
+    syncWidgetValidatorToFieldController<DateTime?>(
+      widget.fieldController,
+      widget.validator,
+    );
     widget.binding?.addListener(_onBindingChanged);
     widget.fieldController?.addListener(_onFieldControllerChanged);
   }
@@ -564,6 +576,13 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
     if (oldWidget.fieldController != widget.fieldController) {
       oldWidget.fieldController?.removeListener(_onFieldControllerChanged);
       widget.fieldController?.addListener(_onFieldControllerChanged);
+    }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.fieldController != widget.fieldController) {
+      syncWidgetValidatorToFieldController<DateTime?>(
+        widget.fieldController,
+        widget.validator,
+      );
     }
     final resetChanged = widget.resetValue != oldWidget.resetValue;
     final bindingChanged = widget.binding != oldWidget.binding;
@@ -667,6 +686,10 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
 
   @override
   Widget build(BuildContext context) {
+    syncWidgetValidatorToFieldController<DateTime?>(
+      widget.fieldController,
+      widget.validator,
+    );
     return UnifiedFormField<DateTime?>(
       formFieldKey: _formFieldKey,
       initialValue: widget.resetValue != null
@@ -1749,6 +1772,10 @@ class _UnifiedFormAsyncPickerFieldState<T>
       _cachedResetTarget = widget.resetValue!();
       _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget();
     }
+    syncWidgetValidatorToFieldController<T>(
+      widget.fieldController,
+      widget.validator,
+    );
     widget.binding?.addListener(_onBindingChanged);
     widget.fieldController?.addListener(_onFieldControllerChanged);
   }
@@ -1763,6 +1790,13 @@ class _UnifiedFormAsyncPickerFieldState<T>
     if (oldWidget.fieldController != widget.fieldController) {
       oldWidget.fieldController?.removeListener(_onFieldControllerChanged);
       widget.fieldController?.addListener(_onFieldControllerChanged);
+    }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.fieldController != widget.fieldController) {
+      syncWidgetValidatorToFieldController<T>(
+        widget.fieldController,
+        widget.validator,
+      );
     }
     final resetChanged = widget.resetValue != oldWidget.resetValue;
     final bindingChanged = widget.binding != oldWidget.binding;
@@ -1848,6 +1882,10 @@ class _UnifiedFormAsyncPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
+    syncWidgetValidatorToFieldController<T>(
+      widget.fieldController,
+      widget.validator,
+    );
     return UnifiedFormField<T?>(
       formFieldKey: _formFieldKey,
       initialValue: widget.resetValue != null
@@ -2061,6 +2099,10 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
     } else {
       _frozenResetList = [];
     }
+    syncWidgetValidatorToFieldController<List<T>>(
+      widget.fieldController,
+      widget.validator,
+    );
     widget.binding?.addListener(_onBindingChanged);
     widget.fieldController?.addListener(_onFieldControllerChanged);
   }
@@ -2077,6 +2119,13 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
     if (oldWidget.fieldController != widget.fieldController) {
       oldWidget.fieldController?.removeListener(_onFieldControllerChanged);
       widget.fieldController?.addListener(_onFieldControllerChanged);
+    }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.fieldController != widget.fieldController) {
+      syncWidgetValidatorToFieldController<List<T>>(
+        widget.fieldController,
+        widget.validator,
+      );
     }
     final resetFnChanged = !identical(widget.resetValue, oldWidget.resetValue);
     final resetPayloadChanged =
@@ -2177,6 +2226,10 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
+    syncWidgetValidatorToFieldController<List<T>>(
+      widget.fieldController,
+      widget.validator,
+    );
     return UnifiedFormField<List<T>>(
       formFieldKey: _formFieldKey,
       initialValue: widget.resetValue != null

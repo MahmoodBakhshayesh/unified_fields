@@ -1,3 +1,10 @@
+## 0.2.1
+
+### Fixes
+
+* **Widget vs controller validator** — fields sync `validator:` on the widget onto `fieldController` so [UnifiedFieldValidation.validateFields] matches [FormState.validate] / inline errors ([UnifiedTextField], [UnifiedFormTextField], [UnifiedSinglePickerField], [UnifiedMultiPickerField], and form picker wrappers).
+* **[UnifiedFormSinglePickerField]** — rebuilds when `fieldController.errorText` changes only (imperative validate).
+
 ## 0.2.0
 
 ### Features
@@ -12,6 +19,8 @@
 
 * **Customizable picker fields** — when `allowFreeText` is true (default), tapping the field focuses the text input for typing; the picker opens only via the suffix icon. Tap-to-open on the whole field applies when `allowFreeText` is false.
 * **`fieldDefaults`** — `borderRadius`, `labelMode` / label-in-row layout, and other chrome now apply on [UnifiedTextField], [UnifiedFormTextField], and fields using [UnifiedBaseTextField] (including when `decorationSet` is set). Removed hardcoded `18` radius / `Colors.black26` overrides on wrappers that blocked theme values.
+* **Controller validation UI** — [UnifiedTextField] rebuilds when [UnifiedTextFieldController] error changes (`ListenableBuilder`). Label-in-row layout shows the error message below the field. [UnifiedFieldValidation.validateFields] documented: requires `fieldController:` on the field.
+* **[UnifiedFormTextField]** — listening to [UnifiedTextFieldController] now rebuilds when only `errorText` changes (not only value). [shakeOnError] works with [UnifiedFieldValidation.validateFields]. If both `controller` and `fieldController` are passed, wire the same [TextEditingController] via [UnifiedTextFieldController.textController].
 
 ## 0.1.9
 

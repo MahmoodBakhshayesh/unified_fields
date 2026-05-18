@@ -366,6 +366,10 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         _effectiveFocusNode.addListener(_onFocusChanged);
       }
     }
+
+    if (oldWidget.errorText != widget.errorText) {
+      _tick.value++;
+    }
   }
 
   void _detachFocusListener(FocusNode? previousExternal) {
@@ -1107,58 +1111,79 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         widget.borderSide ??
         const BorderSide(color: Color(0xff58514C), width: 0.5);
     final headerBg = _effectiveHeaderBackgroundColor(palette, dec);
+    final showErrorMessage = hasError &&
+        errorText != null &&
+        UnifiedInputThemeResolver.fieldShowError(context, field: widget.showError) &&
+        dec.showError;
 
     return wrapInteraction(
-      Container(
-        decoration: BoxDecoration(
-          borderRadius: radius,
-          border: _borderFromSide(
-            dec.borderSide ?? widget.borderSide,
-            palette,
-            dec,
-            hasError,
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                flex: labelFlex,
-                child: Container(
-                  constraints: BoxConstraints(minHeight: h),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: headerBg,
-                    border: BorderDirectional(end: divider),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              border: _borderFromSide(
+                dec.borderSide ?? widget.borderSide,
+                palette,
+                dec,
+                hasError,
+              ),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    flex: labelFlex,
+                    child: Container(
+                      constraints: BoxConstraints(minHeight: h),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: headerBg,
+                        border: BorderDirectional(end: divider),
+                      ),
+                      child: widget.label == null
+                          ? const SizedBox.shrink()
+                          : Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: _labelRowCompact(palette, dec),
+                            ),
+                    ),
                   ),
-                  child: widget.label == null
-                      ? const SizedBox.shrink()
-                      : Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: _labelRowCompact(palette, dec),
-                        ),
+                  Expanded(
+                    flex: bodyFlex,
+                    child: Container(
+                      constraints: BoxConstraints(minHeight: h),
+                      color: _effectiveBackgroundColor(palette, dec),
+                      child: _bodyRow(
+                        context,
+                        errorText,
+                        hasError,
+                        palette,
+                        dec,
+                        labelInRow: true,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (showErrorMessage)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, left: 4),
+              child: Text(
+                errorText,
+                style: TextStyle(
+                  color: _validationColor(palette, dec),
+                  fontSize: 12,
                 ),
               ),
-              Expanded(
-                flex: bodyFlex,
-                child: Container(
-                  constraints: BoxConstraints(minHeight: h),
-                  color: _effectiveBackgroundColor(palette, dec),
-                  child: _bodyRow(
-                    context,
-                    errorText,
-                    hasError,
-                    palette,
-                    dec,
-                    labelInRow: true,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+        ],
       ),
     );
   }

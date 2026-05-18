@@ -294,8 +294,11 @@ class UnifiedFormTextField extends StatefulWidget {
   /// When null, an internal [TextEditingController] is created and disposed here.
   final TextEditingController? controller;
 
-  /// Preferred imperative handle; when set, uses [UnifiedTextFieldController.textController]
-  /// instead of an internal controller and syncs with [binding] on change.
+  /// Preferred imperative handle; when set, the field edits [UnifiedTextFieldController.textController].
+  ///
+  /// If both [controller] and [fieldController] are set, pass the same
+  /// [TextEditingController] into [UnifiedTextFieldController.textController] (or only
+  /// use [fieldController]); otherwise [controller] is ignored for editing.
   final UnifiedTextFieldController? fieldController;
 
   /// Initial text when [controller] is null.
@@ -431,11 +434,20 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
   void initState() {
     super.initState();
     _initEffectiveController();
-    final fromExternal = widget.fieldController?.value ?? widget.binding?.value;
+    final external = widget.controller;
+    final fc = widget.fieldController;
+    if (fc != null && external != null && external != fc.textController) {
+      fc.textController.text = external.text;
+    }
+    final fromExternal = fc?.value ?? widget.binding?.value;
     if (fromExternal != null && fromExternal.isNotEmpty) {
       _effectiveController.text = fromExternal;
     }
     _recomputeResetBaseline();
+    syncWidgetStringValidatorToFieldController(
+      widget.fieldController,
+      widget.validator,
+    );
     widget.binding?.addListener(_onBindingChanged);
     widget.fieldController?.addListener(_onFieldControllerChanged);
   }
@@ -463,6 +475,13 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
         widget.fieldController != oldWidget.fieldController) {
       _recomputeResetBaseline();
     }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.fieldController != widget.fieldController) {
+      syncWidgetStringValidatorToFieldController(
+        widget.fieldController,
+        widget.validator,
+      );
+    }
   }
 
   void _onBindingChanged() {
@@ -477,14 +496,25 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
   }
 
   void _onFieldControllerChanged() {
-    final v = widget.fieldController?.value ?? '';
-    if (v == _effectiveController.text) return;
-    _effectiveController.text = v;
-    _formFieldKey.currentState?.didChange(v);
-    if (widget.resetValue == null) {
-      _formResetBaseline = v;
+    final fc = widget.fieldController;
+    if (fc == null) return;
+    final v = fc.value ?? '';
+    if (v != _effectiveController.text) {
+      _effectiveController.text = v;
+      _formFieldKey.currentState?.didChange(v);
+      if (widget.resetValue == null) {
+        _formResetBaseline = v;
+      }
     }
+    // Rebuild when [errorText] changes too ([validate] / [UnifiedFieldValidation]).
     setState(() {});
+    // Keep [FormFieldState.hasError] in sync for [shakeOnError] and [unifiedFormErrorText].
+    final formState = _formFieldKey.currentState;
+    if (formState != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) formState.validate();
+      });
+    }
   }
 
   /// [FormField.onReset]: align [TextEditingController] + optional [binding] with form state.
@@ -516,6 +546,10 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
 
   @override
   Widget build(BuildContext context) {
+    syncWidgetStringValidatorToFieldController(
+      widget.fieldController,
+      widget.validator,
+    );
     final chrome = resolveUnifiedFieldDecorationContext(
       context,
       decoration: widget.decoration,
@@ -524,14 +558,7 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
     );
     final d = chrome.resolved;
 
-    return UnifiedFormField<String>(
-      formFieldKey: _formFieldKey,
-      initialValue: _formResetBaseline,
-      validator: widget.validator,
-      onSaved: widget.onSaved,
-      onReset: _syncControllerAndBindingFromForm,
-      shakeOnError: widget.shakeOnError,
-      builder: (context, fieldState) {
+    Widget buildField(FormFieldState<String> fieldState) {
         return UnifiedBaseTextField(
           decorationSet: chrome.activeSet,
           brightness: widget.brightness,
@@ -541,7 +568,8 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
             binding: widget.binding,
             direct: widget.focusNode,
           ),
-          errorText: widget.fieldController?.errorText,
+          errorText:
+              widget.fieldController?.errorText ?? fieldState.errorText,
           label: widget.label ?? d.label,
           placeholder: widget.placeholder ?? d.placeholder ?? d.label,
           labelStyle: d.labelStyle,
@@ -601,6 +629,22 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
               }
             }
           },
+        );
+    }
+
+    final fc = widget.fieldController;
+    return UnifiedFormField<String>(
+      formFieldKey: _formFieldKey,
+      initialValue: _formResetBaseline,
+      validator: widget.validator,
+      onSaved: widget.onSaved,
+      onReset: _syncControllerAndBindingFromForm,
+      shakeOnError: widget.shakeOnError,
+      builder: (context, fieldState) {
+        if (fc == null) return buildField(fieldState);
+        return ListenableBuilder(
+          listenable: fc,
+          builder: (context, _) => buildField(fieldState),
         );
       },
     );
@@ -772,6 +816,10 @@ class _UnifiedFormSinglePickerFieldState<T>
       _cachedResetTarget = widget.resetValue!();
       _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget();
     }
+    syncWidgetValidatorToFieldController(
+      widget.fieldController,
+      widget.validator,
+    );
     widget.binding?.addListener(_onBindingChanged);
     widget.fieldController?.addListener(_onFieldControllerChanged);
   }
@@ -786,6 +834,13 @@ class _UnifiedFormSinglePickerFieldState<T>
     if (oldWidget.fieldController != widget.fieldController) {
       oldWidget.fieldController?.removeListener(_onFieldControllerChanged);
       widget.fieldController?.addListener(_onFieldControllerChanged);
+    }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.fieldController != widget.fieldController) {
+      syncWidgetValidatorToFieldController(
+        widget.fieldController,
+        widget.validator,
+      );
     }
     final resetChanged = widget.resetValue != oldWidget.resetValue;
     final bindingChanged = widget.binding != oldWidget.binding;
@@ -851,10 +906,16 @@ class _UnifiedFormSinglePickerFieldState<T>
       value: display,
       fieldController: widget.fieldController,
     );
-    if (widget.resetValue == null && _echoInitialWhenNoReset != display) {
-      setState(() => _echoInitialWhenNoReset = display);
-    } else {
-      setState(() {});
+    setState(() {
+      if (widget.resetValue == null && _echoInitialWhenNoReset != display) {
+        _echoInitialWhenNoReset = display;
+      }
+    });
+    final formState = _formFieldKey.currentState;
+    if (formState != null && (widget.fieldController?.hasError ?? false)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) formState.validate();
+      });
     }
   }
 
@@ -876,6 +937,10 @@ class _UnifiedFormSinglePickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
+    syncWidgetValidatorToFieldController(
+      widget.fieldController,
+      widget.validator,
+    );
     return UnifiedFormField<T?>(
       formFieldKey: _formFieldKey,
       initialValue: widget.resetValue != null

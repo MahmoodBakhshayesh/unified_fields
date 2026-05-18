@@ -160,13 +160,15 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
     _fc?.addListener(_onFieldControllerChanged);
   }
 
+  void _syncFieldControllerValidator() {
+    syncWidgetStringValidatorToFieldController(_fc, widget.validator);
+  }
+
   void _initController() {
     if (_fc != null) {
       _effectiveController = _fc!.textController;
       _ownsController = false;
-      if (widget.validator != null) {
-        _fc!.validator = (v) => widget.validator!(v ?? '');
-      }
+      _syncFieldControllerValidator();
       return;
     }
     _effectiveController =
@@ -228,8 +230,9 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       oldWidget.fieldController?.removeListener(_onFieldControllerChanged);
       widget.fieldController?.addListener(_onFieldControllerChanged);
     }
-    if (widget.validator != null && _fc != null) {
-      _fc!.validator = (v) => widget.validator!(v ?? '');
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.fieldController != widget.fieldController) {
+      _syncFieldControllerValidator();
     }
   }
 
@@ -270,18 +273,13 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final chrome = resolveUnifiedFieldDecorationContext(
-      context,
-      decoration: widget.decoration,
-      decorationSet: widget.decorationSet,
-      brightness: widget.brightness,
-    );
-    final d = chrome.resolved;
-
+  Widget _buildField(
+    BuildContext context,
+    UnifiedInputDecoration d,
+    UnifiedInputDecorationSet? activeDecorationSet,
+  ) {
     return UnifiedBaseTextField(
-      decorationSet: chrome.activeSet,
+      decorationSet: activeDecorationSet,
       brightness: widget.brightness,
       controller: _effectiveController,
       focusNode: unifiedEffectiveFocusNode(
@@ -341,6 +339,26 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       initialValue: widget.controller != null ? null : widget.initialValue,
       onSubmit: widget.onSubmitted,
       onChanged: _forwardChanged,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _syncFieldControllerValidator();
+    final chrome = resolveUnifiedFieldDecorationContext(
+      context,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
+      brightness: widget.brightness,
+    );
+    final d = chrome.resolved;
+
+    final field = _buildField(context, d, chrome.activeSet);
+    final fc = _fc;
+    if (fc == null) return field;
+    return ListenableBuilder(
+      listenable: fc,
+      builder: (context, _) => _buildField(context, d, chrome.activeSet),
     );
   }
 }

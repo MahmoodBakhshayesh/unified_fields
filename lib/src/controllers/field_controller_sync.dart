@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../fields/unified_input_picker.dart';
 import 'base_unified_field_controller.dart';
+import 'unified_picker_field_controller.dart';
 
 /// Focus node: [fieldController] → [binding] → [direct].
 FocusNode? unifiedEffectiveFocusNode<T>({
@@ -111,6 +112,50 @@ void syncUnifiedFieldListValue<T>({
   if (fieldController != null) {
     fieldController.value = value;
   }
+}
+
+/// Copies [widgetValidator] onto [fieldController] when the widget supplies one.
+///
+/// Keeps [BaseUnifiedFieldController.validate] and
+/// [UnifiedFieldValidation.validateFields] aligned with a field / [FormField] validator.
+/// Does nothing when [widgetValidator] is null (controller keeps its own validator).
+void syncWidgetValidatorToFieldController<T>(
+  BaseUnifiedFieldController<T>? fieldController,
+  String? Function(T? value)? widgetValidator,
+) {
+  if (fieldController == null || widgetValidator == null) return;
+  fieldController.validator = widgetValidator;
+}
+
+/// Like [syncWidgetValidatorToFieldController] for [String] fields whose widget
+/// validator uses a non-nullable [String] argument.
+void syncWidgetStringValidatorToFieldController(
+  BaseUnifiedFieldController<String>? fieldController,
+  String? Function(String value)? widgetValidator,
+) {
+  if (fieldController == null || widgetValidator == null) return;
+  fieldController.validator = (value) => widgetValidator(value ?? '');
+}
+
+/// Picker fields validate display [String] while [UnifiedPickerFieldController]
+/// stores [String? Function(T? value)?]; maps between them via [displayFor].
+void syncPickerStringValidatorToFieldController<T>(
+  UnifiedPickerFieldController<T>? fieldController,
+  String? Function(String value)? widgetValidator,
+  String Function(T? value) displayFor,
+) {
+  if (fieldController == null || widgetValidator == null) return;
+  fieldController.validator = (value) => widgetValidator(displayFor(value));
+}
+
+/// Like [syncPickerStringValidatorToFieldController] for multi-select pickers.
+void syncMultiPickerStringValidatorToFieldController<T>(
+  UnifiedMultiPickerFieldController<T>? fieldController,
+  String? Function(String value)? widgetValidator,
+  String Function(List<T>? value) displayFor,
+) {
+  if (fieldController == null || widgetValidator == null) return;
+  fieldController.validator = (value) => widgetValidator(displayFor(value));
 }
 
 /// Effective value: [fieldController] → [binding] → [direct].

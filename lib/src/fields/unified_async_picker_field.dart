@@ -152,6 +152,11 @@ class _UnifiedAsyncPickerFieldState<T>
     widget.fieldController?.bindPickerLabel(
       dec.placeholder ?? dec.label ?? widget.label,
     );
+    syncPickerStringValidatorToFieldController(
+      widget.fieldController,
+      widget.validator,
+      _display,
+    );
     attachUnifiedFieldHandles(
       opener: _presentPicker,
       focusNode: unifiedEffectiveFocusNode(
@@ -196,7 +201,8 @@ class _UnifiedAsyncPickerFieldState<T>
     }
     if (oldWidget.fieldController != widget.fieldController ||
         oldWidget.label != widget.label ||
-        oldWidget.decoration != widget.decoration) {
+        oldWidget.decoration != widget.decoration ||
+        oldWidget.validator != widget.validator) {
       _syncFieldController();
     }
     if (oldWidget.value != widget.value ||
@@ -504,6 +510,11 @@ class _UnifiedAsyncMultiPickerFieldState<T>
     widget.fieldController?.bindPickerLabel(
       dec.placeholder ?? dec.label ?? widget.label,
     );
+    syncMultiPickerStringValidatorToFieldController(
+      widget.fieldController,
+      widget.validator,
+      (values) => _display(values ?? const []),
+    );
     attachUnifiedFieldHandles(
       opener: (context) => _presentPicker(context, dec),
       focusNode: unifiedEffectiveFocusNode(
@@ -553,7 +564,8 @@ class _UnifiedAsyncMultiPickerFieldState<T>
     }
     if (oldWidget.fieldController != widget.fieldController ||
         oldWidget.label != widget.label ||
-        oldWidget.decoration != widget.decoration) {
+        oldWidget.decoration != widget.decoration ||
+        oldWidget.validator != widget.validator) {
       final dec = resolveUnifiedDecoration(
         context,
         overrides: widget.decoration,

@@ -35,7 +35,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.2.0
+  unified_fields: ^0.2.1
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -766,7 +766,7 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.2.0`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.2.1`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
 
 ### Upgrading to 0.2.0
 
