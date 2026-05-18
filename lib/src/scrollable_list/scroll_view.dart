@@ -14,6 +14,7 @@ import 'viewport.dart';
 class UnboundedCustomScrollView extends CustomScrollView {
   final bool _shrinkWrap;
 
+  /// Creates an unbounded [CustomScrollView] (see class documentation).
   const UnboundedCustomScrollView({
     Key? key,
     Axis scrollDirection = Axis.vertical,

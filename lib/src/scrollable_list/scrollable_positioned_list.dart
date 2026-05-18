@@ -108,6 +108,7 @@ class ScrollablePositionedList extends StatefulWidget {
   /// Notifier that reports the items laid out in the list after each frame.
   final ItemPositionsNotifier? itemPositionsNotifier;
 
+  /// Controller for relative pixel scroll animations.
   final ScrollOffsetController? scrollOffsetController;
 
   /// Notifier that reports the changes to the scroll offset.
@@ -275,6 +276,7 @@ class ItemScrollController {
 /// This is an experimental API and is subject to change.
 /// Behavior may be ill-defined in some cases.  Please file bugs.
 class ScrollOffsetController {
+  /// Animates the scroll position by [offset] pixels from the current offset.
   Future<void> animateScroll({
     required double offset,
     required Duration duration,

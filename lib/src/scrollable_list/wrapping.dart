@@ -152,6 +152,7 @@ class CustomRenderShrinkWrappingViewport extends CustomRenderViewport {
   @override
   bool get sizedByParent => false;
 
+  /// Main-axis extent from the most recent layout pass.
   double lastMainAxisExtent = -1;
 
   @override
@@ -595,6 +596,7 @@ abstract class CustomViewport extends MultiChildRenderObjectWidget {
   }
 }
 
+/// Element for [CustomViewport] that wires the center sliver.
 class CustomViewportElement extends MultiChildRenderObjectElement {
   /// Creates an element that uses the given widget as its configuration.
   CustomViewportElement(CustomViewport widget) : super(widget);
@@ -645,6 +647,7 @@ class CustomViewportElement extends MultiChildRenderObjectElement {
   }
 }
 
+/// Parent data for sliver children in a [CustomRenderShrinkWrappingViewport].
 class CustomSliverPhysicalContainerParentData
     extends SliverPhysicalContainerParentData {
   /// The position of the child relative to the zero scroll offset.
@@ -659,6 +662,7 @@ class CustomSliverPhysicalContainerParentData
   /// Defaults to null.
   double? layoutOffset;
 
+  /// Growth direction assigned during shrink-wrap layout.
   GrowthDirection? growthDirection;
 }
 
@@ -885,6 +889,7 @@ abstract class CustomRenderViewport
   late double _maxScrollExtent;
   bool _hasVisualOverflow = false;
 
+  /// Extra extent added during shrink-wrap growth passes.
   double growSize = 0;
 
   @override

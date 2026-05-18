@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 /// computed to allow scroll extents outside 0 to 1.  See [Viewport]
 /// for more information.
 class UnboundedViewport extends Viewport {
+  /// Creates an unbounded [Viewport] (see class documentation).
   UnboundedViewport({
     Key? key,
     AxisDirection axisDirection = AxisDirection.down,

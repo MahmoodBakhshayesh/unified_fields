@@ -51,5 +51,5 @@ See the root [README](../README.md#global-theme-unifiedinputthemescope) for the 
 
 ## Package version
 
-This example tracks the parent package (**currently 0.1.6**). See the root
+This example tracks the parent package (**currently 0.1.7**). See the root
 [`CHANGELOG.md`](../CHANGELOG.md) for release notes.

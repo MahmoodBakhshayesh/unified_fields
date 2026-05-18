@@ -1,4 +1,4 @@
-## 0.1.6
+## 0.1.7
 
 ### Features
 
@@ -10,18 +10,6 @@
 * **`UnifiedInputPhoneStyle`** / **`UnifiedInputThemeData.phoneStyle`** — dial-code box chrome, flag dimensions, invalid dial-code display (`message` vs `highlightText`).
 * **`UnifiedPhoneFieldController`** — `UnifiedPhoneNumber` value, national/dial controllers, `setCountry`, unified single-field entry mode.
 * **`UnifiedFieldLabelMode`** — `labelInRow`, `labelInColumn`, and `floatingLabel` (default on [UnifiedBaseTextField]); set via `labelMode` on fields or [UnifiedInputDecoration]. Legacy `labelInRow: true` still maps to row mode.
-* **`UnifiedInputThemeScope`** — global field chrome via `UnifiedInputThemeData`: disabled/locked label and field colors, placeholder, required icon, validation, suffix/clear/loading colors, picker sheet background, default suffix icons per field type.
-* **`UnifiedInputPickerHeaderStyle`** — picker sheet header `padding`, `backgroundColor`, `titleStyle`, and `clearButtonColor`.
-* **`UnifiedInputMultiPickerCheckboxStyle`** — multi-picker checkbox `size`, `borderRadius`, `fillColor`, `checkColor`, and `borderColor`.
-* **`UnifiedSuffixIconChrome`** — 32×32 aligned suffix slot for date/time/duration/phone icons.
-* **Custom duration columns** — `pickerColumns` with fixed wheel ranges; presets on `UnifiedFieldsDurationColumnPresets`.
-* **Time / duration wheel pickers**, **Persian digits** (KookFaNum), **Jalali** calendar and field display improvements.
-
-### API
-
-* **`UnifiedFieldsContextX`** — prefixed getters (`unifiedFieldsScreenWidth`, `unifiedFieldsUseDialogLayout`, …); legacy `width` / `isDesktop` deprecated.
-* **`UnifiedFieldsDateWheelStyle.forPicker`** — named `overrides:` and optional `context:` for themed sheet background.
-* **`unifiedFormatDuration`** / **`unifiedTryParseDuration`** — named `granularity:`, optional `pickerColumns:` / `calendarKind:`.
 
 ### Breaking changes
 
@@ -32,9 +20,30 @@
 
 * Placeholder / hint styling uses [UnifiedColors.hintColor] at **0.72** opacity by default.
 * Placeholder no longer falls back to the label string on [UnifiedTextField] and [UnifiedNumberField].
-* Picker sheets use theme scope for background color instead of hard-coded values.
 * Phone layout: bounded row height, label modes on [UnifiedPhoneField], `height` / `width` support.
-* Static analysis: `dart analyze` clean on `lib/`.
+* Static analysis: `dart analyze` clean on `lib/` (including vendored `scrollable_list` dartdoc for pub.dev scoring).
+
+## 0.1.6
+
+### Features
+
+* **`UnifiedInputThemeScope`** — global field chrome via `UnifiedInputThemeData`: disabled/locked label and field colors, placeholder, required icon, validation, suffix/clear/loading colors, picker sheet background, default suffix icons per field type.
+* **`UnifiedInputPickerHeaderStyle`** — settable picker sheet header `padding`, `backgroundColor`, `titleStyle`, and `clearButtonColor` (shared `UnifiedPickerSheetHeader` for single and multi pickers).
+* **`UnifiedInputMultiPickerCheckboxStyle`** — settable multi-picker checkbox `size`, `borderRadius`, `fillColor`, `checkColor`, and `borderColor`.
+* **`UnifiedSuffixIconChrome`** — 32×32 aligned suffix slot so date/time/duration icons line up with picker dropdown and lock/clear affordances.
+* **Custom duration columns** — `pickerColumns` with fixed wheel ranges (year `0…999`, month `0…11`, week `0…4`); presets on `UnifiedFieldsDurationColumnPresets`.
+* **Time / duration wheel pickers**, **Persian digits** (KookFaNum), **Jalali** calendar and field display improvements (see 0.1.4–0.1.5 notes below).
+
+### API
+
+* **`UnifiedFieldsContextX`** — prefixed getters (`unifiedFieldsScreenWidth`, `unifiedFieldsUseDialogLayout`, …); legacy `width` / `isDesktop` deprecated.
+* **`UnifiedFieldsDateWheelStyle.forPicker`** — named `overrides:` and optional `context:` for themed sheet background.
+* **`unifiedFormatDuration`** / **`unifiedTryParseDuration`** — named `granularity:`, optional `pickerColumns:` / `calendarKind:`.
+
+### Fixes
+
+* Picker sheets use theme scope for background color instead of hard-coded values.
+* Static-analysis cleanup (`dart analyze lib` clean).
 
 ## 0.1.5
 

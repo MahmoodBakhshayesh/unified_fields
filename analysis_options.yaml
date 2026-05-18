@@ -1,10 +1,5 @@
 include: package:flutter_lints/flutter.yaml
 
-# Vendored scrollable list predates super-parameters style; keep lints focused elsewhere.
-analyzer:
-  exclude:
-    - lib/src/scrollable_list/**
-
 linter:
   rules:
     use_super_parameters: false

@@ -35,7 +35,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.1.6
+  unified_fields: ^0.1.7
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -691,9 +691,9 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.1.6`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.1.7`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
 
-### Upgrading to 0.1.6
+### Upgrading to 0.1.7
 
 - **`UnifiedPhoneField`**, **`UnifiedCountry`** enum, **`UnifiedFlag`**, and **`UnifiedCountryWidget`** — see [Phone](#phone-unifiedphonefield). Replace any `UnifiedPhoneCountry(...)` constructor with enum values (e.g. `UnifiedCountry.ir`; India: `UnifiedCountry.countryIN`). `UnifiedPhoneCountries` → **`UnifiedCountries`**.
 - Wrap your app (or a screen) in **`UnifiedInputThemeScope`** for global disabled/placeholder/required/validation colors, picker sheet background, header padding, and multi-picker checkbox styling — see [Global theme](#global-theme-unifiedinputthemescope).  
