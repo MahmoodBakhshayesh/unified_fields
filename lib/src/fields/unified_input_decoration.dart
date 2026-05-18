@@ -68,6 +68,12 @@ class UnifiedInputDecoration {
   /// Trailing widget shown after the field content.
   final Widget? suffixIcon;
 
+  /// Width of the slot wrapping [suffixIcon]; defaults to 32 when null.
+  final double? suffixWidth;
+
+  /// Height of the slot wrapping [suffixIcon]; defaults to 32 when null.
+  final double? suffixHeight;
+
   /// Inner padding of the editing area.
   final EdgeInsetsGeometry? contentPadding;
 
@@ -93,6 +99,8 @@ class UnifiedInputDecoration {
     this.prefix,
     this.prefixIcon,
     this.suffixIcon,
+    this.suffixWidth,
+    this.suffixHeight,
     this.contentPadding,
   });
 
@@ -122,6 +130,8 @@ class UnifiedInputDecoration {
       prefix: other.prefix ?? prefix,
       prefixIcon: other.prefixIcon ?? prefixIcon,
       suffixIcon: other.suffixIcon ?? suffixIcon,
+      suffixWidth: other.suffixWidth ?? suffixWidth,
+      suffixHeight: other.suffixHeight ?? suffixHeight,
       contentPadding: other.contentPadding ?? contentPadding,
     );
   }
@@ -154,6 +164,8 @@ class UnifiedInputDecoration {
       prefix: prefix,
       prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,
+      suffixWidth: suffixWidth,
+      suffixHeight: suffixHeight,
       contentPadding: contentPadding,
     );
   }

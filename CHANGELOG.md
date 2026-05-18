@@ -4,6 +4,8 @@
 
 * **Widget vs controller validator** — fields sync `validator:` on the widget onto `fieldController` so [UnifiedFieldValidation.validateFields] matches [FormState.validate] / inline errors ([UnifiedTextField], [UnifiedFormTextField], [UnifiedSinglePickerField], [UnifiedMultiPickerField], and form picker wrappers).
 * **[UnifiedFormSinglePickerField]** — rebuilds when `fieldController.errorText` changes only (imperative validate).
+* **Live error updates** — after a failed validate, editing the value re-runs validation on [BaseUnifiedFieldController] and `UnifiedForm*` fields (error clears when fixed, without tapping validate again).
+* **Suffix layout** — [UnifiedInputDecoration.suffix] and [suffixConstraints] for trailing text/custom widgets; [suffixIcon] stays icon-sized (32×32). Custom suffix text is no longer clipped into the icon slot. Date, time, duration, and picker fields use the same trailing-edge row as disabled fields ([_inlineFieldRow]), so default suffix icons align consistently (fixes centered chevrons with `textAlign: center` / empty values).
 
 ## 0.2.0
 

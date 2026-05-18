@@ -735,8 +735,10 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     BuildContext context,
     bool hasText,
     UnifiedInputPalette palette,
+    UnifiedInputDecoration dec,
   ) {
     final widgets = <Widget>[];
+    final customSuffix = widget.suffixIcon ?? dec.suffixIcon;
 
     if (_visuallyDisabled) {
       widgets.add(_stateSuffixIcon(Icons.not_interested_outlined, palette));
@@ -754,8 +756,14 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
             tooltip: _obscure ? 'Show password' : 'Hide password',
           ),
         );
-      } else if (widget.suffixIcon != null) {
-        widgets.add(UnifiedSuffixIconChrome.normalize(widget.suffixIcon!));
+      } else if (customSuffix != null) {
+        widgets.add(
+          UnifiedSuffixIconChrome.normalize(
+            customSuffix,
+            width: dec.suffixWidth,
+            height: dec.suffixHeight,
+          ),
+        );
       }
 
       if (UnifiedInputThemeResolver.fieldShowClearButton(
@@ -869,7 +877,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       );
     }
 
-    final suffix = _buildSuffixRow(context, hasText, palette);
+    final suffix = _buildSuffixRow(context, hasText, palette, dec);
     return Container(
       alignment: Alignment.centerLeft,
       padding: padding,
@@ -935,7 +943,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       placeholder: widget.placeholder,
       placeholderStyle: _placeholderStyle(palette, dec),
       prefix: dec.prefixIcon ?? widget.prefixIcon ?? widget.prefix,
-      suffix: _buildSuffixRow(context, hasText, palette),
+      suffix: _buildSuffixRow(context, hasText, palette, dec),
       onSubmitted: widget.onSubmit,
       decoration: const BoxDecoration(color: Colors.transparent),
     );
@@ -1079,7 +1087,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         ),
         prefixIcon: dec.prefixIcon ?? widget.prefixIcon,
         prefix: dec.prefix ?? widget.prefix,
-        suffixIcon: _buildSuffixRow(context, hasText, palette),
+        suffixIcon: _buildSuffixRow(context, hasText, palette, dec),
       ),
     );
     if (_absorbInnerPointers) {

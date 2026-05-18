@@ -30,10 +30,7 @@ class UnifiedTextFieldController extends BaseUnifiedFieldController<String> {
   static String? _emptyToNull(String? s) => (s == null || s.isEmpty) ? null : s;
 
   void _onTextChanged() {
-    final next = _emptyToNull(textController.text);
-    if (value == next) return;
-    silentSetValue(next);
-    notifyListeners();
+    applyValueFromUser(_emptyToNull(textController.text));
   }
 
   @override
@@ -45,8 +42,7 @@ class UnifiedTextFieldController extends BaseUnifiedFieldController<String> {
     if (textController.text != text) {
       textController.text = text;
     }
-    silentSetValue(_emptyToNull(text));
-    notifyListeners();
+    applyValueFromUser(_emptyToNull(text));
   }
 
   @override

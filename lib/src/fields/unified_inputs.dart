@@ -38,6 +38,7 @@ export 'unified_duration_field.dart'
         unifiedTryParseDuration;
 export '../unified_duration_columns.dart';
 export 'unified_number_field.dart';
+export 'unified_numeric_step_buttons.dart';
 export 'unified_numeric_step_field.dart';
 export 'unified_multi_picker_sheet.dart';
 export 'unified_picker_item_builders.dart';

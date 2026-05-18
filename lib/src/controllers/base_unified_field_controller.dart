@@ -37,10 +37,24 @@ abstract class BaseUnifiedFieldController<T> extends ChangeNotifier {
   T? get value => _value;
 
   /// Updates [value] and notifies listeners when it changes.
-  set value(T? next) {
-    if (_value == next) return;
+  ///
+  /// When the field is already in error, re-runs [validate] so the message
+  /// clears or updates as the user edits (without another submit).
+  set value(T? next) => applyValueFromUser(next);
+
+  /// User-driven value update (typing, picker selection, etc.).
+  @protected
+  void applyValueFromUser(T? next) {
+    if (_value == next) {
+      if (hasError) validate();
+      return;
+    }
     _value = next;
-    notifyListeners();
+    if (hasError) {
+      validate();
+    } else {
+      notifyListeners();
+    }
   }
 
   /// Last validation / API error shown on the field.
@@ -78,8 +92,9 @@ abstract class BaseUnifiedFieldController<T> extends ChangeNotifier {
 
   /// Resets value to null and clears errors.
   void clear() {
-    value = null;
+    silentSetValue(null);
     clearError();
+    notifyListeners();
   }
 
   /// Registers the field's picker opener. Pass `null` on dispose.

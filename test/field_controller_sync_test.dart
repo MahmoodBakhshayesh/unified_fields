@@ -19,6 +19,20 @@ void main() {
     expect(fc.errorText, isNull);
   });
 
+  test('applyValueFromUser revalidates while in error', () {
+    final fc = UnifiedTextFieldController();
+    syncWidgetStringValidatorToFieldController(
+      fc,
+      (v) => v.isEmpty ? 'Required' : null,
+    );
+    fc.validate();
+    expect(fc.hasError, isTrue);
+
+    fc.textController.text = 'fixed';
+    expect(fc.hasError, isFalse);
+    expect(fc.errorText, isNull);
+  });
+
   test('widget validator overrides controller validator when synced', () {
     final fc = UnifiedTextFieldController(
       validator: (_) => 'from controller',

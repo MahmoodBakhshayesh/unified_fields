@@ -341,7 +341,12 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     value: TimeOfDay(hour: 14, minute: 30),
                   ),
                   const SizedBox(height: 12),
-                  UnifiedDurationField(
+                  UnifiedTextField(
+                    decoration: UnifiedInputDecoration(
+                      suffixIcon: Text("asdasd"),
+                      suffixWidth: 64
+                    ),
+                    
                     // locked: true,
                     // isDisabled: true,
                     // showCalendarKindToggle: false,
@@ -350,6 +355,15 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     // initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
                     // value: const Duration(hours: 1, minutes: 30),
                     // pickerColumns: [UnifiedFieldsDurationColumn.year,UnifiedFieldsDurationColumn.month,UnifiedFieldsDurationColumn.week],
+                  ),
+                  UnifiedNumberField(
+                    decoration: UnifiedInputDecoration(
+                      suffixIcon: Text("as"),
+                      suffixWidth: 175
+                    ),
+                    stepButtonPlacement: UnifiedNumericStepButtonPlacement.trailing,
+                    // stepButtons: UnifiedNumericStepButtons.none,
+                    textAlign: TextAlign.start,
                   ),
                   const SizedBox(height: 12),
 

@@ -158,6 +158,13 @@ void syncMultiPickerStringValidatorToFieldController<T>(
   fieldController.validator = (value) => widgetValidator(displayFor(value));
 }
 
+/// Re-runs [FormFieldState.validate] when the user edits while the field is invalid.
+void unifiedFormRevalidateAfterUserEdit<T>(FormFieldState<T> fieldState) {
+  if (fieldState.hasError) {
+    fieldState.validate();
+  }
+}
+
 /// Effective value: [fieldController] → [binding] → [direct].
 T? unifiedEffectiveValue<T>({
   BaseUnifiedFieldController<T>? fieldController,

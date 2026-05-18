@@ -16,6 +16,7 @@ import 'unified_duration_field.dart';
 import 'unified_form_fields.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
+import 'unified_numeric_step_buttons.dart';
 import 'unified_number_field.dart';
 import 'unified_picker_fields.dart';
 import 'unified_picker_item_builders.dart';
@@ -2317,6 +2318,11 @@ class UnifiedFormNumberField extends StatefulWidget {
     this.shakeOnError = false,
     this.placeholder,
     this.isRequired = false,
+    this.stepButtons = UnifiedNumericStepButtons.both,
+    this.stepButtonPlacement = UnifiedNumericStepButtonPlacement.split,
+    this.decrementIcon = Icons.remove_rounded,
+    this.incrementIcon = Icons.add_rounded,
+    this.textAlign = TextAlign.center,
   });
 
   /// Hint text shown when empty.
@@ -2402,6 +2408,21 @@ class UnifiedFormNumberField extends StatefulWidget {
 
   /// When true, shakes once when validation error appears on this field.
   final bool shakeOnError;
+
+  /// Which +/- buttons to show.
+  final UnifiedNumericStepButtons stepButtons;
+
+  /// Where step buttons sit relative to [decoration] prefix/suffix.
+  final UnifiedNumericStepButtonPlacement stepButtonPlacement;
+
+  /// Icon for the decrement button.
+  final IconData decrementIcon;
+
+  /// Icon for the increment button.
+  final IconData incrementIcon;
+
+  /// Horizontal alignment of the numeric value.
+  final TextAlign textAlign;
 
   @override
   State<UnifiedFormNumberField> createState() => _UnifiedFormNumberFieldState();
@@ -2575,6 +2596,11 @@ class _UnifiedFormNumberFieldState extends State<UnifiedFormNumberField> {
           fractionDigits: widget.fractionDigits,
           textInputAction: widget.textInputAction,
           label: widget.label,
+          stepButtons: widget.stepButtons,
+          stepButtonPlacement: widget.stepButtonPlacement,
+          decrementIcon: widget.decrementIcon,
+          incrementIcon: widget.incrementIcon,
+          textAlign: widget.textAlign,
         );
       },
     );

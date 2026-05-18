@@ -450,7 +450,12 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
         UnifiedInputFieldSuffixKind.phone,
         palette,
       ),
-      if (extra != null) UnifiedSuffixIconChrome.normalize(extra),
+      if (extra != null)
+        UnifiedSuffixIconChrome.normalize(
+          extra,
+          width: d.suffixWidth,
+          height: d.suffixHeight,
+        ),
     ];
     return Padding(
       padding: const EdgeInsets.all(8),

@@ -10,6 +10,8 @@ import '../unified_fields_typography.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
+import 'unified_numeric_step_buttons.dart';
+import 'unified_suffix_icon.dart';
 
 double _pow10(int digits) {
   var p = 1.0;
@@ -74,6 +76,16 @@ class UnifiedNumericStepField extends StatefulWidget {
     this.digitCalendarKind,
     this.decorationSet,
     this.brightness,
+    this.prefix,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.suffixWidth,
+    this.suffixHeight,
+    this.stepButtons = UnifiedNumericStepButtons.both,
+    this.stepButtonPlacement = UnifiedNumericStepButtonPlacement.split,
+    this.decrementIcon = Icons.remove_rounded,
+    this.incrementIcon = Icons.add_rounded,
+    this.textAlign = TextAlign.center,
   }) : assert(step != 0, 'step must be non-zero');
 
   /// External [TextEditingController]; if null one is created internally.
@@ -178,6 +190,36 @@ class UnifiedNumericStepField extends StatefulWidget {
 
   /// Shows the required marker next to [label].
   final bool requiredField;
+
+  /// Leading adornment before step buttons (from [UnifiedInputDecoration.prefix]).
+  final Widget? prefix;
+
+  /// Leading icon adornment (from [UnifiedInputDecoration.prefixIcon]).
+  final Widget? prefixIcon;
+
+  /// Trailing adornment after step buttons (from [UnifiedInputDecoration.suffixIcon]).
+  final Widget? suffixIcon;
+
+  /// Slot width for [suffixIcon]; see [UnifiedInputDecoration.suffixWidth].
+  final double? suffixWidth;
+
+  /// Slot height for [suffixIcon]; see [UnifiedInputDecoration.suffixHeight].
+  final double? suffixHeight;
+
+  /// Which +/- buttons to show.
+  final UnifiedNumericStepButtons stepButtons;
+
+  /// Where step buttons are placed relative to adornments.
+  final UnifiedNumericStepButtonPlacement stepButtonPlacement;
+
+  /// Icon for the decrement button.
+  final IconData decrementIcon;
+
+  /// Icon for the increment button.
+  final IconData incrementIcon;
+
+  /// Horizontal alignment of the numeric value.
+  final TextAlign textAlign;
 
   @override
   State<UnifiedNumericStepField> createState() =>
@@ -427,6 +469,96 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
         : const TextInputType.numberWithOptions(decimal: false, signed: true);
   }
 
+  bool get _stepButtonsActive =>
+      !widget.disabled &&
+      !widget.isDisabled &&
+      !widget.locked &&
+      !widget.readOnly;
+
+  bool get _showDecrementButton =>
+      _stepButtonsActive &&
+      widget.stepButtons != UnifiedNumericStepButtons.none &&
+      widget.stepButtons != UnifiedNumericStepButtons.incrementOnly;
+
+  bool get _showIncrementButton =>
+      _stepButtonsActive &&
+      widget.stepButtons != UnifiedNumericStepButtons.none &&
+      widget.stepButtons != UnifiedNumericStepButtons.decrementOnly;
+
+  List<Widget> _decrementStepWidgets() =>
+      _showDecrementButton
+          ? [
+              _stepButton(
+                icon: widget.decrementIcon,
+                delta: -widget.step,
+              ),
+            ]
+          : const [];
+
+  List<Widget> _incrementStepWidgets() =>
+      _showIncrementButton
+          ? [_stepButton(icon: widget.incrementIcon, delta: widget.step)]
+          : const [];
+
+  List<Widget> _stepWidgetsForSide({required bool leading}) {
+    switch (widget.stepButtonPlacement) {
+      case UnifiedNumericStepButtonPlacement.split:
+        return leading ? _decrementStepWidgets() : _incrementStepWidgets();
+      case UnifiedNumericStepButtonPlacement.leading:
+        if (!leading) return const [];
+        return [..._decrementStepWidgets(), ..._incrementStepWidgets()];
+      case UnifiedNumericStepButtonPlacement.trailing:
+        if (leading) return const [];
+        return [..._decrementStepWidgets(), ..._incrementStepWidgets()];
+    }
+  }
+
+  List<Widget> _decorationLeadingWidgets() {
+    final widgets = <Widget>[];
+    if (widget.prefixIcon != null) {
+      widgets.add(UnifiedSuffixIconChrome.normalize(widget.prefixIcon!));
+    }
+    if (widget.prefix != null) {
+      widgets.add(widget.prefix!);
+    }
+    return widgets;
+  }
+
+  Widget? _decorationTrailingWidget() {
+    final suffix = widget.suffixIcon;
+    if (suffix == null) return null;
+    return UnifiedSuffixIconChrome.normalize(
+      suffix,
+      width: widget.suffixWidth,
+      height: widget.suffixHeight,
+    );
+  }
+
+  Widget? _joinRow(List<Widget> children) {
+    if (children.isEmpty) return null;
+    if (children.length == 1) return children.first;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: children,
+    );
+  }
+
+  Widget? _composePrefix() {
+    return _joinRow([
+      ..._decorationLeadingWidgets(),
+      ..._stepWidgetsForSide(leading: true),
+    ]);
+  }
+
+  Widget? _composeTrailingSuffixIcon() {
+    final trailing = _decorationTrailingWidget();
+    return _joinRow([
+      ..._stepWidgetsForSide(leading: false),
+      ?trailing,
+    ]);
+  }
+
   Widget _stepButton({required IconData icon, required num delta}) {
     final enabled =
         !widget.disabled &&
@@ -483,7 +615,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       height: widget.height,
       keyboardType: _keyboardType,
       inputFormatters: _formatters,
-      textAlign: TextAlign.center,
+      textAlign: widget.textAlign,
       style: widget.style ?? TextStyle(color: UnifiedColors.textColorDark),
       padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 4),
       disabled: widget.disabled,
@@ -500,12 +632,8 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
         _clampTypedValueIfOutOfRange();
         widget.onSubmitted?.call(_effectiveController.text);
       },
-      prefix: widget.isDisabled || widget.disabled || widget.locked
-          ? null
-          : _stepButton(icon: Icons.remove_rounded, delta: -widget.step),
-      suffixIcon: widget.isDisabled || widget.disabled || widget.locked
-          ? null
-          : _stepButton(icon: Icons.add_rounded, delta: widget.step),
+      prefix: _composePrefix(),
+      suffixIcon: _composeTrailingSuffixIcon(),
       onChanged: (_) {
         final text = _effectiveController.text;
         if (_hasTrailingDecimalPointForTyping(text)) return;

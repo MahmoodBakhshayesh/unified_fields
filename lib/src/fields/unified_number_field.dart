@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../controllers/unified_number_field_controller.dart';
+import 'unified_numeric_step_buttons.dart';
 import 'unified_numeric_step_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_field_decoration_context.dart';
@@ -38,6 +39,11 @@ class UnifiedNumberField extends StatelessWidget {
     this.label,
     this.placeholder,
     this.isRequired = false,
+    this.stepButtons = UnifiedNumericStepButtons.both,
+    this.stepButtonPlacement = UnifiedNumericStepButtonPlacement.split,
+    this.decrementIcon = Icons.remove_rounded,
+    this.incrementIcon = Icons.add_rounded,
+    this.textAlign = TextAlign.center,
   });
 
   /// Visual chrome.
@@ -109,6 +115,21 @@ class UnifiedNumberField extends StatelessWidget {
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
 
+  /// Which +/- buttons to show.
+  final UnifiedNumericStepButtons stepButtons;
+
+  /// Where step buttons sit relative to [decoration] prefix/suffix.
+  final UnifiedNumericStepButtonPlacement stepButtonPlacement;
+
+  /// Icon for the decrement button.
+  final IconData decrementIcon;
+
+  /// Icon for the increment button.
+  final IconData incrementIcon;
+
+  /// Horizontal alignment of the numeric value.
+  final TextAlign textAlign;
+
   @override
   Widget build(BuildContext context) {
     final chrome = resolveUnifiedFieldDecorationContext(
@@ -152,6 +173,16 @@ class UnifiedNumberField extends StatelessWidget {
       showError: d.showError,
       validationColor: d.validationColor,
       validationIcon: d.validationIcon,
+      prefix: d.prefix,
+      prefixIcon: d.prefixIcon,
+      suffixIcon: d.suffixIcon,
+      suffixWidth: d.suffixWidth,
+      suffixHeight: d.suffixHeight,
+      stepButtons: stepButtons,
+      stepButtonPlacement: stepButtonPlacement,
+      decrementIcon: decrementIcon,
+      incrementIcon: incrementIcon,
+      textAlign: textAlign,
       onSubmitted: onSubmitted,
       onChanged: onChanged,
     );

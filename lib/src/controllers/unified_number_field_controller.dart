@@ -47,8 +47,7 @@ class UnifiedNumberFieldController extends BaseUnifiedFieldController<num> {
     final parsed =
         num.tryParse(text.textController.text.trim()) ??
         double.tryParse(text.textController.text.trim());
-    silentSetValue(parsed);
-    notifyListeners();
+    applyValueFromUser(parsed);
   }
 
   @override
