@@ -10,6 +10,7 @@ import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_item_builders.dart';
 import 'unified_picker_sheet.dart';
+import 'unified_picker_sheet_style.dart';
 
 /// Like [UnifiedAsyncPickerField] but supports free typing vs sheet selection via
 /// [pickerController], same model as [UnifiedCustomizablePickerField].
@@ -42,6 +43,9 @@ class UnifiedCustomizableAsyncPickerField<T> extends StatefulWidget {
     this.placeholder,
     this.isRequired = false,
     this.onChanged,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Fetched when the user opens the picker.
@@ -112,6 +116,15 @@ class UnifiedCustomizableAsyncPickerField<T> extends StatefulWidget {
 
   /// Notified when the controller value transitions (typed text or selection change).
   final ValueChanged<CustomizableSinglePickerController<T>>? onChanged;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedCustomizableAsyncPickerField<T>> createState() =>
@@ -251,6 +264,11 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
     }
     if (!mounted || !context.mounted) return;
 
+    final sheetChrome = resolvePickerSheetStyleOverrides(
+      pickerSheetStyle: widget.pickerSheetStyle,
+      pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+      pickerHeaderStyle: widget.pickerHeaderStyle,
+    );
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
       context: context,
@@ -269,6 +287,8 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,
           gridDelegate: widget.gridDelegate,
+          sheetBackgroundColor: sheetChrome.sheetBackgroundColor,
+          pickerHeaderStyle: sheetChrome.pickerHeaderStyle,
         ),
       ),
     );
@@ -392,6 +412,9 @@ class UnifiedCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
     this.placeholder,
     this.isRequired = false,
     this.onChanged,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Fetched when the user opens the picker.
@@ -462,6 +485,15 @@ class UnifiedCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// Notified when the controller value transitions (typed text or selection change).
   final ValueChanged<CustomizableMultiPickerController<T>>? onChanged;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedCustomizableAsyncMultiPickerField<T>> createState() =>
@@ -601,6 +633,11 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
     }
     if (!mounted || !context.mounted) return;
 
+    final sheetChrome = resolvePickerSheetStyleOverrides(
+      pickerSheetStyle: widget.pickerSheetStyle,
+      pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+      pickerHeaderStyle: widget.pickerHeaderStyle,
+    );
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
       context: context,
@@ -619,6 +656,8 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,
           gridDelegate: widget.gridDelegate,
+          sheetBackgroundColor: sheetChrome.sheetBackgroundColor,
+          pickerHeaderStyle: sheetChrome.pickerHeaderStyle,
         ),
       ),
     );

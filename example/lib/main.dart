@@ -14,6 +14,18 @@ void main() {
           labelMode: UnifiedFieldLabelMode.labelInRow,
           borderRadius: BorderRadius.all(Radius.circular(8)),
         ),
+
+        pickerHeaderStyle: UnifiedInputPickerHeaderStyle(
+          itemOrder: const [
+
+            UnifiedPickerHeaderItem.title,
+            UnifiedPickerHeaderItem.help,
+            UnifiedPickerHeaderItem.clear,
+            UnifiedPickerHeaderItem.close,
+          ],
+          helpText: 'Pick one option',
+          // closeButton: IconButton(...),
+        ),
         placeholderOpacityWhenDisabled: 0.38,
         pickerSheetBackgroundColor: const Color(0xFFF5F7FA),
         defaultSuffixIcons: const UnifiedInputDefaultSuffixIcons(
@@ -22,11 +34,8 @@ void main() {
           duration: Icons.timelapse_outlined,
           picker: Icons.unfold_more,
         ),
-        pickerHeaderStyle: const UnifiedInputPickerHeaderStyle(
-          padding: EdgeInsets.fromLTRB(16, 14, 8, 14),
-        ),
-        multiPickerCheckboxStyle: const UnifiedInputMultiPickerCheckboxStyle(
-          borderRadius: 4,
+
+        multiPickerCheckboxStyle:  UnifiedInputMultiPickerCheckboxStyle(
           fillColor: Color(0xFF1565C0),
         ),
       ),
@@ -281,6 +290,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
 
                   UnifiedFormSinglePickerField<String>(
                     label: 'Country',
+                    searchAutoFocus: true,
                     decoration: UnifiedInputDecoration(height: 40, labelInRow: true),
                     placeholder: 'Pick one',
                     isRequired: true,

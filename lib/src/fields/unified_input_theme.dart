@@ -100,7 +100,11 @@ class UnifiedInputThemeResolver {
   static Color resolvePickerSheetBackground(
     BuildContext context, {
     UnifiedInputPalette? palette,
+    Color? pickerSheetBackgroundColor,
   }) {
+    if (pickerSheetBackgroundColor != null) {
+      return pickerSheetBackgroundColor;
+    }
     final theme = UnifiedInputThemeScope.themeDataOf(context);
     if (theme.pickerSheetBackgroundColor != null) {
       return theme.pickerSheetBackgroundColor!;
@@ -279,8 +283,21 @@ class UnifiedInputThemeResolver {
       _theme(context).loadingIndicatorColor ??
       Theme.of(context).colorScheme.primary;
 
-  static UnifiedInputPickerHeaderStyle _headerStyle(BuildContext context) =>
-      _theme(context).pickerHeaderStyle ?? const UnifiedInputPickerHeaderStyle();
+  /// Picker sheet header style from [UnifiedInputThemeScope], merged with [override].
+  static UnifiedInputPickerHeaderStyle pickerHeaderStyle(
+    BuildContext context, {
+    UnifiedInputPickerHeaderStyle? override,
+  }) {
+    final base =
+        _theme(context).pickerHeaderStyle ?? const UnifiedInputPickerHeaderStyle();
+    return base.merge(override);
+  }
+
+  static UnifiedInputPickerHeaderStyle _headerStyle(
+    BuildContext context, {
+    UnifiedInputPickerHeaderStyle? override,
+  }) =>
+      pickerHeaderStyle(context, override: override);
 
   static UnifiedInputMultiPickerCheckboxStyle _checkboxStyle(
     BuildContext context,
@@ -289,9 +306,9 @@ class UnifiedInputThemeResolver {
       const UnifiedInputMultiPickerCheckboxStyle();
 
   /// Padding for picker sheet headers.
-  static EdgeInsets pickerHeaderPadding(BuildContext context) =>
+  static EdgeInsetsGeometry pickerHeaderPadding(BuildContext context) =>
       _headerStyle(context).padding ??
-      const EdgeInsets.fromLTRB(16, 12, 8, 12);
+      const EdgeInsetsDirectional.fromSTEB(16, 12, 8, 12);
 
   /// Picker sheet header background.
   static Color pickerHeaderBackgroundColor(
@@ -316,6 +333,18 @@ class UnifiedInputThemeResolver {
   static Color pickerHeaderClearButtonColor(BuildContext context) =>
       _headerStyle(context).clearButtonColor ??
       Theme.of(context).colorScheme.primary;
+
+  /// Help text style in picker headers.
+  static TextStyle pickerHeaderHelpTextStyle(
+    BuildContext context,
+    UnifiedInputPalette palette,
+  ) =>
+      _headerStyle(context).helpTextStyle ??
+      TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w400,
+        color: palette.labelColor.withValues(alpha: 0.75),
+      );
 
   /// Multi-picker checkbox style from the active theme scope.
   static UnifiedInputMultiPickerCheckboxStyle multiPickerCheckboxStyle(

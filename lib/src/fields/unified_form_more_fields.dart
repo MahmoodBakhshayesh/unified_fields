@@ -20,6 +20,7 @@ import 'unified_numeric_step_buttons.dart';
 import 'unified_number_field.dart';
 import 'unified_picker_fields.dart';
 import 'unified_picker_item_builders.dart';
+import 'unified_picker_sheet_style.dart';
 import 'unified_time_of_day_field.dart';
 
 bool _unifiedListsEqual<T>(List<T>? a, List<T> b) {
@@ -62,6 +63,9 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
     this.shakeOnError = false,
     this.placeholder,
     this.isRequired = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Choices shown in the picker sheet.
@@ -78,6 +82,15 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
 
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (e.g. `() => const []` to clear).
   final UnifiedFormResetValue<List<T>>? resetValue;
@@ -347,6 +360,7 @@ class _UnifiedFormMultiPickerFieldState<T>
               onChanged: widget.onChanged,
               binding: widget.binding,
               fieldController: widget.fieldController,
+              formFieldState: fieldState,
             );
           },
           valueToString: widget.valueToString,
@@ -362,6 +376,9 @@ class _UnifiedFormMultiPickerFieldState<T>
           isDisabled: widget.isDisabled,
           validator: null,
           validationOverrideMessage: unifiedFormPickerOverride(fieldState),
+          pickerSheetStyle: widget.pickerSheetStyle,
+          pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+          pickerHeaderStyle: widget.pickerHeaderStyle,
         );
       },
     );
@@ -725,6 +742,7 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
               onChanged: widget.onChanged,
               binding: widget.binding,
               fieldController: widget.fieldController,
+              formFieldState: fieldState,
             );
           },
           onSubmit: widget.onSubmit,
@@ -1038,6 +1056,7 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
               onChanged: widget.onRangeChanged,
               binding: widget.binding,
               fieldController: widget.fieldController,
+              formFieldState: fieldState,
             );
           },
           min: widget.min,
@@ -1304,6 +1323,7 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
               onChanged: widget.onChanged,
               binding: widget.binding,
               fieldController: widget.fieldController,
+              formFieldState: fieldState,
             );
           },
           onSubmitted: widget.onSubmitted,
@@ -1597,6 +1617,7 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
               onChanged: widget.onChanged,
               binding: widget.binding,
               fieldController: widget.fieldController,
+              formFieldState: fieldState,
             );
           },
           onSubmitted: widget.onSubmitted,
@@ -1647,6 +1668,9 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
     this.shakeOnError = false,
     this.placeholder,
     this.isRequired = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Fetched when the user opens the picker.
@@ -1660,6 +1684,15 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
 
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
@@ -1918,6 +1951,7 @@ class _UnifiedFormAsyncPickerFieldState<T>
               onChanged: widget.onChanged,
               binding: widget.binding,
               fieldController: widget.fieldController,
+              formFieldState: fieldState,
             );
           },
           valueToString: widget.valueToString,
@@ -1933,6 +1967,9 @@ class _UnifiedFormAsyncPickerFieldState<T>
           isDisabled: widget.isDisabled,
           validator: null,
           validationOverrideMessage: unifiedFormPickerOverride(fieldState),
+          pickerSheetStyle: widget.pickerSheetStyle,
+          pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+          pickerHeaderStyle: widget.pickerHeaderStyle,
         );
       },
     );
@@ -1970,6 +2007,9 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
     this.shakeOnError = false,
     this.placeholder,
     this.isRequired = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Fetched when the user opens the picker.
@@ -1986,6 +2026,15 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (e.g. `() => const []` to clear).
   final UnifiedFormResetValue<List<T>>? resetValue;
@@ -2264,6 +2313,7 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
               onChanged: widget.onChanged,
               binding: widget.binding,
               fieldController: widget.fieldController,
+              formFieldState: fieldState,
             );
           },
           valueToString: widget.valueToString,
@@ -2279,6 +2329,9 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
           isDisabled: widget.isDisabled,
           validator: null,
           validationOverrideMessage: unifiedFormPickerOverride(fieldState),
+          pickerSheetStyle: widget.pickerSheetStyle,
+          pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+          pickerHeaderStyle: widget.pickerHeaderStyle,
         );
       },
     );

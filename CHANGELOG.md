@@ -1,3 +1,9 @@
+## 0.2.3
+
+### Features
+
+* **Local picker sheet chrome** — every picker field (single/multi, sync/async, customizable) and matching `UnifiedForm*Picker*` wrappers accept optional `pickerSheetStyle`, `pickerSheetBackgroundColor`, and `pickerHeaderStyle` (including `itemOrder`). Direct params win over `pickerSheetStyle`, which wins over [UnifiedInputThemeData].
+
 ## 0.2.2
 
 ### Features
@@ -5,10 +11,12 @@
 * **[UnifiedNumberField] / [UnifiedFormNumberField] / [UnifiedNumericStepField]** — configurable step buttons: [UnifiedNumericStepButtons] (`both`, `incrementOnly`, `decrementOnly`, `none`), [UnifiedNumericStepButtonPlacement] (`split`, `leading`, `trailing`), and custom `decrementIcon` / `incrementIcon`. Decoration `prefix`, `prefixIcon`, and `suffixIcon` compose with buttons (prefix at natural width, then buttons; trailing buttons before suffix).
 * **`textAlign`** on number fields (default `TextAlign.center`).
 * **[UnifiedInputDecoration]** — optional `suffixWidth` / `suffixHeight` to force a suffix slot size.
+* **Picker sheet header** — [UnifiedPickerHeaderItem] + `itemOrder` list on [UnifiedInputPickerHeaderStyle] / [UnifiedPickerSheetHeader]: lay out title (expanded), help, close, and clear in any order; unavailable slots are skipped. Defaults to title → help → close → clear. Also `helpText`, custom `closeButton` / `clearButton`, `titleWidget`, `helpWidget`.
 
 ### Fixes
 
 * **Adornment sizing** — [UnifiedSuffixIconChrome] uses intrinsic width/height for custom `suffixIcon` / `prefix` widgets; fixed 32×32 only for [Icon]s / [IconButton]s or when `suffixWidth` / `suffixHeight` are set. Avoids clipping text or wide trailing labels.
+* **Live validation on edit** — user edits only clear errors when the value becomes valid (no re-`validate()` while still invalid), fixing focus loss on [UnifiedFormTextField] and delete-and-retype. [unifiedFormClearErrorIfValid] on form pickers, dates, time, duration, and multi-select after a selection.
 
 ## 0.2.1
 

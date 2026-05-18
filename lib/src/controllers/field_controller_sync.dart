@@ -61,6 +61,7 @@ void syncFormFieldFromExternalValue<T>({
 }) {
   if (formState != null && formState.value != value) {
     formState.didChange(value);
+    unifiedFormClearErrorIfValid(formState);
   }
   if (fieldController != null && fieldController.value != value) {
     fieldController.value = value;
@@ -75,6 +76,7 @@ void syncFormFieldFromExternalList<T>({
 }) {
   if (formState != null && !unifiedListsEqual(formState.value, value)) {
     formState.didChange(value);
+    unifiedFormClearErrorIfValid(formState);
   }
   if (fieldController != null &&
       !unifiedListsEqual(fieldController.value, value)) {
@@ -88,6 +90,7 @@ void syncUnifiedFieldValue<T>({
   ValueChanged<T?>? onChanged,
   UnifiedInputPicker<T>? binding,
   BaseUnifiedFieldController<T>? fieldController,
+  FormFieldState<dynamic>? formFieldState,
 }) {
   onChanged?.call(value);
   if (binding != null && binding.value != value) {
@@ -95,6 +98,9 @@ void syncUnifiedFieldValue<T>({
   }
   if (fieldController != null && fieldController.value != value) {
     fieldController.value = value;
+  }
+  if (formFieldState != null) {
+    unifiedFormClearErrorIfValid(formFieldState);
   }
 }
 
@@ -104,6 +110,7 @@ void syncUnifiedFieldListValue<T>({
   ValueChanged<List<T>>? onChanged,
   UnifiedInputPicker<List<T>>? binding,
   BaseUnifiedFieldController<List<T>>? fieldController,
+  FormFieldState<dynamic>? formFieldState,
 }) {
   onChanged?.call(value);
   if (binding != null) {
@@ -111,6 +118,9 @@ void syncUnifiedFieldListValue<T>({
   }
   if (fieldController != null) {
     fieldController.value = value;
+  }
+  if (formFieldState != null) {
+    unifiedFormClearErrorIfValid(formFieldState);
   }
 }
 
@@ -158,9 +168,14 @@ void syncMultiPickerStringValidatorToFieldController<T>(
   fieldController.validator = (value) => widgetValidator(displayFor(value));
 }
 
-/// Re-runs [FormFieldState.validate] when the user edits while the field is invalid.
-void unifiedFormRevalidateAfterUserEdit<T>(FormFieldState<T> fieldState) {
-  if (fieldState.hasError) {
+/// Clears [FormFieldState] error when the current value passes [validator].
+///
+/// Does not set new errors while the user edits (invalid → valid only).
+void unifiedFormClearErrorIfValid(FormFieldState<dynamic> fieldState) {
+  if (!fieldState.hasError) return;
+  final validator = fieldState.widget.validator;
+  if (validator == null) return;
+  if (validator(fieldState.value) == null) {
     fieldState.validate();
   }
 }

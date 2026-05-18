@@ -10,6 +10,7 @@ import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_sheet.dart';
+import 'unified_picker_sheet_style.dart';
 
 /// Single-select field backed by [PickerSheetWidget] (search + scroll-to-item list).
 ///
@@ -41,6 +42,9 @@ class UnifiedCustomizablePickerField<T> extends StatefulWidget {
     this.placeholder,
     this.isRequired = false,
     this.onChanged,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Choices shown in the picker sheet.
@@ -112,6 +116,15 @@ class UnifiedCustomizablePickerField<T> extends StatefulWidget {
 
   /// Notified when the controller value transitions (typed text or selection change).
   final ValueChanged<CustomizableSinglePickerController<T>>? onChanged;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedCustomizablePickerField<T>> createState() =>
@@ -235,6 +248,11 @@ class _UnifiedCustomizablePickerFieldState<T>
       overrides: widget.decoration,
       brightness: widget.brightness,
     );
+    final sheetChrome = resolvePickerSheetStyleOverrides(
+      pickerSheetStyle: widget.pickerSheetStyle,
+      pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+      pickerHeaderStyle: widget.pickerHeaderStyle,
+    );
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
       context: context,
@@ -257,6 +275,8 @@ class _UnifiedCustomizablePickerFieldState<T>
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,
           gridDelegate: widget.gridDelegate,
+          sheetBackgroundColor: sheetChrome.sheetBackgroundColor,
+          pickerHeaderStyle: sheetChrome.pickerHeaderStyle,
         ),
       ),
     );
@@ -374,6 +394,9 @@ class UnifiedCustomizableMultiPickerField<T> extends StatefulWidget {
     this.isRequired = false,
     this.allowFreeText = true,
     this.onChanged,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Choices shown in the picker sheet.
@@ -444,6 +467,15 @@ class UnifiedCustomizableMultiPickerField<T> extends StatefulWidget {
 
   /// Notified when the controller value transitions (typed text or selection change).
   final ValueChanged<CustomizableMultiPickerController<T>>? onChanged;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedCustomizableMultiPickerField<T>> createState() =>
@@ -568,6 +600,11 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
       overrides: widget.decoration,
       brightness: widget.brightness,
     );
+    final sheetChrome = resolvePickerSheetStyleOverrides(
+      pickerSheetStyle: widget.pickerSheetStyle,
+      pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+      pickerHeaderStyle: widget.pickerHeaderStyle,
+    );
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
       context: context,
@@ -590,6 +627,8 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,
           gridDelegate: widget.gridDelegate,
+          sheetBackgroundColor: sheetChrome.sheetBackgroundColor,
+          pickerHeaderStyle: sheetChrome.pickerHeaderStyle,
         ),
       ),
     );

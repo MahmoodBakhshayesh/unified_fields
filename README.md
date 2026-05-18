@@ -35,7 +35,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.2.2
+  unified_fields: ^0.2.3
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -766,7 +766,11 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.2.2`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.2.3`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+
+### Upgrading to 0.2.3
+
+* **Picker sheets** — override sheet background and header per field with `pickerSheetBackgroundColor`, `pickerHeaderStyle` (e.g. `itemOrder`, `helpText`), or bundled `pickerSheetStyle`. Works on standalone pickers and `UnifiedForm*Picker*` wrappers without changing global theme.
 
 ### Upgrading to 0.2.2
 

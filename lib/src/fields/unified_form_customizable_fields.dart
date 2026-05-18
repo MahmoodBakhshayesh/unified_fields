@@ -7,6 +7,7 @@ import 'unified_form_fields.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 import 'unified_picker_item_builders.dart';
+import 'unified_picker_sheet_style.dart';
 
 /// Reset-time snapshot for a [CustomizableSinglePickerController].
 ///
@@ -118,6 +119,9 @@ class UnifiedFormCustomizablePickerField<T> extends StatefulWidget {
     this.placeholder,
     this.isRequired = false,
     this.shakeOnError = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Choices shown in the picker sheet.
@@ -194,6 +198,15 @@ class UnifiedFormCustomizablePickerField<T> extends StatefulWidget {
 
   /// When true, shakes once when validation error appears on this field.
   final bool shakeOnError;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedFormCustomizablePickerField<T>> createState() =>
@@ -277,6 +290,9 @@ class _UnifiedFormCustomizablePickerFieldState<T>
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           onChanged: widget.onChanged,
+          pickerSheetStyle: widget.pickerSheetStyle,
+          pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+          pickerHeaderStyle: widget.pickerHeaderStyle,
           validator: (_) {
             final err = fieldState.errorText;
             return (err == null || err.isEmpty) ? null : err;
@@ -317,6 +333,9 @@ class UnifiedFormCustomizableMultiPickerField<T> extends StatefulWidget {
     this.placeholder,
     this.isRequired = false,
     this.shakeOnError = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Choices shown in the picker sheet.
@@ -393,6 +412,15 @@ class UnifiedFormCustomizableMultiPickerField<T> extends StatefulWidget {
 
   /// When true, shakes once when validation error appears on this field.
   final bool shakeOnError;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedFormCustomizableMultiPickerField<T>> createState() =>
@@ -475,6 +503,9 @@ class _UnifiedFormCustomizableMultiPickerFieldState<T>
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           onChanged: widget.onChanged,
+          pickerSheetStyle: widget.pickerSheetStyle,
+          pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+          pickerHeaderStyle: widget.pickerHeaderStyle,
           validator: (_) {
             final err = fieldState.errorText;
             return (err == null || err.isEmpty) ? null : err;
@@ -515,6 +546,9 @@ class UnifiedFormCustomizableAsyncPickerField<T> extends StatefulWidget {
     this.placeholder,
     this.isRequired = false,
     this.shakeOnError = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Fetched when the user opens the picker.
@@ -591,6 +625,15 @@ class UnifiedFormCustomizableAsyncPickerField<T> extends StatefulWidget {
 
   /// When true, shakes once when validation error appears on this field.
   final bool shakeOnError;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedFormCustomizableAsyncPickerField<T>> createState() =>
@@ -674,6 +717,9 @@ class _UnifiedFormCustomizableAsyncPickerFieldState<T>
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           onChanged: widget.onChanged,
+          pickerSheetStyle: widget.pickerSheetStyle,
+          pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+          pickerHeaderStyle: widget.pickerHeaderStyle,
           validator: (_) {
             final err = fieldState.errorText;
             return (err == null || err.isEmpty) ? null : err;
@@ -714,6 +760,9 @@ class UnifiedFormCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
     this.placeholder,
     this.isRequired = false,
     this.shakeOnError = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Fetched when the user opens the picker.
@@ -790,6 +839,15 @@ class UnifiedFormCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// When true, shakes once when validation error appears on this field.
   final bool shakeOnError;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedFormCustomizableAsyncMultiPickerField<T>> createState() =>
@@ -872,6 +930,9 @@ class _UnifiedFormCustomizableAsyncMultiPickerFieldState<T>
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           onChanged: widget.onChanged,
+          pickerSheetStyle: widget.pickerSheetStyle,
+          pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+          pickerHeaderStyle: widget.pickerHeaderStyle,
           validator: (_) {
             final err = fieldState.errorText;
             return (err == null || err.isEmpty) ? null : err;

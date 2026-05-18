@@ -38,22 +38,29 @@ abstract class BaseUnifiedFieldController<T> extends ChangeNotifier {
 
   /// Updates [value] and notifies listeners when it changes.
   ///
-  /// When the field is already in error, re-runs [validate] so the message
-  /// clears or updates as the user edits (without another submit).
+  /// When already in error, only clears the error if the new value passes
+  /// [validator] (does not set new errors while the user edits).
   set value(T? next) => applyValueFromUser(next);
 
   /// User-driven value update (typing, picker selection, etc.).
   @protected
   void applyValueFromUser(T? next) {
-    if (_value == next) {
-      if (hasError) validate();
-      return;
+    final changed = _value != next;
+    if (changed) {
+      _value = next;
     }
-    _value = next;
-    if (hasError) {
-      validate();
-    } else {
+    _clearErrorIfValueNowValid();
+    if (changed) {
       notifyListeners();
+    }
+  }
+
+  /// Clears [errorText] when [validator] accepts the current [_value].
+  void _clearErrorIfValueNowValid() {
+    if (!hasError) return;
+    final err = validator?.call(_value);
+    if (err == null || err.isEmpty) {
+      clearError();
     }
   }
 

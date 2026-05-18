@@ -11,6 +11,7 @@ import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_item_builders.dart';
 import 'unified_picker_sheet.dart';
+import 'unified_picker_sheet_style.dart';
 
 /// Like [UnifiedSinglePickerField] but loads choices with [itemProvider] when the
 /// field or dropdown [IconButton] is pressed (suffix spinner while loading, then sheet).
@@ -42,6 +43,9 @@ class UnifiedAsyncPickerField<T> extends StatefulWidget {
     this.validationOverrideMessage,
     this.placeholder,
     this.isRequired = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Fetched when the user opens the picker; replaces a static [items] list.
@@ -116,6 +120,15 @@ class UnifiedAsyncPickerField<T> extends StatefulWidget {
 
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedAsyncPickerField<T>> createState() =>
@@ -259,6 +272,11 @@ class _UnifiedAsyncPickerFieldState<T>
     if (!mounted) return;
     if (!context.mounted) return;
 
+    final sheetChrome = resolvePickerSheetStyleOverrides(
+      pickerSheetStyle: widget.pickerSheetStyle,
+      pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+      pickerHeaderStyle: widget.pickerHeaderStyle,
+    );
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
       context: context,
@@ -277,6 +295,8 @@ class _UnifiedAsyncPickerFieldState<T>
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,
           gridDelegate: widget.gridDelegate,
+          sheetBackgroundColor: sheetChrome.sheetBackgroundColor,
+          pickerHeaderStyle: sheetChrome.pickerHeaderStyle,
         ),
       ),
     );
@@ -407,6 +427,9 @@ class UnifiedAsyncMultiPickerField<T> extends StatefulWidget {
     this.validationOverrideMessage,
     this.placeholder,
     this.isRequired = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Fetched when the user opens the picker; replaces a static items list.
@@ -481,6 +504,15 @@ class UnifiedAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedAsyncMultiPickerField<T>> createState() =>
@@ -624,6 +656,11 @@ class _UnifiedAsyncMultiPickerFieldState<T>
     if (!mounted) return;
     if (!context.mounted) return;
 
+    final sheetChrome = resolvePickerSheetStyleOverrides(
+      pickerSheetStyle: widget.pickerSheetStyle,
+      pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+      pickerHeaderStyle: widget.pickerHeaderStyle,
+    );
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
       context: context,
@@ -642,6 +679,8 @@ class _UnifiedAsyncMultiPickerFieldState<T>
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,
           gridDelegate: widget.gridDelegate,
+          sheetBackgroundColor: sheetChrome.sheetBackgroundColor,
+          pickerHeaderStyle: sheetChrome.pickerHeaderStyle,
         ),
       ),
     );

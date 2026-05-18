@@ -8,7 +8,7 @@ void main() {
     final fc = UnifiedTextFieldController();
     syncWidgetStringValidatorToFieldController(
       fc,
-      (v) => v.isEmpty ? 'Required' : null,
+      (v) => v == null || v.isEmpty ? 'Required' : null,
     );
 
     expect(UnifiedFieldValidation.validateFields([fc]), isFalse);
@@ -19,14 +19,18 @@ void main() {
     expect(fc.errorText, isNull);
   });
 
-  test('applyValueFromUser revalidates while in error', () {
+  test('applyValueFromUser clears error only when value becomes valid', () {
     final fc = UnifiedTextFieldController();
     syncWidgetStringValidatorToFieldController(
       fc,
-      (v) => v.isEmpty ? 'Required' : null,
+      (v) => v == null || v.isEmpty ? 'Required' : null,
     );
     fc.validate();
     expect(fc.hasError, isTrue);
+
+    fc.textController.text = '';
+    expect(fc.hasError, isTrue);
+    expect(fc.errorText, 'Required');
 
     fc.textController.text = 'fixed';
     expect(fc.hasError, isFalse);

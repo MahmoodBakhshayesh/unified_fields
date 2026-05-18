@@ -13,6 +13,7 @@ import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_picker_fields.dart';
 import 'unified_picker_item_builders.dart';
+import 'unified_picker_sheet_style.dart';
 
 /// Optional callback used by unified form fields for [FormState.reset].
 ///
@@ -508,11 +509,10 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
     }
     // Rebuild when [errorText] changes too ([validate] / [UnifiedFieldValidation]).
     setState(() {});
-    // Keep [FormFieldState.hasError] in sync for [shakeOnError] and [unifiedFormErrorText].
     final formState = _formFieldKey.currentState;
     if (formState != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) formState.validate();
+        if (mounted) unifiedFormClearErrorIfValid(formState);
       });
     }
   }
@@ -628,6 +628,7 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
                 fc.value = next;
               }
             }
+            unifiedFormClearErrorIfValid(fieldState);
           },
         );
     }
@@ -694,6 +695,9 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
     this.validator,
     this.onSaved,
     this.shakeOnError = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Choices shown in the picker sheet.
@@ -707,6 +711,15 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
 
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// Local picker sheet chrome; overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
@@ -912,9 +925,9 @@ class _UnifiedFormSinglePickerFieldState<T>
       }
     });
     final formState = _formFieldKey.currentState;
-    if (formState != null && (widget.fieldController?.hasError ?? false)) {
+    if (formState != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) formState.validate();
+        if (mounted) unifiedFormClearErrorIfValid(formState);
       });
     }
   }
@@ -972,6 +985,7 @@ class _UnifiedFormSinglePickerFieldState<T>
               onChanged: widget.onChanged,
               binding: widget.binding,
               fieldController: widget.fieldController,
+              formFieldState: fieldState,
             );
           },
           valueToString: widget.valueToString,
@@ -987,6 +1001,9 @@ class _UnifiedFormSinglePickerFieldState<T>
           isDisabled: widget.isDisabled,
           validator: null,
           validationOverrideMessage: unifiedFormPickerOverride(fieldState),
+          pickerSheetStyle: widget.pickerSheetStyle,
+          pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+          pickerHeaderStyle: widget.pickerHeaderStyle,
         );
       },
     );

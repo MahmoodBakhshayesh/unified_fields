@@ -11,6 +11,7 @@ import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_item_builders.dart';
 import 'unified_picker_sheet.dart';
+import 'unified_picker_sheet_style.dart';
 
 /// Single-select field backed by [PickerSheetWidget] (search + scroll-to-item list).
 class UnifiedSinglePickerField<T> extends StatefulWidget {
@@ -41,6 +42,9 @@ class UnifiedSinglePickerField<T> extends StatefulWidget {
     this.validationOverrideMessage,
     this.placeholder,
     this.isRequired = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Choices shown in the picker sheet.
@@ -116,6 +120,15 @@ class UnifiedSinglePickerField<T> extends StatefulWidget {
   /// Whether the field is required (adds the required marker next to [label]).
   /// Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// Local picker sheet chrome (background + header); overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedSinglePickerField<T>> createState() =>
@@ -243,6 +256,11 @@ class _UnifiedSinglePickerFieldState<T>
 
   Future<void> _presentPicker(BuildContext context) async {
     if (widget.locked || widget.isDisabled) return;
+    final sheetChrome = resolvePickerSheetStyleOverrides(
+      pickerSheetStyle: widget.pickerSheetStyle,
+      pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+      pickerHeaderStyle: widget.pickerHeaderStyle,
+    );
     final dec = resolveUnifiedDecoration(
       context,
       overrides: widget.decoration,
@@ -266,6 +284,8 @@ class _UnifiedSinglePickerFieldState<T>
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,
           gridDelegate: widget.gridDelegate,
+          sheetBackgroundColor: sheetChrome.sheetBackgroundColor,
+          pickerHeaderStyle: sheetChrome.pickerHeaderStyle,
         ),
       ),
     );
@@ -393,6 +413,9 @@ class UnifiedMultiPickerField<T> extends StatefulWidget {
     this.validationOverrideMessage,
     this.placeholder,
     this.isRequired = false,
+    this.pickerSheetStyle,
+    this.pickerSheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   /// Choices shown in the picker sheet.
@@ -468,6 +491,15 @@ class UnifiedMultiPickerField<T> extends StatefulWidget {
   /// Whether the field is required.
   /// Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
+
+  /// Local picker sheet chrome (background + header); overrides theme when set.
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Sheet background override (wins over [pickerSheetStyle] and theme).
+  final Color? pickerSheetBackgroundColor;
+
+  /// Header override (wins over [pickerSheetStyle] and theme).
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
   @override
   State<UnifiedMultiPickerField<T>> createState() =>
@@ -600,6 +632,11 @@ class _UnifiedMultiPickerFieldState<T>
     UnifiedInputDecoration dec,
   ) async {
     if (widget.locked || widget.isDisabled) return;
+    final sheetChrome = resolvePickerSheetStyleOverrides(
+      pickerSheetStyle: widget.pickerSheetStyle,
+      pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
+      pickerHeaderStyle: widget.pickerHeaderStyle,
+    );
     FocusScope.of(context).requestFocus(FocusNode());
     final dynamic result = await showModalBottomSheet<dynamic>(
       context: context,
@@ -618,6 +655,8 @@ class _UnifiedMultiPickerFieldState<T>
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,
           gridDelegate: widget.gridDelegate,
+          sheetBackgroundColor: sheetChrome.sheetBackgroundColor,
+          pickerHeaderStyle: sheetChrome.pickerHeaderStyle,
         ),
       ),
     );

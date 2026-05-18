@@ -7,6 +7,7 @@ import '../unified_fields_strings.dart';
 import '../unified_sheet_button.dart';
 import 'unified_input_theme.dart';
 import 'unified_picker_item_builders.dart';
+import 'unified_picker_sheet_style.dart';
 
 /// Bottom-sheet content used by [UnifiedMultiPickerField] for multi-selection.
 class MultiPickerSheetWidget<T> extends StatefulWidget {
@@ -46,6 +47,12 @@ class MultiPickerSheetWidget<T> extends StatefulWidget {
   /// Grid layout when [gridItemBuilder] is set. Defaults to [unifiedPickerDefaultGridDelegate].
   final SliverGridDelegate? gridDelegate;
 
+  /// Sheet background; overrides [UnifiedInputThemeData.pickerSheetBackgroundColor].
+  final Color? sheetBackgroundColor;
+
+  /// Header chrome; merged with theme [UnifiedInputThemeData.pickerHeaderStyle].
+  final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
+
   /// Creates a multi-picker sheet.
   const MultiPickerSheetWidget({
     super.key,
@@ -61,6 +68,8 @@ class MultiPickerSheetWidget<T> extends StatefulWidget {
     required this.hasSearch,
     this.gridItemBuilder,
     this.gridDelegate,
+    this.sheetBackgroundColor,
+    this.pickerHeaderStyle,
   });
 
   @override
@@ -147,7 +156,10 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
     //     Navigator.of(context).pop(widget.suggestion.first);
     //   });
     // }
-    final sheetBg = UnifiedInputThemeResolver.resolvePickerSheetBackground(context);
+    final sheetBg = UnifiedInputThemeResolver.resolvePickerSheetBackground(
+      context,
+      pickerSheetBackgroundColor: widget.sheetBackgroundColor,
+    );
     return SafeArea(
       child: BottomSheet(
         backgroundColor: sheetBg,
@@ -169,6 +181,7 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                   widget.label,
                 ),
                 showClear: widget.hasClear,
+                pickerHeaderStyle: widget.pickerHeaderStyle,
               ),
               if (widget.headerWidget != null) widget.headerWidget!,
               // Search
@@ -349,8 +362,14 @@ Future<List<T>?> showUnifiedMultiPickerSheet<T>({
   UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder,
   SliverGridDelegate? gridDelegate,
   Widget? headerWidget,
+  Color? sheetBackgroundColor,
+  UnifiedInputPickerHeaderStyle? pickerHeaderStyle,
+  UnifiedPickerSheetStyle? pickerSheetStyle,
 }) async {
   FocusScope.of(context).requestFocus(FocusNode());
+  final bg = sheetBackgroundColor ?? pickerSheetStyle?.pickerSheetBackgroundColor;
+  final header =
+      pickerHeaderStyle ?? pickerSheetStyle?.pickerHeaderStyle;
   final dynamic result = await showModalBottomSheet<dynamic>(
     context: context,
     isScrollControlled: true,
@@ -369,6 +388,8 @@ Future<List<T>?> showUnifiedMultiPickerSheet<T>({
         headerWidget: headerWidget,
         gridItemBuilder: gridItemBuilder,
         gridDelegate: gridDelegate,
+        sheetBackgroundColor: bg,
+        pickerHeaderStyle: header,
       ),
     ),
   );

@@ -213,8 +213,8 @@ class _UnifiedInputsShowcasePageState extends State<UnifiedInputsShowcasePage> {
                 pickerHeaderStyle: UnifiedInputPickerHeaderStyle(
                   padding: EdgeInsets.fromLTRB(20, 14, 10, 14),
                 ),
-                multiPickerCheckboxStyle: UnifiedInputMultiPickerCheckboxStyle(
-                  borderRadius: 6,
+                multiPickerCheckboxStyle: const UnifiedInputMultiPickerCheckboxStyle(
+                  borderRadius: BorderRadius.all(Radius.circular(6)),
                   fillColor: Color(0xFFE65100),
                   checkColor: Colors.white,
                 ),
