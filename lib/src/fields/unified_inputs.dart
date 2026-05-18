@@ -11,6 +11,7 @@ export 'unified_form_more_fields.dart';
 export 'unified_form_customizable_fields.dart';
 export 'unified_input_brightness.dart';
 export 'unified_input_decoration.dart';
+export 'unified_field_decoration_context.dart';
 export 'unified_field_label_mode.dart';
 export 'unified_phone_field.dart';
 export '../phone/unified_phone_models.dart';

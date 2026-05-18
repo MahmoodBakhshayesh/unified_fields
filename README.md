@@ -35,7 +35,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.1.8
+  unified_fields: ^0.1.9
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -81,7 +81,7 @@ dependencies:
 | **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind`, `UnifiedFieldsDatePickerStyle` | Single date or range; calendar grid or scroll wheels; Gregorian vs Jalali |
 | **Time** | `UnifiedTimeOfDayField`, `showUnifiedFieldsTimePicker`, `UnifiedFieldsTimePickerStyle`, `UnifiedFieldsTimeGranularity`, `TimePickerUtils.show` | Material dial (default) or H:M:S wheels with Shamsi digit toggle |
 | **Duration** | `UnifiedDurationField`, `showUnifiedFieldsDurationPicker`, `UnifiedFieldsDurationColumn`, `UnifiedFieldsDurationColumnPresets`, `UnifiedDurationGranularity`, `UnifiedFieldsDurationPickerStyle` | Wheel picker with fixed granularity or custom column order (year · week · day · hour, …) |
-| **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedFieldLabelMode`, `UnifiedInputDecoration`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPhoneStyle`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, phone/dial chrome, global theme scope, picker headers, aligned suffix icons |
+| **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedFieldLabelMode`, `UnifiedInputDecoration`, `UnifiedInputDecorationSet`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPhoneStyle`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, per-state borders/fills, phone/dial chrome, global theme scope, picker headers, aligned suffix icons |
 | **Controllers** | `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, `UnifiedAsyncPickerFieldController`, `UnifiedDateFieldController`, `UnifiedTimeOfDayFieldController`, `UnifiedDurationFieldController`, `UnifiedNumberFieldController`, `UnifiedPhoneFieldController`, `UnifiedFormController` | Listenable value + validation + imperative `openPicker` / `requestFocus` |
 | **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsTypography`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedPickerDefaultGridDelegate`, `showUnifiedSinglePickerSheet`, `showUnifiedMultiPickerSheet`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, Persian digits, picker grid helpers, layout helpers, default colors, sheet actions |
 | **Demo** | `UnifiedInputsShowcasePage` | Scrollable gallery of widgets + palette toggle |
@@ -93,6 +93,32 @@ dependencies:
 ### One visual language
 
 Fields share **`UnifiedInputDecoration`** (label, placeholder, radii, validation colors, prefix/suffix) and **`UnifiedInputBrightness`** (light / dark palette). For colors that should be the same on every field (disabled chrome, required `*`, validation red, picker sheet background), wrap your app or a screen in **`UnifiedInputThemeScope`** — see [Global theme](#global-theme-unifiedinputthemescope).
+
+### Per-state decoration (`decorationSet`)
+
+Like Material `InputDecoration` focus/error borders, pass optional layers via **`decorationSet`** (or theme-wide **`fieldDecorationSet`**). Each layer is a partial **`UnifiedInputDecoration`**; unset properties fall back to **`decoration`** / palette defaults.
+
+```dart
+UnifiedTextField(
+  decoration: const UnifiedInputDecoration(
+    borderSide: BorderSide(color: Colors.grey),
+  ),
+  decorationSet: UnifiedInputDecorationSet(
+    focused: const UnifiedInputDecoration(
+      borderSide: BorderSide(color: Colors.blue, width: 1.5),
+    ),
+    error: const UnifiedInputDecoration(
+      borderSide: BorderSide(color: Colors.red),
+      validationColor: Colors.red,
+    ),
+    disabled: const UnifiedInputDecoration(
+      backgroundColor: Color(0xFFF5F5F5),
+    ),
+  ),
+)
+```
+
+**States:** `base`, `focused`, `valid`, `error`, `locked`, `disabled`, `loading`, `readOnly`. The `valid` layer applies only when you define it and validation has passed with no error.
 
 ### Two usage modes
 
@@ -631,9 +657,10 @@ UnifiedInputThemeScope(
 | `pickerSheetBackgroundColor` | Date/time/duration sheets (else `bottomSheetTheme` → palette) |
 | `pickerHeaderStyle` | `UnifiedInputPickerHeaderStyle`: header `padding`, `backgroundColor`, `titleStyle`, `clearButtonColor` |
 | `multiPickerCheckboxStyle` | `UnifiedInputMultiPickerCheckboxStyle`: `size`, `borderRadius`, `fillColor`, `checkColor`, `borderColor` |
+| `fieldDecorationSet` | Default per-state layers (`focused`, `error`, `disabled`, …) for all fields in the scope |
 | `defaultSuffixIcons` | Default suffix per field type (`date`, `time`, `duration`, `picker`, …) |
 
-Field-level **`UnifiedInputDecoration`** and per-widget params still win for one-off overrides.
+Field-level **`UnifiedInputDecoration`** / **`decorationSet`** and per-widget params still win for one-off overrides.
 
 Live demos: **`example/lib/main.dart`** (app + nested card) and **`UnifiedInputsShowcasePage`** (scoped block near the top of the gallery).
 
@@ -720,7 +747,11 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.1.8`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.1.9`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+
+### Upgrading to 0.1.9
+
+- **Per-state decoration** — optional **`decorationSet`** on any field, or **`UnifiedInputThemeData.fieldDecorationSet`** in **`UnifiedInputThemeScope`**. Layers: `focused`, `error`, `valid`, `locked`, `disabled`, `loading`, `readOnly`, `base`. See [Per-state decoration](#per-state-decoration-decorationset).
 
 ### Upgrading to 0.1.8
 

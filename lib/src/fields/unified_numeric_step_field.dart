@@ -8,6 +8,8 @@ import '../unified_colors.dart';
 import '../unified_date_picker_types.dart';
 import '../unified_fields_typography.dart';
 import 'unified_base_text_field.dart';
+import 'unified_input_brightness.dart';
+import 'unified_input_decoration.dart';
 
 double _pow10(int digits) {
   var p = 1.0;
@@ -70,6 +72,8 @@ class UnifiedNumericStepField extends StatefulWidget {
     this.fractionDigits,
     this.requiredField = false,
     this.digitCalendarKind,
+    this.decorationSet,
+    this.brightness,
   }) : assert(step != 0, 'step must be non-zero');
 
   /// External [TextEditingController]; if null one is created internally.
@@ -114,6 +118,12 @@ class UnifiedNumericStepField extends StatefulWidget {
   /// When set (e.g. [UnifiedFieldsCalendarKind.jalali]), displayed digits use
   /// [UnifiedFieldsTypography] for that calendar context.
   final UnifiedFieldsCalendarKind? digitCalendarKind;
+
+  /// Per-state decorations for the inner [UnifiedBaseTextField].
+  final UnifiedInputDecorationSet? decorationSet;
+
+  /// Brightness used when resolving [decorationSet].
+  final UnifiedInputBrightness? brightness;
 
   /// When true, allow decimal values.
   final bool allowDecimals;
@@ -456,6 +466,8 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     final placeholder = widget.placeholder ?? widget.label;
 
     return UnifiedBaseTextField(
+      decorationSet: widget.decorationSet,
+      brightness: widget.brightness,
       label: widget.label,
       labelStyle: widget.labelStyle,
       focusNode: _focusNode,

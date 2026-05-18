@@ -40,6 +40,7 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
     required this.values,
     this.resetValue,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -82,6 +83,9 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
@@ -321,6 +325,7 @@ class _UnifiedFormMultiPickerFieldState<T>
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           binding: null,
           onChanged: (next) {
@@ -360,6 +365,7 @@ class UnifiedFormDateField extends StatefulWidget {
   const UnifiedFormDateField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -398,6 +404,9 @@ class UnifiedFormDateField extends StatefulWidget {
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
@@ -670,6 +679,7 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
       builder: (context, fieldState) {
         return UnifiedDateField(
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           fieldController: widget.fieldController,
           binding: null,
@@ -734,6 +744,7 @@ class UnifiedFormDateRangeField extends StatefulWidget {
   const UnifiedFormDateRangeField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -757,6 +768,9 @@ class UnifiedFormDateRangeField extends StatefulWidget {
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
@@ -979,6 +993,7 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
       builder: (context, fieldState) {
         return UnifiedDateRangeField(
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           binding: null,
           rangeValue: fieldState.value,
@@ -1017,6 +1032,7 @@ class UnifiedFormTimeOfDayField extends StatefulWidget {
   const UnifiedFormTimeOfDayField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -1046,6 +1062,9 @@ class UnifiedFormTimeOfDayField extends StatefulWidget {
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
@@ -1242,6 +1261,7 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
       builder: (context, fieldState) {
         return UnifiedTimeOfDayField(
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           fieldController: widget.fieldController,
           binding: null,
@@ -1278,6 +1298,7 @@ class UnifiedFormDurationField extends StatefulWidget {
   const UnifiedFormDurationField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -1314,6 +1335,9 @@ class UnifiedFormDurationField extends StatefulWidget {
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
@@ -1531,6 +1555,7 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
       builder: (context, fieldState) {
         return UnifiedDurationField(
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           binding: null,
           value: fieldState.value,
@@ -1575,6 +1600,7 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
     required this.itemProvider,
     required this.label,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -1613,6 +1639,9 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
@@ -1835,6 +1864,7 @@ class _UnifiedFormAsyncPickerFieldState<T>
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           fieldController: widget.fieldController,
           binding: null,
@@ -1880,6 +1910,7 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
     required this.values,
     this.resetValue,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -1922,6 +1953,9 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
@@ -2163,6 +2197,7 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           binding: null,
           onChanged: (next) {
@@ -2202,6 +2237,7 @@ class UnifiedFormNumberField extends StatefulWidget {
   const UnifiedFormNumberField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.controller,
     this.fieldController,
@@ -2238,6 +2274,9 @@ class UnifiedFormNumberField extends StatefulWidget {
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
@@ -2449,6 +2488,7 @@ class _UnifiedFormNumberFieldState extends State<UnifiedFormNumberField> {
       builder: (context, fieldState) {
         return UnifiedNumberField(
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           controller: _effectiveController,
           focusNode: widget.fieldController?.text.focusNode ?? widget.focusNode,

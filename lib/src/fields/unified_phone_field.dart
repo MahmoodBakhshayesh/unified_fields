@@ -12,6 +12,7 @@ import '../unified_date_picker_types.dart';
 import '../unified_fields_typography.dart';
 import 'unified_field_label_mode.dart';
 import 'unified_input_brightness.dart';
+import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_palette.dart';
 import 'unified_input_theme.dart';
@@ -30,6 +31,7 @@ class UnifiedPhoneField extends StatefulWidget {
   const UnifiedPhoneField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.phoneStyle,
     this.fieldController,
@@ -62,6 +64,9 @@ class UnifiedPhoneField extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override palette brightness.
   final UnifiedInputBrightness? brightness;
@@ -263,7 +268,12 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
       _fc.dialCodeController.addListener(_onControllersChanged);
     }
     _fc.addListener(_onControllersChanged);
+    _fc.focusNode.addListener(_onFocusChanged);
     _fc.validator = widget.validator;
+  }
+
+  void _onFocusChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -335,6 +345,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     _fc.nationalController.removeListener(_onControllersChanged);
     _fc.dialCodeController.removeListener(_onControllersChanged);
     _fc.removeListener(_onControllersChanged);
+    _fc.focusNode.removeListener(_onFocusChanged);
     if (_ownsController) _fc.dispose();
     super.dispose();
   }
@@ -779,12 +790,12 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
 
   @override
   Widget build(BuildContext context) {
-    final base = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: widget.decoration,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
       brightness: widget.brightness,
     );
-    final d = _resolvedDecoration(base);
     final palette = widget.brightness != null
         ? UnifiedInputThemeResolver.paletteFor(widget.brightness!)
         : UnifiedInputThemeResolver.resolvePalette(context);
@@ -792,6 +803,28 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
 
     final dialError = _dialCodeErrorMessage(ps);
     final error = _fc.errorText ?? dialError;
+    final inactive = widget.disabled || widget.isDisabled;
+    final hasError = error != null && error.isNotEmpty;
+
+    var paletteDec = chrome.resolved;
+    if (chrome.activeSet != null) {
+      paletteDec = chrome.composedSet.resolve(
+        context,
+        state: resolveUnifiedInputFieldVisualState(
+          disabled: inactive,
+          locked: widget.locked,
+          loading: false,
+          hasError: hasError,
+          showValid: false,
+          readOnly: widget.readOnly && !inactive && !widget.locked,
+          focused:
+              _fc.focusNode.hasFocus && !inactive && !widget.locked,
+        ),
+        brightness: widget.brightness,
+        fieldDecoration: widget.decoration,
+      );
+    }
+    final d = _resolvedDecoration(paletteDec);
     final mode = d.labelMode ?? UnifiedFieldLabelMode.floatingLabel;
 
     final Widget field = switch (mode) {

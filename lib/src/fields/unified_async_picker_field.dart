@@ -5,6 +5,7 @@ import '../controllers/unified_async_picker_field_controller.dart';
 import 'unified_input_picker.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
+import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
@@ -20,6 +21,7 @@ class UnifiedAsyncPickerField<T> extends StatefulWidget {
     required this.itemProvider,
     required this.label,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -54,6 +56,9 @@ class UnifiedAsyncPickerField<T> extends StatefulWidget {
 
   /// Visual chrome (colors, sizes, borders, etc.).
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -297,11 +302,13 @@ class _UnifiedAsyncPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
-    final dec = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: widget.decoration,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
       brightness: widget.brightness,
     );
+    final dec = chrome.resolved;
 
     final palette = UnifiedInputThemeResolver.resolvePalette(context);
     final Widget? suffix = widget.isDisabled || widget.locked || _loading
@@ -317,6 +324,8 @@ class _UnifiedAsyncPickerFieldState<T>
     return GestureDetector(
       onTap: widget.locked || widget.isDisabled || _loading ? null : _open,
       child: UnifiedBaseTextField(
+        decorationSet: chrome.activeSet,
+        brightness: widget.brightness,
         controller: _txt,
         focusNode: unifiedEffectiveFocusNode(
           fieldController: widget.fieldController,
@@ -372,6 +381,7 @@ class UnifiedAsyncMultiPickerField<T> extends StatefulWidget {
     required this.label,
     required this.values,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -408,6 +418,9 @@ class UnifiedAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -649,11 +662,13 @@ class _UnifiedAsyncMultiPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
-    final dec = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: widget.decoration,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
       brightness: widget.brightness,
     );
+    final dec = chrome.resolved;
 
     final palette = UnifiedInputThemeResolver.resolvePalette(context);
     final Widget? suffix = widget.isDisabled || widget.locked || _loading
@@ -671,6 +686,8 @@ class _UnifiedAsyncMultiPickerFieldState<T>
           ? null
           : () => _open(dec),
       child: UnifiedBaseTextField(
+        decorationSet: chrome.activeSet,
+        brightness: widget.brightness,
         controller: _txt,
         focusNode: unifiedEffectiveFocusNode(
           fieldController: widget.fieldController,

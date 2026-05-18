@@ -9,6 +9,7 @@ import '../controllers/unified_text_field_controller.dart';
 import 'unified_input_picker.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
+import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_picker_fields.dart';
 import 'unified_picker_item_builders.dart';
@@ -246,6 +247,7 @@ class UnifiedFormTextField extends StatefulWidget {
   const UnifiedFormTextField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.controller,
     this.fieldController,
@@ -282,6 +284,9 @@ class UnifiedFormTextField extends StatefulWidget {
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
@@ -511,11 +516,13 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: widget.decoration,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
       brightness: widget.brightness,
     );
+    final d = chrome.resolved;
 
     return UnifiedFormField<String>(
       formFieldKey: _formFieldKey,
@@ -526,6 +533,8 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
       shakeOnError: widget.shakeOnError,
       builder: (context, fieldState) {
         return UnifiedBaseTextField(
+          decorationSet: chrome.activeSet,
+          brightness: widget.brightness,
           controller: _effectiveController,
           focusNode: unifiedEffectiveFocusNode(
             fieldController: widget.fieldController,
@@ -619,6 +628,7 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
     required this.items,
     required this.label,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.value,
     this.binding,
@@ -657,6 +667,9 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
@@ -880,6 +893,7 @@ class _UnifiedFormSinglePickerFieldState<T>
           placeholder: widget.placeholder,
           isRequired: widget.isRequired,
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           fieldController: widget.fieldController,
           value: widget.fieldController == null ? fieldState.value : null,

@@ -10,6 +10,7 @@ import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_time_field_controller.dart';
 import 'unified_input_picker.dart';
 import 'unified_input_brightness.dart';
+import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 
@@ -19,6 +20,7 @@ class UnifiedTimeOfDayField extends StatefulWidget {
   const UnifiedTimeOfDayField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -41,6 +43,9 @@ class UnifiedTimeOfDayField extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -267,17 +272,21 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: widget.decoration,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
       brightness: widget.brightness,
     );
+    final d = chrome.resolved;
 
     return GestureDetector(
       onTap: widget.locked || widget.isDisabled ? null : () => _pick(context),
       child: AbsorbPointer(
         absorbing: true,
         child: UnifiedBaseTextField(
+          decorationSet: chrome.activeSet,
+          brightness: widget.brightness,
           controller: _txt,
           focusNode: unifiedEffectiveFocusNode(
             fieldController: widget.fieldController,

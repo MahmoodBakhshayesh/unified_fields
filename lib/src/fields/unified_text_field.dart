@@ -6,6 +6,7 @@ import '../controllers/unified_text_field_controller.dart';
 import 'unified_input_picker.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
+import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 
 /// Text input using shared unified decoration + optional external [UnifiedInputPicker] binding.
@@ -14,6 +15,7 @@ class UnifiedTextField extends StatefulWidget {
   const UnifiedTextField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.controller,
     this.fieldController,
@@ -47,6 +49,9 @@ class UnifiedTextField extends StatefulWidget {
 
   /// Visual chrome overrides; merged on top of palette defaults.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Forces a brightness regardless of the ambient [Theme].
   final UnifiedInputBrightness? brightness;
@@ -267,13 +272,17 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: widget.decoration,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
       brightness: widget.brightness,
     );
+    final d = chrome.resolved;
 
     return UnifiedBaseTextField(
+      decorationSet: chrome.activeSet,
+      brightness: widget.brightness,
       controller: _effectiveController,
       focusNode: unifiedEffectiveFocusNode(
         fieldController: widget.fieldController,

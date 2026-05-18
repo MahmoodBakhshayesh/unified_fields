@@ -97,6 +97,7 @@ class UnifiedFormCustomizablePickerField<T> extends StatefulWidget {
     required this.label,
     required this.pickerController,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.allowFreeText = true,
     this.valueToString,
@@ -130,6 +131,9 @@ class UnifiedFormCustomizablePickerField<T> extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -256,6 +260,7 @@ class _UnifiedFormCustomizablePickerFieldState<T>
           label: widget.label,
           pickerController: widget.pickerController,
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           allowFreeText: widget.allowFreeText,
           valueToString: widget.valueToString,
@@ -291,6 +296,7 @@ class UnifiedFormCustomizableMultiPickerField<T> extends StatefulWidget {
     required this.label,
     required this.pickerController,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.allowFreeText = true,
     this.valueToString,
@@ -324,6 +330,9 @@ class UnifiedFormCustomizableMultiPickerField<T> extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -449,6 +458,7 @@ class _UnifiedFormCustomizableMultiPickerFieldState<T>
           label: widget.label,
           pickerController: widget.pickerController,
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           allowFreeText: widget.allowFreeText,
           valueToString: widget.valueToString,
@@ -484,6 +494,7 @@ class UnifiedFormCustomizableAsyncPickerField<T> extends StatefulWidget {
     required this.label,
     required this.pickerController,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.allowFreeText = true,
     this.valueToString,
@@ -517,6 +528,9 @@ class UnifiedFormCustomizableAsyncPickerField<T> extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -643,6 +657,7 @@ class _UnifiedFormCustomizableAsyncPickerFieldState<T>
           label: widget.label,
           pickerController: widget.pickerController,
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           allowFreeText: widget.allowFreeText,
           valueToString: widget.valueToString,
@@ -678,6 +693,7 @@ class UnifiedFormCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
     required this.label,
     required this.pickerController,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.allowFreeText = true,
     this.valueToString,
@@ -711,6 +727,9 @@ class UnifiedFormCustomizableAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -836,6 +855,7 @@ class _UnifiedFormCustomizableAsyncMultiPickerFieldState<T>
           label: widget.label,
           pickerController: widget.pickerController,
           decoration: widget.decoration,
+          decorationSet: widget.decorationSet,
           brightness: widget.brightness,
           allowFreeText: widget.allowFreeText,
           valueToString: widget.valueToString,

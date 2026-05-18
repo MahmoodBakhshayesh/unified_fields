@@ -1,3 +1,9 @@
+## 0.1.9
+
+### Features
+
+* **Per-state field decoration** — optional [UnifiedInputDecorationSet] on every field (`decorationSet`) and globally via [UnifiedInputThemeData.fieldDecorationSet]. Layers: `base`, `focused`, `valid`, `error`, `locked`, `disabled`, `loading`, `readOnly`. Omitted layers keep current palette / single-[UnifiedInputDecoration] behavior. [UnifiedPhoneField] applies the same state resolution for borders and fills.
+
 ## 0.1.8
 
 ### Features

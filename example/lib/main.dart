@@ -12,6 +12,7 @@ void main() {
         requiredIconSize: 9,
         validationColor: Color(0xFFD32F2F),
         disabledFieldOpacity: 0.38,
+
         placeholderOpacityWhenDisabled: 0.38,
         pickerSheetBackgroundColor: Color(0xFFF5F7FA),
         defaultSuffixIcons: UnifiedInputDefaultSuffixIcons(

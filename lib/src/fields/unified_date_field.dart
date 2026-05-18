@@ -10,6 +10,7 @@ import '../controllers/unified_date_range_field_controller.dart';
 import 'unified_input_picker.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
+import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 
@@ -72,6 +73,7 @@ class UnifiedDateField extends StatefulWidget {
   const UnifiedDateField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -107,6 +109,9 @@ class UnifiedDateField extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -412,11 +417,13 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: widget.decoration,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
       brightness: widget.brightness,
     );
+    final d = chrome.resolved;
     final bg = d.backgroundColor ?? Colors.black26;
     final headerBg =
         d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26;
@@ -426,6 +433,8 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
           ? null
           : () => _pick(context, d),
       child: UnifiedBaseTextField(
+        decorationSet: chrome.activeSet,
+        brightness: widget.brightness,
         focusNode: unifiedEffectiveFocusNode(
           fieldController: widget.fieldController,
           binding: widget.binding,
@@ -482,6 +491,7 @@ class UnifiedDateRangeField extends StatefulWidget {
   const UnifiedDateRangeField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -502,6 +512,9 @@ class UnifiedDateRangeField extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -665,11 +678,13 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: widget.decoration,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
       brightness: widget.brightness,
     );
+    final d = chrome.resolved;
     final bg = d.backgroundColor ?? Colors.black26;
     final headerBg =
         d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26;
@@ -679,6 +694,8 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
           ? null
           : () => _pick(context, d),
       child: UnifiedBaseTextField(
+        decorationSet: chrome.activeSet,
+        brightness: widget.brightness,
         controller: _effectiveController,
         focusNode: widget.fieldController?.focusNode,
         errorText: widget.fieldController?.errorText,

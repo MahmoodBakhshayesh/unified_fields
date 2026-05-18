@@ -5,6 +5,7 @@ import 'unified_base_text_field.dart';
 import 'unified_picker_item_builders.dart';
 import 'unified_customizable_picker_controller.dart';
 import 'unified_input_brightness.dart';
+import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
@@ -21,6 +22,7 @@ class UnifiedCustomizablePickerField<T> extends StatefulWidget {
     required this.label,
     required this.pickerController,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.allowFreeText = true,
     this.valueToString,
@@ -52,6 +54,9 @@ class UnifiedCustomizablePickerField<T> extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -276,11 +281,13 @@ class _UnifiedCustomizablePickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
-    final dec = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: widget.decoration,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
       brightness: widget.brightness,
     );
+    final dec = chrome.resolved;
     final readOnly = widget.locked || _inactive || !widget.allowFreeText;
 
     final palette = UnifiedInputThemeResolver.resolvePalette(context);
@@ -294,6 +301,8 @@ class _UnifiedCustomizablePickerFieldState<T>
           );
 
     final field = UnifiedBaseTextField(
+      decorationSet: chrome.activeSet,
+      brightness: widget.brightness,
       controller: _txt,
       readOnly: readOnly,
       interactionBlocked: true,
@@ -343,6 +352,7 @@ class UnifiedCustomizableMultiPickerField<T> extends StatefulWidget {
     required this.label,
     required this.pickerController,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.valueToString,
     this.searchBuilder,
@@ -374,6 +384,9 @@ class UnifiedCustomizableMultiPickerField<T> extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -599,11 +612,13 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
-    final dec = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: widget.decoration,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
       brightness: widget.brightness,
     );
+    final dec = chrome.resolved;
     final readOnly = widget.locked || _inactive || !widget.allowFreeText;
 
     final palette = UnifiedInputThemeResolver.resolvePalette(context);
@@ -617,6 +632,8 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
           );
 
     final field = UnifiedBaseTextField(
+      decorationSet: chrome.activeSet,
+      brightness: widget.brightness,
       controller: _txt,
       readOnly: readOnly,
       interactionBlocked: true,

@@ -168,3 +168,178 @@ UnifiedInputDecoration resolveUnifiedDecoration(
       : UnifiedInputThemeResolver.resolvePalette(context);
   return const UnifiedInputDecoration().merge(overrides).applyPalette(palette);
 }
+
+/// Visual state used to pick a layer from [UnifiedInputDecorationSet].
+enum UnifiedInputFieldVisualState {
+  /// Default enabled appearance (no focus, no error).
+  base,
+
+  /// Field has focus and is editable.
+  focused,
+
+  /// Validation succeeded (no error, validator has run).
+  valid,
+
+  /// Field has a non-empty error message.
+  error,
+
+  /// [UnifiedBaseTextField.locked] is true.
+  locked,
+
+  /// [UnifiedBaseTextField.disabled] or [UnifiedBaseTextField.isDisabled].
+  disabled,
+
+  /// [UnifiedBaseTextField.loading] is true.
+  loading,
+
+  /// [UnifiedBaseTextField.readOnly] without disabled/locked.
+  readOnly,
+}
+
+/// Per-state [UnifiedInputDecoration] overrides, similar to Material [InputDecoration] focus/error borders.
+///
+/// Each layer is optional; unspecified properties fall back to [base] (then palette defaults).
+/// Pass on a field via [decorationSet], or globally on [UnifiedInputThemeData.fieldDecorationSet].
+@immutable
+class UnifiedInputDecorationSet {
+  /// Creates a set of optional per-state decorations.
+  const UnifiedInputDecorationSet({
+    this.base,
+    this.focused,
+    this.valid,
+    this.error,
+    this.locked,
+    this.disabled,
+    this.loading,
+    this.readOnly,
+  });
+
+  /// Default / enabled decoration (merged with legacy single [UnifiedInputDecoration] on fields).
+  final UnifiedInputDecoration? base;
+
+  /// When the field has focus (and is editable).
+  final UnifiedInputDecoration? focused;
+
+  /// When validation passed and there is no error (only applied if this layer is non-null).
+  final UnifiedInputDecoration? valid;
+
+  /// When the field shows an error message.
+  final UnifiedInputDecoration? error;
+
+  /// When [UnifiedBaseTextField.locked] is true.
+  final UnifiedInputDecoration? locked;
+
+  /// When the field is disabled.
+  final UnifiedInputDecoration? disabled;
+
+  /// When [UnifiedBaseTextField.loading] is true.
+  final UnifiedInputDecoration? loading;
+
+  /// When the field is read-only (and not disabled/locked).
+  final UnifiedInputDecoration? readOnly;
+
+  /// Merges [other] on top of this; non-null layers from [other] replace this set's layers.
+  UnifiedInputDecorationSet merge(UnifiedInputDecorationSet? other) {
+    if (other == null) return this;
+    return UnifiedInputDecorationSet(
+      base: other.base ?? base,
+      focused: other.focused ?? focused,
+      valid: other.valid ?? valid,
+      error: other.error ?? error,
+      locked: other.locked ?? locked,
+      disabled: other.disabled ?? disabled,
+      loading: other.loading ?? loading,
+      readOnly: other.readOnly ?? readOnly,
+    );
+  }
+
+  /// Decoration layer for [state] (may be null).
+  UnifiedInputDecoration? layerFor(UnifiedInputFieldVisualState state) {
+    switch (state) {
+      case UnifiedInputFieldVisualState.base:
+        return base;
+      case UnifiedInputFieldVisualState.focused:
+        return focused;
+      case UnifiedInputFieldVisualState.valid:
+        return valid;
+      case UnifiedInputFieldVisualState.error:
+        return error;
+      case UnifiedInputFieldVisualState.locked:
+        return locked;
+      case UnifiedInputFieldVisualState.disabled:
+        return disabled;
+      case UnifiedInputFieldVisualState.loading:
+        return loading;
+      case UnifiedInputFieldVisualState.readOnly:
+        return readOnly;
+    }
+  }
+
+  /// Whether [state] has an explicit decoration layer.
+  bool hasLayerFor(UnifiedInputFieldVisualState state) => layerFor(state) != null;
+
+  /// True when any layer (including [base]) is set.
+  bool get isConfigured =>
+      base != null ||
+      focused != null ||
+      valid != null ||
+      error != null ||
+      locked != null ||
+      disabled != null ||
+      loading != null ||
+      readOnly != null;
+
+  /// Resolves the active decoration for [state] (palette applied).
+  UnifiedInputDecoration resolve(
+    BuildContext context, {
+    required UnifiedInputFieldVisualState state,
+    UnifiedInputBrightness? brightness,
+    UnifiedInputDecoration? fieldDecoration,
+  }) {
+    final palette = brightness != null
+        ? UnifiedInputThemeResolver.paletteFor(brightness)
+        : UnifiedInputThemeResolver.resolvePalette(context);
+    var merged = const UnifiedInputDecoration()
+        .merge(base)
+        .merge(fieldDecoration);
+    final overlay = layerFor(state);
+    if (overlay != null) {
+      merged = merged.merge(overlay);
+    }
+    return merged.applyPalette(palette);
+  }
+}
+
+/// Picks the highest-priority visual state for a field.
+UnifiedInputFieldVisualState resolveUnifiedInputFieldVisualState({
+  required bool disabled,
+  required bool locked,
+  required bool loading,
+  required bool hasError,
+  required bool showValid,
+  required bool readOnly,
+  required bool focused,
+}) {
+  if (disabled) return UnifiedInputFieldVisualState.disabled;
+  if (locked) return UnifiedInputFieldVisualState.locked;
+  if (loading) return UnifiedInputFieldVisualState.loading;
+  if (hasError) return UnifiedInputFieldVisualState.error;
+  if (showValid) return UnifiedInputFieldVisualState.valid;
+  if (readOnly) return UnifiedInputFieldVisualState.readOnly;
+  if (focused) return UnifiedInputFieldVisualState.focused;
+  return UnifiedInputFieldVisualState.base;
+}
+
+/// Theme scope + field [decoration] / [decorationSet] composed for [UnifiedBaseTextField].
+UnifiedInputDecorationSet composeFieldDecorationSet(
+  BuildContext context, {
+  UnifiedInputDecoration? decoration,
+  UnifiedInputDecorationSet? decorationSet,
+}) {
+  final themeSet =
+      UnifiedInputThemeScope.themeDataOf(context).fieldDecorationSet;
+  return const UnifiedInputDecorationSet()
+      .merge(themeSet)
+      .merge(UnifiedInputDecorationSet(base: decoration))
+      .merge(decorationSet);
+}

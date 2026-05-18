@@ -6,6 +6,7 @@ import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_duration_field_controller.dart';
 import 'unified_input_picker.dart';
 import 'unified_input_brightness.dart';
+import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import '../unified_date_picker_types.dart';
 import '../unified_date_wheel_style.dart';
@@ -156,6 +157,7 @@ class UnifiedDurationField extends StatefulWidget {
   const UnifiedDurationField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.binding,
     this.fieldController,
@@ -181,6 +183,9 @@ class UnifiedDurationField extends StatefulWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -493,11 +498,13 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: widget.decoration,
+      decoration: widget.decoration,
+      decorationSet: widget.decorationSet,
       brightness: widget.brightness,
     );
+    final d = chrome.resolved;
 
     return GestureDetector(
       onTap: widget.locked || widget.isDisabled
@@ -506,6 +513,8 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
       child: AbsorbPointer(
         absorbing: true,
         child: UnifiedBaseTextField(
+          decorationSet: chrome.activeSet,
+          brightness: widget.brightness,
           controller: _txt,
           focusNode: widget.fieldController?.focusNode ?? _fn,
           errorText: widget.fieldController?.errorText,

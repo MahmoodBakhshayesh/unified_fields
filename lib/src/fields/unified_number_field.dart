@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../controllers/unified_number_field_controller.dart';
 import 'unified_numeric_step_field.dart';
 import 'unified_input_brightness.dart';
+import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 
 /// Number field using [UnifiedNumericStepField] with [UnifiedInputDecoration] colors / typography.
@@ -14,6 +15,7 @@ class UnifiedNumberField extends StatelessWidget {
   const UnifiedNumberField({
     super.key,
     this.decoration,
+    this.decorationSet,
     this.brightness,
     this.controller,
     this.fieldController,
@@ -39,6 +41,9 @@ class UnifiedNumberField extends StatelessWidget {
 
   /// Visual chrome.
   final UnifiedInputDecoration? decoration;
+
+  /// Per-state decorations (focus, error, valid, locked, disabled, …).
+  final UnifiedInputDecorationSet? decorationSet;
 
   /// Override [Theme] brightness for the unified palette.
   final UnifiedInputBrightness? brightness;
@@ -105,13 +110,17 @@ class UnifiedNumberField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final d = resolveUnifiedDecoration(
+    final chrome = resolveUnifiedFieldDecorationContext(
       context,
-      overrides: decoration,
+      decoration: decoration,
+      decorationSet: decorationSet,
       brightness: brightness,
     );
+    final d = chrome.resolved;
 
     return UnifiedNumericStepField(
+      decorationSet: chrome.activeSet,
+      brightness: brightness,
       controller: fieldController?.text.textController ?? controller,
       fieldController: fieldController,
       focusNode: fieldController?.focusNode ?? focusNode,
