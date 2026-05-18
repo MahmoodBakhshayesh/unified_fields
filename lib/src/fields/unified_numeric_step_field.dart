@@ -519,7 +519,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       widgets.add(UnifiedSuffixIconChrome.normalize(widget.prefixIcon!));
     }
     if (widget.prefix != null) {
-      widgets.add(widget.prefix!);
+      widgets.add(UnifiedSuffixIconChrome.normalize(widget.prefix!));
     }
     return widgets;
   }
@@ -544,6 +544,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     );
   }
 
+  /// Leading edge: decoration prefix at intrinsic size, then step buttons.
   Widget? _composePrefix() {
     return _joinRow([
       ..._decorationLeadingWidgets(),
@@ -551,6 +552,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     ]);
   }
 
+  /// Trailing edge: step buttons, then decoration suffix at intrinsic size.
   Widget? _composeTrailingSuffixIcon() {
     final trailing = _decorationTrailingWidget();
     return _joinRow([

@@ -2,22 +2,24 @@ import 'package:flutter/material.dart';
 
 /// Shared suffix sizing for [UnifiedBaseTextField] and picker fields.
 ///
-/// Display-only icons use a fixed [slotSize] box; tappable icons use the same
-/// box via a zero-padding [IconButton] so they line up with date/duration defaults.
-/// Custom [suffixIcon] widgets use [normalize] with optional [width]/[height]
-/// from [UnifiedInputDecoration.suffixWidth] / [suffixHeight].
+/// [Icon]s and [IconButton]s use a fixed [slotSize] box so they line up with
+/// lock / clear / password affordances. Other widgets use their intrinsic size
+/// unless [UnifiedInputDecoration.suffixWidth] / [suffixHeight] are set.
 abstract final class UnifiedSuffixIconChrome {
-  /// Width and height of every suffix affordance in the field row.
+  /// Width and height of standard icon suffix affordances.
   static const double slotSize = 32;
 
-  /// Glyph size inside the slot.
+  /// Glyph size inside the icon slot.
   static const double iconSize = 18;
 
   static double _slotWidth(double? width) => width ?? slotSize;
 
   static double _slotHeight(double? height) => height ?? slotSize;
 
-  /// Centers [child] in the suffix slot (non-interactive icons).
+  static bool _hasExplicitSize(double? width, double? height) =>
+      width != null || height != null;
+
+  /// Centers [child] in a fixed slot (used for icons and explicit overrides).
   static Widget slot(
     Widget child, {
     double? width,
@@ -64,8 +66,40 @@ abstract final class UnifiedSuffixIconChrome {
     );
   }
 
-  /// Wraps a custom [suffixIcon] in a sized slot; omit [width]/[height] for the default 32×32.
+  /// Lays out a field adornment ([prefixIcon], [suffixIcon], etc.).
+  ///
+  /// With [width] / [height] (from decoration), uses a fixed slot. [Icon] and
+  /// [IconButton] use the default 32×32 slot. Everything else keeps intrinsic
+  /// width and height.
   static Widget normalize(
+    Widget suffix, {
+    double? width,
+    double? height,
+  }) {
+    if (_hasExplicitSize(width, height)) {
+      return _slotAdornment(suffix, width: width, height: height);
+    }
+
+    if (suffix is Icon) {
+      return slot(suffix);
+    }
+    if (suffix is IconButton) {
+      return _normalizeIconButton(suffix);
+    }
+    if (suffix is ExcludeFocus) {
+      final child = suffix.child;
+      if (child is IconButton) {
+        return ExcludeFocus(child: _normalizeIconButton(child));
+      }
+      if (child is Icon) {
+        return ExcludeFocus(child: slot(child));
+      }
+    }
+
+    return suffix;
+  }
+
+  static Widget _slotAdornment(
     Widget suffix, {
     double? width,
     double? height,

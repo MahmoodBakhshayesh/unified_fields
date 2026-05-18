@@ -1,3 +1,15 @@
+## 0.2.2
+
+### Features
+
+* **[UnifiedNumberField] / [UnifiedFormNumberField] / [UnifiedNumericStepField]** — configurable step buttons: [UnifiedNumericStepButtons] (`both`, `incrementOnly`, `decrementOnly`, `none`), [UnifiedNumericStepButtonPlacement] (`split`, `leading`, `trailing`), and custom `decrementIcon` / `incrementIcon`. Decoration `prefix`, `prefixIcon`, and `suffixIcon` compose with buttons (prefix at natural width, then buttons; trailing buttons before suffix).
+* **`textAlign`** on number fields (default `TextAlign.center`).
+* **[UnifiedInputDecoration]** — optional `suffixWidth` / `suffixHeight` to force a suffix slot size.
+
+### Fixes
+
+* **Adornment sizing** — [UnifiedSuffixIconChrome] uses intrinsic width/height for custom `suffixIcon` / `prefix` widgets; fixed 32×32 only for [Icon]s / [IconButton]s or when `suffixWidth` / `suffixHeight` are set. Avoids clipping text or wide trailing labels.
+
 ## 0.2.1
 
 ### Fixes
@@ -5,7 +17,6 @@
 * **Widget vs controller validator** — fields sync `validator:` on the widget onto `fieldController` so [UnifiedFieldValidation.validateFields] matches [FormState.validate] / inline errors ([UnifiedTextField], [UnifiedFormTextField], [UnifiedSinglePickerField], [UnifiedMultiPickerField], and form picker wrappers).
 * **[UnifiedFormSinglePickerField]** — rebuilds when `fieldController.errorText` changes only (imperative validate).
 * **Live error updates** — after a failed validate, editing the value re-runs validation on [BaseUnifiedFieldController] and `UnifiedForm*` fields (error clears when fixed, without tapping validate again).
-* **Suffix layout** — [UnifiedInputDecoration.suffix] and [suffixConstraints] for trailing text/custom widgets; [suffixIcon] stays icon-sized (32×32). Custom suffix text is no longer clipped into the icon slot. Date, time, duration, and picker fields use the same trailing-edge row as disabled fields ([_inlineFieldRow]), so default suffix icons align consistently (fixes centered chevrons with `textAlign: center` / empty values).
 
 ## 0.2.0
 

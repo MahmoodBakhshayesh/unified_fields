@@ -68,10 +68,10 @@ class UnifiedInputDecoration {
   /// Trailing widget shown after the field content.
   final Widget? suffixIcon;
 
-  /// Width of the slot wrapping [suffixIcon]; defaults to 32 when null.
+  /// When set, fixes [suffixIcon] width; otherwise non-icon suffixes use intrinsic width.
   final double? suffixWidth;
 
-  /// Height of the slot wrapping [suffixIcon]; defaults to 32 when null.
+  /// When set, fixes [suffixIcon] height; otherwise non-icon suffixes use intrinsic height.
   final double? suffixHeight;
 
   /// Inner padding of the editing area.

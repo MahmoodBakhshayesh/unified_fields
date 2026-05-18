@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:unified_fields/unified_fields.dart';
 
@@ -358,10 +356,10 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   ),
                   UnifiedNumberField(
                     decoration: UnifiedInputDecoration(
-                      suffixIcon: Text("as"),
-                      suffixWidth: 175
+                      suffixIcon: Text("aswerewr"),
+
                     ),
-                    stepButtonPlacement: UnifiedNumericStepButtonPlacement.trailing,
+                    // stepButtonPlacement: UnifiedNumericStepButtonPlacement.trailing,
                     // stepButtons: UnifiedNumericStepButtons.none,
                     textAlign: TextAlign.start,
                   ),
