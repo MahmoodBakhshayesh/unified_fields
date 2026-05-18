@@ -1,6 +1,10 @@
-/// Public API for the **unified_fields** package (fields, pickers, forms, date picker).
+/// Unified Flutter form fields, phone input, pickers, and Jalali/Gregorian date-time UI.
 ///
-/// Host apps add a path or pub dependency, then import this library.
+/// Import this library in host apps:
+///
+/// ```dart
+/// import 'package:unified_fields/unified_fields.dart';
+/// ```
 library;
 
 export 'src/unified_colors.dart';

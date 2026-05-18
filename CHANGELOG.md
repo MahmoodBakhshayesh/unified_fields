@@ -2,12 +2,20 @@
 
 ### Features
 
+* **`UnifiedPhoneField`** — phone input with SVG country flag, optional dial-code section, national mask, and validation. Editable country code uses one field (`+` + dial + national via [UnifiedPhoneFullNumberFormatter]); fixed or read-only dial code uses a label + national field.
+* **`UnifiedPhoneField`** — Persian digit mode via `usePersianDigits` and `digitCalendarKind` (Jalali): parses Persian/Arabic-Indic input, localizes display (including partial dial prefixes), and applies KookFaNum when active.
+* **`UnifiedCountry`** — enum of ~250 countries (ISO, name, dial code). Use `UnifiedCountry.ir`, `UnifiedCountries.byIso('DE')`, `UnifiedCountries.matchDialCode`, etc. Regenerate from `tool/countries.json` via `dart run tool/generate_unified_countries.dart`.
+* **`UnifiedCountryWidget`** — public flag + optional name/dial row (`showName` defaults to `false`). [showUnifiedPhoneCountryPicker] for standalone country selection.
+* **`UnifiedFlag`** — ISO or asset stem → bundled SVG; optional `size`, `width`, `height`, `borderRadius`; reads [UnifiedInputPhoneStyle] from theme.
+* **`UnifiedInputPhoneStyle`** / **`UnifiedInputThemeData.phoneStyle`** — dial-code box chrome, flag dimensions, invalid dial-code display (`message` vs `highlightText`).
+* **`UnifiedPhoneFieldController`** — `UnifiedPhoneNumber` value, national/dial controllers, `setCountry`, unified single-field entry mode.
+* **`UnifiedFieldLabelMode`** — `labelInRow`, `labelInColumn`, and `floatingLabel` (default on [UnifiedBaseTextField]); set via `labelMode` on fields or [UnifiedInputDecoration]. Legacy `labelInRow: true` still maps to row mode.
 * **`UnifiedInputThemeScope`** — global field chrome via `UnifiedInputThemeData`: disabled/locked label and field colors, placeholder, required icon, validation, suffix/clear/loading colors, picker sheet background, default suffix icons per field type.
-* **`UnifiedInputPickerHeaderStyle`** — settable picker sheet header `padding`, `backgroundColor`, `titleStyle`, and `clearButtonColor` (shared `UnifiedPickerSheetHeader` for single and multi pickers).
-* **`UnifiedInputMultiPickerCheckboxStyle`** — settable multi-picker checkbox `size`, `borderRadius`, `fillColor`, `checkColor`, and `borderColor`.
-* **`UnifiedSuffixIconChrome`** — 32×32 aligned suffix slot so date/time/duration icons line up with picker dropdown and lock/clear affordances.
-* **Custom duration columns** — `pickerColumns` with fixed wheel ranges (year `0…999`, month `0…11`, week `0…4`); presets on `UnifiedFieldsDurationColumnPresets`.
-* **Time / duration wheel pickers**, **Persian digits** (KookFaNum), **Jalali** calendar and field display improvements (see 0.1.4–0.1.5 notes below).
+* **`UnifiedInputPickerHeaderStyle`** — picker sheet header `padding`, `backgroundColor`, `titleStyle`, and `clearButtonColor`.
+* **`UnifiedInputMultiPickerCheckboxStyle`** — multi-picker checkbox `size`, `borderRadius`, `fillColor`, `checkColor`, and `borderColor`.
+* **`UnifiedSuffixIconChrome`** — 32×32 aligned suffix slot for date/time/duration/phone icons.
+* **Custom duration columns** — `pickerColumns` with fixed wheel ranges; presets on `UnifiedFieldsDurationColumnPresets`.
+* **Time / duration wheel pickers**, **Persian digits** (KookFaNum), **Jalali** calendar and field display improvements.
 
 ### API
 
@@ -15,10 +23,18 @@
 * **`UnifiedFieldsDateWheelStyle.forPicker`** — named `overrides:` and optional `context:` for themed sheet background.
 * **`unifiedFormatDuration`** / **`unifiedTryParseDuration`** — named `granularity:`, optional `pickerColumns:` / `calendarKind:`.
 
+### Breaking changes
+
+* **`UnifiedPhoneCountry`** removed — use the [UnifiedCountry] enum (`UnifiedCountry.ir`, not `UnifiedPhoneCountry(isoCode: …)`). India: `UnifiedCountry.countryIN`.
+* **`UnifiedPhoneCountries`** deprecated — use [UnifiedCountries]. `UnifiedCountryRow` renamed to [UnifiedCountryWidget].
+
 ### Fixes
 
+* Placeholder / hint styling uses [UnifiedColors.hintColor] at **0.72** opacity by default.
+* Placeholder no longer falls back to the label string on [UnifiedTextField] and [UnifiedNumberField].
 * Picker sheets use theme scope for background color instead of hard-coded values.
-* Static-analysis cleanup (`dart analyze lib` clean).
+* Phone layout: bounded row height, label modes on [UnifiedPhoneField], `height` / `width` support.
+* Static analysis: `dart analyze` clean on `lib/`.
 
 ## 0.1.5
 
@@ -61,20 +77,14 @@
   are still honored as a fallback for backwards compatibility, but field-level parameters now win.
 * Added `Form`-aware wrappers for the customizable pickers:
   `UnifiedFormCustomizablePickerField`, `UnifiedFormCustomizableMultiPickerField`,
-  `UnifiedFormCustomizableAsyncPickerField`, `UnifiedFormCustomizableAsyncMultiPickerField`.
-* Added a runnable `example/` Flutter project demonstrating the showcase page.
-* Renamed `AppColors` to `UnifiedColors` to match the package naming style.
-* Dartdoc comments on every public member across the package
-  (palette, decoration, controllers, base text field, sheet helpers,
-  color tokens, all unified and form-aware fields, plus the vendored
-  utility extensions). The `public_member_api_docs` lint is now enforced
-  in `analysis_options.yaml` to keep coverage from regressing.
+  `UnifiedFormCustomizableAsyncPickerField`.
+* Added **`example/`** — runnable Flutter app demonstrating form validate/save/reset and theme scope.
+* Expanded dartdoc on public APIs; `public_member_api_docs` enabled for `lib/`.
 
 ## 0.1.1
 
-* Documentation pass on the public API and minor README polish.
+* Initial pub.dev release scaffolding.
 
 ## 0.1.0
 
-* Initial release: unified text / number / picker / async picker / date / time / duration fields,
-  Gregorian–Jalali calendar sheet, vendored scrollable positioned list, and `Form`-aware wrappers.
+* Initial release.

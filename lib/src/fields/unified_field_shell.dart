@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../unified_colors.dart';
+import 'unified_field_label_mode.dart';
 import 'unified_input_decoration.dart';
 
 /// Shared chrome: optional label (column or row), bordered body, optional inline validation panel.
@@ -41,11 +42,26 @@ class UnifiedFieldShell extends StatelessWidget {
     final inner = Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(child: body),
+        Expanded(
+          child: SizedBox(
+            height: h,
+            width: double.infinity,
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: body,
+            ),
+          ),
+        ),
         if (showStrip)
           Expanded(
             child: Container(
-              height: dec.labelInRow ? h : (h - 12).clamp(40, h),
+              height: (dec.labelMode ??
+                          resolveUnifiedFieldLabelMode(
+                            labelInRow: dec.labelInRow,
+                          )) ==
+                      UnifiedFieldLabelMode.labelInRow
+                  ? h
+                  : (h - 12).clamp(40, h),
               margin: const EdgeInsets.only(left: 12),
               padding: const EdgeInsets.symmetric(horizontal: 4),
               alignment: Alignment.center,
@@ -80,7 +96,9 @@ class UnifiedFieldShell extends StatelessWidget {
       constraints: BoxConstraints(minHeight: h),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: dec.labelInRow
+        borderRadius: (dec.labelMode ??
+                    resolveUnifiedFieldLabelMode(labelInRow: dec.labelInRow)) ==
+                UnifiedFieldLabelMode.labelInRow
             ? BorderRadiusDirectional.horizontal(
                 end: Radius.circular(radius.bottomRight.x),
               )
@@ -95,7 +113,11 @@ class UnifiedFieldShell extends StatelessWidget {
       return boxed;
     }
 
-    if (!dec.labelInRow) {
+    final labelMode = dec.labelMode ??
+        resolveUnifiedFieldLabelMode(labelInRow: dec.labelInRow);
+
+    if (labelMode == UnifiedFieldLabelMode.labelInColumn ||
+        labelMode == UnifiedFieldLabelMode.floatingLabel) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,7 +161,10 @@ class _LabelRow extends StatelessWidget {
     final dec = decoration;
     if (dec.label == null) return const SizedBox.shrink();
 
-    final pad = dec.labelInRow
+    final inRow = (dec.labelMode ??
+            resolveUnifiedFieldLabelMode(labelInRow: dec.labelInRow)) ==
+        UnifiedFieldLabelMode.labelInRow;
+    final pad = inRow
         ? EdgeInsets.zero
         : const EdgeInsets.only(bottom: 4, top: 8);
 

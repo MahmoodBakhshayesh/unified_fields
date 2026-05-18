@@ -12,4 +12,5 @@ export 'unified_form_controller.dart';
 export 'unified_number_field_controller.dart';
 export 'unified_picker_field_controller.dart';
 export 'unified_text_field_controller.dart';
+export 'unified_phone_field_controller.dart';
 export 'unified_time_field_controller.dart';

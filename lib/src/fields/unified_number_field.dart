@@ -116,7 +116,7 @@ class UnifiedNumberField extends StatelessWidget {
       fieldController: fieldController,
       focusNode: fieldController?.focusNode ?? focusNode,
       label: label ?? d.label,
-      placeholder: placeholder ?? d.placeholder ?? d.label,
+      placeholder: placeholder ?? d.placeholder,
       labelStyle: d.labelStyle,
       padding: d.contentPadding,
       borderRadius:

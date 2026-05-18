@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'unified_field_label_mode.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_palette.dart';
 import 'unified_input_theme.dart';
@@ -40,8 +41,11 @@ class UnifiedInputDecoration {
   final List<int> rowLabelRatio;
 
   /// When true, the label is rendered on the left of the field (split row),
-  /// otherwise on top.
+  /// otherwise on top. Prefer [labelMode].
   final bool labelInRow;
+
+  /// Label placement; overrides [labelInRow] when set. Defaults to floating label.
+  final UnifiedFieldLabelMode? labelMode;
 
   /// Default for `isRequired` (overridden by field-level `isRequired`).
   final bool requiredField;
@@ -81,6 +85,7 @@ class UnifiedInputDecoration {
     this.height = 56,
     this.rowLabelRatio = const [12, 33],
     this.labelInRow = false,
+    this.labelMode,
     this.requiredField = false,
     this.showError = true,
     this.validationColor,
@@ -107,6 +112,7 @@ class UnifiedInputDecoration {
       height: other.height ?? height,
       rowLabelRatio: other.rowLabelRatio,
       labelInRow: other.labelInRow,
+      labelMode: other.labelMode ?? labelMode,
       requiredField: other.requiredField,
       showError: other.showError,
       validationColor: other.validationColor ?? validationColor,
@@ -138,6 +144,7 @@ class UnifiedInputDecoration {
       height: height,
       rowLabelRatio: rowLabelRatio,
       labelInRow: labelInRow,
+      labelMode: labelMode,
       requiredField: requiredField,
       showError: showError,
       validationColor: validationColor ?? palette.validationColor,

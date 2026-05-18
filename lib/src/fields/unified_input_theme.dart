@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'unified_input_brightness.dart';
 import 'unified_input_palette.dart';
+import '../phone/unified_input_phone_style.dart';
 import 'unified_input_theme_data.dart';
 import 'unified_picker_sheet_style.dart';
 import 'unified_suffix_icon.dart';
@@ -10,6 +11,7 @@ export 'unified_input_theme_data.dart';
 export 'unified_picker_sheet_chrome.dart';
 export 'unified_picker_sheet_style.dart';
 export 'unified_suffix_icon.dart';
+export '../phone/unified_input_phone_style.dart';
 
 /// Optional inherited scope for brightness, palette, disabled/placeholder chrome, picker sheets, and default suffix icons.
 class UnifiedInputThemeScope extends InheritedWidget {
@@ -120,11 +122,24 @@ class UnifiedInputThemeResolver {
         return icons?.time ?? Icons.schedule_outlined;
       case UnifiedInputFieldSuffixKind.duration:
         return icons?.duration ?? Icons.timer_outlined;
+      case UnifiedInputFieldSuffixKind.phone:
+        return icons?.phone ?? Icons.phone_outlined;
       case UnifiedInputFieldSuffixKind.picker:
         return icons?.picker ?? Icons.arrow_drop_down;
       case UnifiedInputFieldSuffixKind.multiPicker:
         return icons?.multiPicker ?? Icons.arrow_drop_down;
     }
+  }
+
+  /// Resolved [UnifiedInputPhoneStyle] for [UnifiedPhoneField] / [UnifiedFlag].
+  static UnifiedInputPhoneStyle resolvePhoneStyle(
+    BuildContext context, {
+    UnifiedInputPhoneStyle? overrides,
+    UnifiedInputPalette? palette,
+  }) {
+    final theme = _theme(context).phoneStyle ?? const UnifiedInputPhoneStyle();
+    final p = palette ?? resolvePalette(context);
+    return theme.merge(overrides).applyDefaults(p);
   }
 
   /// Builds a default suffix icon in the standard 32×32 slot.
@@ -210,10 +225,11 @@ class UnifiedInputThemeResolver {
     final color = theme.placeholderColor ?? palette.hintColor;
     final opacity = disabled
         ? (theme.placeholderOpacityWhenDisabled ?? theme.placeholderOpacity ?? 0.45)
-        : (theme.placeholderOpacity ?? 1.0);
+        : (theme.placeholderOpacity ?? 0.72);
     return TextStyle(
       color: _withOpacity(color, opacity),
-      fontSize: fontSize,
+      fontSize: fontSize ?? 16,
+      fontWeight: FontWeight.w400,
     );
   }
 

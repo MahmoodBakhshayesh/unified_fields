@@ -525,6 +525,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
           height: d.height,
           rowLabelRatio: d.rowLabelRatio,
           labelInRow: d.labelInRow,
+          labelMode: d.labelMode,
           requiredField: widget.isRequired || d.requiredField,
           showError: d.showError,
           validationColor: d.validationColor,

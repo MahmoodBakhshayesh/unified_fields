@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'unified_input_brightness.dart';
 import 'unified_input_palette.dart';
+import '../phone/unified_input_phone_style.dart';
 import 'unified_picker_sheet_style.dart';
 
 /// Default suffix icons for unified field types when the field does not set its own.
@@ -12,6 +13,7 @@ class UnifiedInputDefaultSuffixIcons {
     this.date,
     this.time,
     this.duration,
+    this.phone,
     this.picker,
     this.multiPicker,
   });
@@ -24,6 +26,9 @@ class UnifiedInputDefaultSuffixIcons {
 
   /// Shown on [UnifiedDurationField] when no custom suffix is set.
   final IconData? duration;
+
+  /// Shown on [UnifiedPhoneField] when no custom suffix is set.
+  final IconData? phone;
 
   /// Shown on single-select picker fields when no custom suffix is set.
   final IconData? picker;
@@ -64,6 +69,7 @@ class UnifiedInputThemeData {
     this.pickerHeaderStyle,
     this.multiPickerCheckboxStyle,
     this.defaultSuffixIcons,
+    this.phoneStyle,
   });
 
   /// When non-null, replaces inferred brightness from [Theme.of(context)].
@@ -105,7 +111,7 @@ class UnifiedInputThemeData {
   /// Placeholder / hint color; defaults to [UnifiedInputPalette.hintColor].
   final Color? placeholderColor;
 
-  /// Placeholder opacity when the field is enabled (0–1); defaults to `1.0`.
+  /// Placeholder opacity when the field is enabled (0–1); defaults to `0.72`.
   final double? placeholderOpacity;
 
   /// Placeholder opacity when disabled (0–1); defaults to `0.45`.
@@ -150,6 +156,9 @@ class UnifiedInputThemeData {
   /// Multi-picker row checkbox colors and corner radius.
   final UnifiedInputMultiPickerCheckboxStyle? multiPickerCheckboxStyle;
 
+  /// Dial-code box, flag size, and invalid dial-code display for [UnifiedPhoneField].
+  final UnifiedInputPhoneStyle? phoneStyle;
+
   /// Returns a copy with the given fields replaced.
   UnifiedInputThemeData merge(UnifiedInputThemeData? other) {
     if (other == null) return this;
@@ -186,6 +195,7 @@ class UnifiedInputThemeData {
       multiPickerCheckboxStyle:
           other.multiPickerCheckboxStyle ?? multiPickerCheckboxStyle,
       defaultSuffixIcons: other.defaultSuffixIcons ?? defaultSuffixIcons,
+      phoneStyle: other.phoneStyle ?? phoneStyle,
     );
   }
 }
@@ -206,4 +216,7 @@ enum UnifiedInputFieldSuffixKind {
 
   /// Multi-select picker.
   multiPicker,
+
+  /// Phone field.
+  phone,
 }

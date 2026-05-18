@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../unified_fields_typography.dart';
+import 'unified_field_label_mode.dart';
 import 'unified_input_palette.dart';
 import 'unified_input_theme.dart';
 
@@ -56,6 +57,7 @@ class UnifiedBaseTextField extends StatefulWidget {
     this.showClearButton = false,
     this.requiredField = false,
     this.labelInRow = false,
+    this.labelMode,
     this.rowLabelRatio = const [12, 33],
     this.errorText,
     this.autovalidateMode,
@@ -174,6 +176,10 @@ class UnifiedBaseTextField extends StatefulWidget {
 
   /// Render the label in the same row as the editing area.
   final bool labelInRow;
+
+  /// Label placement; when null, [labelInRow] maps to [UnifiedFieldLabelMode.labelInRow],
+  /// otherwise defaults to [UnifiedFieldLabelMode.floatingLabel].
+  final UnifiedFieldLabelMode? labelMode;
 
   /// Flex ratio between the label cell and the body cell when [labelInRow] is true.
   final List<int> rowLabelRatio;
@@ -707,6 +713,204 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     );
   }
 
+  InputBorder _materialOutlineBorder(
+    UnifiedInputPalette palette,
+    bool hasError, {
+    bool focused = false,
+  }) {
+    final side = hasError
+        ? BorderSide(color: _validationColor(palette), width: 1)
+        : (widget.borderSide ?? palette.defaultBorderSide);
+    return OutlineInputBorder(
+      borderRadius: widget.borderRadius,
+      borderSide: focused && !hasError
+          ? side.copyWith(width: (side.width + 0.5).clamp(0.5, 2.0))
+          : side,
+    );
+  }
+
+  Widget? _floatingLabelWidget(UnifiedInputPalette palette) {
+    if (widget.label == null) return null;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(widget.label!, style: _resolveLabelStyle(palette)),
+        if (widget.requiredField)
+          Padding(
+            padding: const EdgeInsets.only(left: 2, bottom: 8),
+            child: UnifiedInputThemeResolver.requiredIcon(
+              context,
+              palette,
+              fallbackColor: palette.labelColor,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _materialFloatingField(
+    String? errorText,
+    bool hasError,
+    UnifiedInputPalette palette,
+  ) {
+    final hasText = _ctrl.text.isNotEmpty;
+    final showErrorOnField = hasError && widget.showError;
+    final field = TextField(
+      controller: _ctrl,
+      focusNode: widget.focusNode,
+      autofocus: widget.autofocus,
+      enabled: !_visuallyDisabled,
+      readOnly: widget.readOnly || _blocksInteraction,
+      textInputAction: widget.textInputAction ?? TextInputAction.done,
+      keyboardType: widget.keyboardType,
+      textAlign: widget.textAlign,
+      textDirection: _resolveTextDirection(),
+      textCapitalization: widget.textCapitalization,
+      obscureText: _obscure && widget.isPassword,
+      maxLines: widget.isPassword && _obscure
+          ? 1
+          : (widget.maxLines == 0 ? null : widget.maxLines),
+      minLines: widget.minLines,
+      maxLength: widget.maxLength,
+      inputFormatters: widget.inputFormatters,
+      style: _resolveFieldStyle(palette),
+      onSubmitted: widget.onSubmit,
+      decoration: InputDecoration(
+        isDense: true,
+        label: _floatingLabelWidget(palette),
+        hintText: widget.placeholder,
+        hintStyle: _placeholderStyle(palette),
+        filled: true,
+        fillColor: _effectiveBackgroundColor,
+        contentPadding:
+            widget.padding ??
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        border: _materialOutlineBorder(palette, hasError),
+        enabledBorder: _materialOutlineBorder(palette, hasError),
+        focusedBorder: _materialOutlineBorder(palette, hasError, focused: true),
+        disabledBorder: _materialOutlineBorder(palette, hasError),
+        errorBorder: _materialOutlineBorder(palette, true),
+        focusedErrorBorder: _materialOutlineBorder(palette, true, focused: true),
+        errorText: showErrorOnField ? errorText : null,
+        errorStyle: TextStyle(
+          color: _validationColor(palette),
+          fontSize: 12,
+        ),
+        prefixIcon: widget.prefixIcon,
+        prefix: widget.prefix,
+        suffixIcon: _buildSuffixRow(hasText, palette),
+      ),
+    );
+    if (_absorbInnerPointers) {
+      return AbsorbPointer(child: field);
+    }
+    return field;
+  }
+
+  Widget _buildLabelInRowLayout(
+    String? errorText,
+    bool hasError,
+    UnifiedInputPalette palette,
+    Widget Function(Widget child) wrapInteraction,
+  ) {
+    final labelFlex = widget.rowLabelRatio.isNotEmpty
+        ? widget.rowLabelRatio[0]
+        : 12;
+    final bodyFlex = widget.rowLabelRatio.length > 1
+        ? widget.rowLabelRatio[1]
+        : 33;
+    final h = widget.height ?? 56;
+    final radius = widget.borderRadius;
+    final divider =
+        widget.borderSide ??
+        const BorderSide(color: Color(0xff58514C), width: 0.5);
+    final headerBg =
+        widget.headerBackgroundColor ?? _effectiveBackgroundColor;
+
+    return wrapInteraction(
+      Container(
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          border: _borderFromSide(widget.borderSide, hasError),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: labelFlex,
+                child: Container(
+                  constraints: BoxConstraints(minHeight: h),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: headerBg,
+                    border: BorderDirectional(end: divider),
+                  ),
+                  child: widget.label == null
+                      ? const SizedBox.shrink()
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: _labelRowCompact(palette),
+                        ),
+                ),
+              ),
+              Expanded(
+                flex: bodyFlex,
+                child: Container(
+                  constraints: BoxConstraints(minHeight: h),
+                  color: _effectiveBackgroundColor,
+                  child: _bodyRow(errorText, hasError, palette),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLabelInColumnLayout(
+    String? errorText,
+    bool hasError,
+    UnifiedInputPalette palette,
+    Widget Function(Widget child) wrapInteraction,
+  ) {
+    final radius = widget.borderRadius;
+    return wrapInteraction(
+      ClipRRect(
+        borderRadius: radius,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _labelBlock(errorText, palette),
+            Container(
+              height: widget.height,
+              decoration: BoxDecoration(
+                color: _effectiveBackgroundColor,
+                borderRadius: radius,
+                border: _borderFromSide(widget.borderSide, hasError),
+              ),
+              child: _bodyRow(errorText, hasError, palette),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingLabelLayout(
+    String? errorText,
+    bool hasError,
+    UnifiedInputPalette palette,
+    Widget Function(Widget child) wrapInteraction,
+  ) {
+    return wrapInteraction(
+      _materialFloatingField(errorText, hasError, palette),
+    );
+  }
+
   Widget _labelRowCompact(UnifiedInputPalette palette) {
     final defaultLabelStyle = _resolveLabelStyle(palette);
     return Row(
@@ -737,7 +941,6 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         final palette = UnifiedInputThemeResolver.resolvePalette(context);
         final errorText = _resolvedError;
         final hasError = errorText != null && errorText.isNotEmpty;
-        final radius = widget.borderRadius;
 
         Widget wrapInteraction(Widget child) {
           final m = _effectiveAutovalidateMode;
@@ -751,86 +954,34 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
           );
         }
 
-        if (widget.labelInRow) {
-          final labelFlex = widget.rowLabelRatio.isNotEmpty
-              ? widget.rowLabelRatio[0]
-              : 12;
-          final bodyFlex = widget.rowLabelRatio.length > 1
-              ? widget.rowLabelRatio[1]
-              : 33;
-          final h = widget.height ?? 56;
-          final divider =
-              widget.borderSide ??
-              const BorderSide(color: Color(0xff58514C), width: 0.5);
-          final headerBg =
-              widget.headerBackgroundColor ?? _effectiveBackgroundColor;
-
-          return wrapInteraction(
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                border: _borderFromSide(widget.borderSide, hasError),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      flex: labelFlex,
-                      child: Container(
-                        constraints: BoxConstraints(minHeight: h),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: headerBg,
-                          border: BorderDirectional(end: divider),
-                        ),
-                        child: widget.label == null
-                            ? const SizedBox.shrink()
-                            : Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                                child: _labelRowCompact(palette),
-                              ),
-                      ),
-                    ),
-                    Expanded(
-                      flex: bodyFlex,
-                      child: Container(
-                        constraints: BoxConstraints(minHeight: h),
-                        color: _effectiveBackgroundColor,
-                        child: _bodyRow(errorText, hasError, palette),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-
-        return wrapInteraction(
-          ClipRRect(
-            borderRadius: radius,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _labelBlock(errorText, palette),
-                Container(
-                  height: widget.height,
-                  decoration: BoxDecoration(
-                    color: _effectiveBackgroundColor,
-                    borderRadius: radius,
-                    border: _borderFromSide(widget.borderSide, hasError),
-                  ),
-                  child: _bodyRow(errorText, hasError, palette),
-                ),
-              ],
-            ),
-          ),
+        final effectiveLabelMode = resolveUnifiedFieldLabelMode(
+          mode: widget.labelMode,
+          labelInRow: widget.labelInRow,
         );
+
+        switch (effectiveLabelMode) {
+          case UnifiedFieldLabelMode.labelInRow:
+            return _buildLabelInRowLayout(
+              errorText,
+              hasError,
+              palette,
+              wrapInteraction,
+            );
+          case UnifiedFieldLabelMode.labelInColumn:
+            return _buildLabelInColumnLayout(
+              errorText,
+              hasError,
+              palette,
+              wrapInteraction,
+            );
+          case UnifiedFieldLabelMode.floatingLabel:
+            return _buildFloatingLabelLayout(
+              errorText,
+              hasError,
+              palette,
+              wrapInteraction,
+            );
+        }
       },
     );
   }

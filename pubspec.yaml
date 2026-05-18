@@ -1,9 +1,18 @@
 name: unified_fields
-description: Standalone unified form fields, pickers, and date/time UI for Flutter apps.
+description: >-
+  Unified Flutter form fields, phone input with country flags, pickers,
+  Jalali/Gregorian date and time, Persian digits, and Form validate/save/reset.
 version: 0.1.6
 homepage: https://github.com/MahmoodBakhshayesh/unified_fields
 repository: https://github.com/MahmoodBakhshayesh/unified_fields
 issue_tracker: https://github.com/MahmoodBakhshayesh/unified_fields/issues
+
+topics:
+  - flutter
+  - forms
+  - input
+  - phone-number
+  - date-picker
 
 environment:
   sdk: ^3.10.0
@@ -12,6 +21,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_svg: ^2.0.17
   intl: ^0.20.2
   shamsi_date: ^1.1.1
   collection: ^1.19.0
@@ -23,6 +33,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/flags/countries/
   fonts:
     - family: KookFaNum
       fonts:

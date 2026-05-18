@@ -545,6 +545,7 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
           height: d.height,
           rowLabelRatio: d.rowLabelRatio,
           labelInRow: d.labelInRow,
+          labelMode: d.labelMode,
           requiredField: widget.isRequired,
           showError: d.showError,
           validationColor: d.validationColor,

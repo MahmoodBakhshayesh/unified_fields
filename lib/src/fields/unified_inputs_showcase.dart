@@ -11,6 +11,9 @@ import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_number_field.dart';
+import 'unified_phone_field.dart';
+import 'unified_field_label_mode.dart';
+import '../phone/unified_country.dart';
 import 'unified_picker_fields.dart';
 import 'unified_text_field.dart';
 import '../unified_date_picker_sheet.dart';
@@ -316,6 +319,55 @@ class _UnifiedInputsShowcasePageState extends State<UnifiedInputsShowcasePage> {
                 ),
               ],
             ),
+            _sectionTitle('Label modes (UnifiedFieldLabelMode)'),
+            UnifiedTextField(
+              brightness: _paletteMode,
+              decoration: const UnifiedInputDecoration(
+                label: 'Column label',
+                placeholder: 'Grey hint (not label text)',
+                labelMode: UnifiedFieldLabelMode.labelInColumn,
+              ),
+            ),
+            const SizedBox(height: 12),
+            UnifiedTextField(
+              brightness: _paletteMode,
+              decoration: const UnifiedInputDecoration(
+                label: 'Floating label (default)',
+                placeholder: 'Material-style hint',
+              ),
+            ),
+            const SizedBox(height: 12),
+            _sectionTitle('UnifiedPhoneField'),
+            UnifiedPhoneField(
+              brightness: _paletteMode,
+              label: 'Mobile',
+              placeholder: 'National number',
+              isRequired: true,
+              fixedCountry: UnifiedCountries.byIso('IR'),
+            ),
+            const SizedBox(height: 12),
+            UnifiedPhoneField(
+              brightness: _paletteMode,
+              label: 'Phone (picker + mask)',
+              placeholder: '### ### ####',
+              decoration: const UnifiedInputDecoration(
+                labelMode: UnifiedFieldLabelMode.labelInColumn,
+              ),
+              phoneStyle: const UnifiedInputPhoneStyle(
+                dialCodeBackgroundColor: Color(0xFF3D3835),
+                flagSize: 28,
+                flagBorderRadius: BorderRadius.all(Radius.circular(4)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            UnifiedPhoneField(
+              brightness: _paletteMode,
+              label: 'Invalid code → red text only',
+              placeholder: 'Type +999…',
+              showCountryCodeSection: false,
+              invalidDialCodeDisplay: UnifiedInvalidDialCodeDisplay.highlightText,
+            ),
+            const SizedBox(height: 12),
             _sectionTitle('UnifiedNumberField'),
             UnifiedNumberField(
               brightness: _paletteMode,

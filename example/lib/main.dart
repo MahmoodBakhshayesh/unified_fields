@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:unified_fields/unified_fields.dart';
 
@@ -68,7 +70,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
   final _date = UnifiedInputPicker<DateTime>(initialValue: null);
   final _time = UnifiedInputPicker<TimeOfDay>(initialValue: null);
   final _duration = UnifiedInputPicker<Duration>(initialValue: const Duration(minutes: 5));
-
+  final UnifiedPhoneFieldController phoneC = UnifiedPhoneFieldController();
   late final CustomizableSinglePickerController<String> _customSingle;
   late final CustomizableMultiPickerController<String> _customMulti;
 
@@ -151,7 +153,8 @@ class _DemoHomePageState extends State<DemoHomePage> {
             icon: const Icon(Icons.clear),
 
             onPressed: () {
-              _nameC.requestFocus();
+              // _nameC.requestFocus();
+              log(phoneC.value!.nationalDigits);
               // _countryController.openPicker(context);
 
               // _country.clear();
@@ -181,13 +184,30 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   const SizedBox(height: 12),
                   _ThemeScopeDemoCard(),
                   const SizedBox(height: 12),
+                  Text(phoneC.dialCodeController.text),
+                  UnifiedCountryWidget(country: UnifiedCountries.defaultCountry),
+                  UnifiedPhoneField(
+                    label: "Phone",
+                    usePersianDigits: true,
+                    fieldController: phoneC,
+                    labelMode: UnifiedFieldLabelMode.labelInColumn,
+                    phoneStyle: UnifiedInputPhoneStyle(),
+                    // editableCountryCode: true,
+                    // showCountryCodeSection: true,
+                    invalidDialCodeDisplay: UnifiedInvalidDialCodeDisplay.highlightText,
+                    // fixedCountry: UnifiedPhoneCountry(isoCode: 'ir', name: 'ir', dialCode: '+98'),
 
+                    // editableCountryCode: false,
+
+                  ),
                   UnifiedFormTextField(
                     label: 'Full name',
 
                     decoration: UnifiedInputDecoration(
                       labelInRow: true,
+
                       height: 40,
+
                       // headerBackgroundColor: Colors.red,
                       // backgroundColor: Colors.blue
                       // borderRadius: BorderRadius.circular(5)

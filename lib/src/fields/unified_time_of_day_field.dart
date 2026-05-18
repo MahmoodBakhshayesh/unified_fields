@@ -300,6 +300,7 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
           height: d.height,
           rowLabelRatio: d.rowLabelRatio,
           labelInRow: d.labelInRow,
+          labelMode: d.labelMode,
           requiredField: widget.isRequired || d.requiredField,
           showError: d.showError,
           validationColor: d.validationColor,

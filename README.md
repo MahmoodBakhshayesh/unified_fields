@@ -15,16 +15,17 @@
 7. [Time](#time)  
 8. [Duration](#duration)  
 9. [Pickers](#pickers)  
-10. [Bindings with `UnifiedInputPicker`](#bindings-with-unifiedinputpicker)  
-11. [Field controllers](#field-controllers)  
-12. [Field states (`isDisabled`, `loading`, …)](#field-states-isdisabled-loading-)  
-13. [UI strings (`UnifiedFieldsStrings`)](#ui-strings-unifiedfieldsstrings)  
-14. [Theming & layout](#theming--layout)  
-15. [Global theme (`UnifiedInputThemeScope`)](#global-theme-unifiedinputthemescope)  
-16. [Persian digits (`UnifiedFieldsTypography`)](#persian-digits-unifiedfieldstypography)  
-17. [Localization](#localization)  
-18. [Try the built-in demo](#try-the-built-in-demo)  
-19. [Dependencies](#dependencies)  
+10. [Phone (`UnifiedPhoneField`)](#phone-unifiedphonefield)  
+11. [Bindings with `UnifiedInputPicker`](#bindings-with-unifiedinputpicker)  
+12. [Field controllers](#field-controllers)  
+13. [Field states & label layout](#field-states--label-layout)  
+14. [UI strings (`UnifiedFieldsStrings`)](#ui-strings-unifiedfieldsstrings)  
+15. [Theming & layout](#theming--layout)  
+16. [Global theme (`UnifiedInputThemeScope`)](#global-theme-unifiedinputthemescope)  
+17. [Persian digits (`UnifiedFieldsTypography`)](#persian-digits-unifiedfieldstypography)  
+18. [Localization](#localization)  
+19. [Try the built-in demo](#try-the-built-in-demo)  
+20. [Dependencies](#dependencies)  
 
 ---
 
@@ -71,7 +72,8 @@ dependencies:
 
 | Area | Widgets / APIs | Purpose |
 |------|------------------|---------|
-| **Plain fields** | `UnifiedTextField`, `UnifiedNumberField`, `UnifiedNumericStepField`, `UnifiedDurationField`, `UnifiedDateField`, `UnifiedDateRangeField`, `UnifiedTimeOfDayField` | Same visual system as form fields, without `FormField` |
+| **Plain fields** | `UnifiedTextField`, `UnifiedNumberField`, `UnifiedNumericStepField`, `UnifiedPhoneField`, `UnifiedDurationField`, `UnifiedDateField`, `UnifiedDateRangeField`, `UnifiedTimeOfDayField` | Same visual system as form fields, without `FormField` |
+| **Phone** | `UnifiedPhoneField`, `UnifiedPhoneFieldController`, `UnifiedCountry`, `UnifiedCountries`, `UnifiedCountryWidget`, `UnifiedFlag`, `showUnifiedPhoneCountryPicker`, `UnifiedPhoneNumber` | Country flag, dial code, masked national number, ~250-country enum, Persian digits |
 | **Pickers** | `UnifiedSinglePickerField`, `UnifiedMultiPickerField`, `UnifiedAsyncPickerField`, `UnifiedAsyncMultiPickerField` | Bottom-sheet selection; async variants load items on demand |
 | **Customizable pickers** | `UnifiedCustomizablePickerField`, `UnifiedCustomizableMultiPickerField`, `UnifiedCustomizableAsyncPickerField`, `UnifiedCustomizableAsyncMultiPickerField`, `CustomizableSinglePickerController`, `CustomizableMultiPickerController` | Controller-driven single or multi selection that also accepts free typed text |
 | **Form wrappers** | `UnifiedFormField`, `UnifiedFormTextField`, `UnifiedFormSinglePickerField`, `UnifiedFormMultiPickerField`, `UnifiedFormAsyncPickerField`, `UnifiedFormAsyncMultiPickerField`, `UnifiedFormDateField`, `UnifiedFormDateRangeField`, `UnifiedFormTimeOfDayField`, `UnifiedFormDurationField`, `UnifiedFormNumberField`, `UnifiedFormCustomizablePickerField`, `UnifiedFormCustomizableMultiPickerField`, `UnifiedFormCustomizableAsyncPickerField`, `UnifiedFormCustomizableAsyncMultiPickerField` | `Form` integration: `validate`, `save`, `reset`, validators |
@@ -79,8 +81,8 @@ dependencies:
 | **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind`, `UnifiedFieldsDatePickerStyle` | Single date or range; calendar grid or scroll wheels; Gregorian vs Jalali |
 | **Time** | `UnifiedTimeOfDayField`, `showUnifiedFieldsTimePicker`, `UnifiedFieldsTimePickerStyle`, `UnifiedFieldsTimeGranularity`, `TimePickerUtils.show` | Material dial (default) or H:M:S wheels with Shamsi digit toggle |
 | **Duration** | `UnifiedDurationField`, `showUnifiedFieldsDurationPicker`, `UnifiedFieldsDurationColumn`, `UnifiedFieldsDurationColumnPresets`, `UnifiedDurationGranularity`, `UnifiedFieldsDurationPickerStyle` | Wheel picker with fixed granularity or custom column order (year · week · day · hour, …) |
-| **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedInputDecoration`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, global theme scope, picker headers, multi-picker checkboxes, aligned suffix icons |
-| **Controllers** | `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, `UnifiedAsyncPickerFieldController`, `UnifiedDateFieldController`, `UnifiedTimeOfDayFieldController`, `UnifiedDurationFieldController`, `UnifiedNumberFieldController`, `UnifiedFormController` | Listenable value + validation + imperative `openPicker` / `requestFocus` |
+| **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedFieldLabelMode`, `UnifiedInputDecoration`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPhoneStyle`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, phone/dial chrome, global theme scope, picker headers, aligned suffix icons |
+| **Controllers** | `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, `UnifiedAsyncPickerFieldController`, `UnifiedDateFieldController`, `UnifiedTimeOfDayFieldController`, `UnifiedDurationFieldController`, `UnifiedNumberFieldController`, `UnifiedPhoneFieldController`, `UnifiedFormController` | Listenable value + validation + imperative `openPicker` / `requestFocus` |
 | **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsTypography`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, Persian digits, layout helpers, default colors, sheet actions |
 | **Demo** | `UnifiedInputsShowcasePage` | Scrollable gallery of widgets + palette toggle |
 
@@ -350,6 +352,72 @@ Helpers: **`unifiedFormatDuration`**, **`unifiedTryParseDuration`**, **`composeU
 
 ---
 
+## Phone (`UnifiedPhoneField`)
+
+International phone input with **SVG flags** (bundled under `assets/flags/countries/`), optional **dial-code** segment, **national mask** (`#` = digit), and a default **phone** suffix icon.
+
+### Countries
+
+Countries are a fixed **`UnifiedCountry` enum** (~250 entries) with ISO code, display name, and dial code:
+
+```dart
+UnifiedCountry.ir.isoCode   // IR
+UnifiedCountry.ir.dialCode  // +98
+UnifiedCountries.byIso('DE')
+UnifiedCountries.matchDialCode('+98912…')
+UnifiedCountries.defaults   // all enum values (picker / field default list)
+```
+
+India uses **`UnifiedCountry.countryIN`** (`in` is a reserved Dart name). Regenerate the enum after editing `tool/countries.json`:
+
+```bash
+dart run tool/generate_unified_countries.dart
+```
+
+### Field usage
+
+```dart
+UnifiedPhoneField(
+  label: 'Mobile',
+  placeholder: '912 123 4567',
+  labelMode: UnifiedFieldLabelMode.labelInColumn,
+  usePersianDigits: true, // or digitCalendarKind: UnifiedFieldsCalendarKind.jalali
+  fixedCountry: UnifiedCountry.ir, // optional: lock dial code
+  // showCountryCodeSection: true,
+  // editableCountryCode: true, // one field: + dial + national
+  fieldController: UnifiedPhoneFieldController(
+    initialCountry: UnifiedCountry.ir,
+    onChanged: (UnifiedPhoneNumber? n) => debugPrint(n?.e164),
+  ),
+)
+```
+
+| Mode | Behavior |
+|------|----------|
+| **Editable dial code** (default when code section is shown) | Single input: `+` + country code + masked national digits |
+| **Fixed country** (`fixedCountry`) | Flag + dial label + national digits only |
+| **Non-editable code section** | Dial label (tap opens picker) + national field |
+
+Theme phone chrome via **`UnifiedInputPhoneStyle`** / **`UnifiedInputThemeData.phoneStyle`** (dial-code box, flag size, invalid-code highlight vs message).
+
+### Standalone widgets
+
+```dart
+UnifiedCountryWidget(country: UnifiedCountry.ae) // flag only (showName defaults to false)
+UnifiedCountryWidget(country: UnifiedCountry.ir, showName: true, showDialCode: true)
+UnifiedFlag(code: 'IR', size: 28)
+
+final picked = await showUnifiedPhoneCountryPicker(
+  context: context,
+  countries: UnifiedCountries.defaults,
+  usePersianDigits: true,
+);
+```
+
+**`UnifiedPhoneNumber`** exposes `country`, `nationalDigits`, `e164`, `display`, and `localizedDisplay` / `localizedE164` when using Persian digits.
+
+---
+
 ## Bindings with `UnifiedInputPicker`
 
 **`UnifiedInputPicker<T>`** is a **`ChangeNotifier`** holding **`value`**, optional **`errorText`**, and helpers **`clear`**, **`setError`**, **`silentSetValue`**. Pass it as **`binding:`** on fields so UI and domain state stay in sync; form wrappers also write back on save/reset when configured.
@@ -397,7 +465,7 @@ When the field is **mounted**, **`openPicker(context)`** (and async **`openPicke
 
 ---
 
-## Field states (`isDisabled`, `loading`, …)
+## Field states & label layout
 
 Shared by **`UnifiedBaseTextField`** and every field built on it:
 
@@ -407,9 +475,9 @@ Shared by **`UnifiedBaseTextField`** and every field built on it:
 | **`locked`** | Blocks interaction; distinct from disabled styling. |
 | **`loading`** | Small **suffix spinner** (replaces dropdown/chevron); field does **not** use full-field overlay or muted disabled colors. |
 | **`interactionBlocked`** | Absorbs pointer events without disabled chrome—used for pick-only surfaces (date, async picker while idle). |
-| **`labelInRow`** | Label and body share **one** rounded border; a straight vertical divider separates them (no inner radius on the body edge). |
+| **`labelMode`** / **`labelInRow`** | **`UnifiedFieldLabelMode`**: `floatingLabel` (default), `labelInColumn`, or `labelInRow` (label + body in one bordered row with a vertical divider). Legacy `labelInRow: true` on decoration maps to row mode. |
 
-Async pickers set **`loading: true`** while **`itemProvider`** runs; date fields use **`interactionBlocked: true`** so the platform picker still opens without **`disabled: true`**.
+Async pickers set **`loading: true`** while **`itemProvider`** runs; date fields use **`interactionBlocked: true`** so the platform picker still opens without **`disabled: true`**. **`UnifiedPhoneField`** supports the same label modes plus optional **`height`** / **`width`**.
 
 ---
 
@@ -556,7 +624,9 @@ void main() {
 }
 ```
 
-By default only Shamsi UI uses Persian digits (`usePersianDigitsInShamsi: true`). Set `usePersianDigitsGlobally: true` to apply the font and digit mapping to every field (including `UnifiedBaseTextField`, numeric step fields, and duration wheels).
+By default only Shamsi UI uses Persian digits (`usePersianDigitsInShamsi: true`). Set `usePersianDigitsGlobally: true` to apply the font and digit mapping to every field (including `UnifiedBaseTextField`, numeric step fields, duration wheels, and **`UnifiedPhoneField`**).
+
+On the phone field, set **`usePersianDigits: true`** or **`digitCalendarKind: UnifiedFieldsCalendarKind.jalali`** to localize dial codes and national digits (input accepts ۰–۹). Use **`UnifiedCountry.localizedDialCode`** / **`UnifiedPhoneNumber.localizedDisplay`** outside the field.
 
 ---
 
@@ -588,6 +658,7 @@ A runnable example app lives in **`example/`** — open it with `flutter run` fr
 
 | Package | Role |
 |---------|------|
+| **`flutter_svg`** | Country flag SVGs in `UnifiedFlag` / phone field |
 | **`intl`** | Date/number formatting in date fields and picker |
 | **`shamsi_date`** | Jalali calendar conversion |
 | **`collection`** | Used by the **vendored** scrollable list implementation |
@@ -624,11 +695,13 @@ Current release: **`0.1.6`** (see **`pubspec.yaml`** and [pub.dev](https://pub.d
 
 ### Upgrading to 0.1.6
 
+- **`UnifiedPhoneField`**, **`UnifiedCountry`** enum, **`UnifiedFlag`**, and **`UnifiedCountryWidget`** — see [Phone](#phone-unifiedphonefield). Replace any `UnifiedPhoneCountry(...)` constructor with enum values (e.g. `UnifiedCountry.ir`; India: `UnifiedCountry.countryIN`). `UnifiedPhoneCountries` → **`UnifiedCountries`**.
 - Wrap your app (or a screen) in **`UnifiedInputThemeScope`** for global disabled/placeholder/required/validation colors, picker sheet background, header padding, and multi-picker checkbox styling — see [Global theme](#global-theme-unifiedinputthemescope).  
+- **`labelMode`** on fields (`floatingLabel`, `labelInColumn`, `labelInRow`); legacy decoration **`labelInRow: true`** still works.  
 - Replace **`context.isDesktop`** / **`context.width`** with **`context.unifiedFieldsUseDialogLayout`** / **`context.unifiedFieldsScreenWidth`** (old names are deprecated).  
 - **Duration wheels** default to `UnifiedFieldsDurationPickerStyle.wheels`; use **`pickerColumns`** for year/month/week-style columns.  
 - **`unifiedFormatDuration`** / **`unifiedTryParseDuration`** use **named** `granularity:` and optional `pickerColumns:` / `calendarKind:`.  
-- **Shamsi dates:** set **`initialCalendarKind: jalali`**; optional **`UnifiedFieldsTypography`** for Persian digits (KookFaNum font).
+- **Shamsi dates / phone:** set **`initialCalendarKind: jalali`** or **`usePersianDigits`** on the phone field; optional **`UnifiedFieldsTypography`** for app-wide Persian digits (KookFaNum font).
 
 ---
 
