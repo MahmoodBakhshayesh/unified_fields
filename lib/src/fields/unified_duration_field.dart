@@ -525,11 +525,11 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
           placeholder: widget.placeholder ?? d.placeholder ?? d.label,
           labelStyle: d.labelStyle,
           style: d.fieldStyle,
-          backgroundColor: d.backgroundColor ?? Colors.black26,
+          backgroundColor: d.backgroundColor,
           headerBackgroundColor:
-              d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26,
+          d.headerBackgroundColor ?? d.backgroundColor,
           borderRadius:
-              d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+              d.borderRadius,
           borderSide: d.borderSide,
           height: d.height,
           rowLabelRatio: d.rowLabelRatio,

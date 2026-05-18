@@ -44,3 +44,12 @@ UnifiedFieldDecorationContext resolveUnifiedFieldDecorationContext(
     composedSet: composed,
   );
 }
+
+/// Layout chrome from [resolveUnifiedFieldDecorationContext] for [UnifiedBaseTextField].
+///
+/// Omits hardcoded palette fallbacks so [UnifiedInputThemeData.fieldDefaults] apply.
+extension UnifiedResolvedFieldChrome on UnifiedInputDecoration {
+  /// Row label flex ratio when non-empty; otherwise defer to theme.
+  List<int>? get optionalRowLabelRatio =>
+      rowLabelRatio.isNotEmpty ? rowLabelRatio : null;
+}

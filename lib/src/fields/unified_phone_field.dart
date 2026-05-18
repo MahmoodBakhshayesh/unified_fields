@@ -641,7 +641,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     UnifiedInputPhoneStyle ps,
     String? error,
   ) {
-    final radius = d.borderRadius ?? const BorderRadius.all(Radius.circular(18));
+    final radius = d.borderRadius ?? palette.borderRadius;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -670,11 +670,11 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     final labelFlex = d.rowLabelRatio.isNotEmpty ? d.rowLabelRatio[0] : 12;
     final bodyFlex = d.rowLabelRatio.length > 1 ? d.rowLabelRatio[1] : 33;
     final h = _fieldHeight(d);
-    final radius = d.borderRadius ?? const BorderRadius.all(Radius.circular(18));
-    final divider = d.borderSide ??
-        const BorderSide(color: Color(0xff58514C), width: 0.5);
-    final headerBg = d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26;
-    final bodyBg = d.backgroundColor ?? Colors.black26;
+    final radius = d.borderRadius ?? palette.borderRadius;
+    final divider = d.borderSide ?? palette.defaultBorderSide;
+    final headerBg =
+        d.headerBackgroundColor ?? d.backgroundColor ?? palette.headerBackground;
+    final bodyBg = d.backgroundColor ?? palette.bodyBackground;
 
     return Container(
       decoration: BoxDecoration(
@@ -725,7 +725,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     String? error,
   ) {
     final h = _fieldHeight(d);
-    final radius = d.borderRadius ?? const BorderRadius.all(Radius.circular(18));
+    final radius = d.borderRadius ?? palette.borderRadius;
     return InputDecorator(
       decoration: InputDecoration(
         labelText: d.label,
@@ -759,10 +759,15 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     );
   }
 
-  UnifiedInputDecoration _resolvedDecoration(UnifiedInputDecoration d) {
-    final mode = widget.labelMode ??
-        d.labelMode ??
-        resolveUnifiedFieldLabelMode(labelInRow: d.labelInRow);
+  UnifiedInputDecoration _resolvedDecoration(
+    BuildContext context,
+    UnifiedInputDecoration d,
+  ) {
+    final mode = resolveUnifiedFieldLabelMode(
+      mode: widget.labelMode ?? d.labelMode,
+      labelInRow: d.labelInRow,
+      themeMode: UnifiedInputThemeResolver.fieldLabelMode(context),
+    );
     final useRow = mode == UnifiedFieldLabelMode.labelInRow;
     return UnifiedInputDecoration(
       label: widget.label ?? d.label,
@@ -824,7 +829,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
         fieldDecoration: widget.decoration,
       );
     }
-    final d = _resolvedDecoration(paletteDec);
+    final d = _resolvedDecoration(context, paletteDec);
     final mode = d.labelMode ?? UnifiedFieldLabelMode.floatingLabel;
 
     final Widget field = switch (mode) {

@@ -304,6 +304,7 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
     );
     final dec = chrome.resolved;
     final readOnly = widget.locked || _inactive || !widget.allowFreeText;
+    final canType = widget.allowFreeText && !readOnly;
 
     final palette = UnifiedInputThemeResolver.resolvePalette(context);
     final Widget? suffix = widget.locked || _inactive || _loading
@@ -316,14 +317,12 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
                 onPressed: _open,
               ));
 
-    return GestureDetector(
-      onTap: widget.locked || _inactive || _loading ? null : _open,
-      child: UnifiedBaseTextField(
+    final field = UnifiedBaseTextField(
         decorationSet: chrome.activeSet,
         brightness: widget.brightness,
         controller: _txt,
         readOnly: readOnly,
-        interactionBlocked: true,
+        interactionBlocked: !canType,
         loading: _loading,
         focusNode: widget.pickerController.focusNode,
         errorText: widget.pickerController.errorText,
@@ -334,11 +333,11 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
         placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
         labelStyle: dec.labelStyle,
         style: dec.fieldStyle,
-        backgroundColor: dec.backgroundColor ?? Colors.black26,
+        backgroundColor: dec.backgroundColor,
         headerBackgroundColor:
-            dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
+          dec.headerBackgroundColor ?? dec.backgroundColor,
         borderRadius:
-            dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+            dec.borderRadius,
         borderSide: dec.borderSide,
         height: dec.height,
         rowLabelRatio: dec.rowLabelRatio,
@@ -353,7 +352,13 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
         suffixIcon: suffix,
         padding: dec.contentPadding,
         validator: widget.validator,
-      ),
+      );
+
+    if (canType) return field;
+
+    return GestureDetector(
+      onTap: widget.locked || _inactive || _loading ? null : _open,
+      child: field,
     );
   }
 }
@@ -650,6 +655,7 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
     );
     final dec = chrome.resolved;
     final readOnly = widget.locked || _inactive || !widget.allowFreeText;
+    final canType = widget.allowFreeText && !readOnly;
 
     final palette = UnifiedInputThemeResolver.resolvePalette(context);
     final Widget? suffix = widget.locked || _inactive || _loading
@@ -662,14 +668,12 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
                 onPressed: _open,
               ));
 
-    return GestureDetector(
-      onTap: widget.locked || _inactive || _loading ? null : _open,
-      child: UnifiedBaseTextField(
+    final field = UnifiedBaseTextField(
         decorationSet: chrome.activeSet,
         brightness: widget.brightness,
         controller: _txt,
         readOnly: readOnly,
-        interactionBlocked: true,
+        interactionBlocked: !canType,
         loading: _loading,
         focusNode: widget.pickerController.focusNode,
         errorText: widget.pickerController.errorText,
@@ -680,11 +684,11 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
         placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
         labelStyle: dec.labelStyle,
         style: dec.fieldStyle,
-        backgroundColor: dec.backgroundColor ?? Colors.black26,
+        backgroundColor: dec.backgroundColor,
         headerBackgroundColor:
-            dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
+          dec.headerBackgroundColor ?? dec.backgroundColor,
         borderRadius:
-            dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+            dec.borderRadius,
         borderSide: dec.borderSide,
         height: dec.height,
         rowLabelRatio: dec.rowLabelRatio,
@@ -699,7 +703,13 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
         suffixIcon: suffix,
         padding: dec.contentPadding,
         validator: widget.validator,
-      ),
+      );
+
+    if (canType) return field;
+
+    return GestureDetector(
+      onTap: widget.locked || _inactive || _loading ? null : _open,
+      child: field,
     );
   }
 }

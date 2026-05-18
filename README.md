@@ -35,7 +35,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.1.9
+  unified_fields: ^0.2.0
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -81,7 +81,7 @@ dependencies:
 | **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind`, `UnifiedFieldsDatePickerStyle` | Single date or range; calendar grid or scroll wheels; Gregorian vs Jalali |
 | **Time** | `UnifiedTimeOfDayField`, `showUnifiedFieldsTimePicker`, `UnifiedFieldsTimePickerStyle`, `UnifiedFieldsTimeGranularity`, `TimePickerUtils.show` | Material dial (default) or H:M:S wheels with Shamsi digit toggle |
 | **Duration** | `UnifiedDurationField`, `showUnifiedFieldsDurationPicker`, `UnifiedFieldsDurationColumn`, `UnifiedFieldsDurationColumnPresets`, `UnifiedDurationGranularity`, `UnifiedFieldsDurationPickerStyle` | Wheel picker with fixed granularity or custom column order (year · week · day · hour, …) |
-| **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedFieldLabelMode`, `UnifiedInputDecoration`, `UnifiedInputDecorationSet`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPhoneStyle`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, per-state borders/fills, phone/dial chrome, global theme scope, picker headers, aligned suffix icons |
+| **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedFieldLabelMode`, `UnifiedInputDecoration`, `UnifiedInputDecorationSet`, `UnifiedInputFieldDefaults`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPhoneStyle`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, per-state borders/fills, theme field defaults, phone/dial chrome, global theme scope, picker headers, aligned suffix icons |
 | **Controllers** | `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, `UnifiedAsyncPickerFieldController`, `UnifiedDateFieldController`, `UnifiedTimeOfDayFieldController`, `UnifiedDurationFieldController`, `UnifiedNumberFieldController`, `UnifiedPhoneFieldController`, `UnifiedFormController` | Listenable value + validation + imperative `openPicker` / `requestFocus` |
 | **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsTypography`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedPickerDefaultGridDelegate`, `showUnifiedSinglePickerSheet`, `showUnifiedMultiPickerSheet`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, Persian digits, picker grid helpers, layout helpers, default colors, sheet actions |
 | **Demo** | `UnifiedInputsShowcasePage` | Scrollable gallery of widgets + palette toggle |
@@ -658,9 +658,28 @@ UnifiedInputThemeScope(
 | `pickerHeaderStyle` | `UnifiedInputPickerHeaderStyle`: header `padding`, `backgroundColor`, `titleStyle`, `clearButtonColor` |
 | `multiPickerCheckboxStyle` | `UnifiedInputMultiPickerCheckboxStyle`: `size`, `borderRadius`, `fillColor`, `checkColor`, `borderColor` |
 | `fieldDecorationSet` | Default per-state layers (`focused`, `error`, `disabled`, …) for all fields in the scope |
+| `fieldDefaults` | Default [UnifiedBaseTextField] layout/behavior: `labelMode`, `height`, `borderRadius`, `showClearButton`, `autovalidateMode`, … |
 | `defaultSuffixIcons` | Default suffix per field type (`date`, `time`, `duration`, `picker`, …) |
 
-Field-level **`UnifiedInputDecoration`** / **`decorationSet`** and per-widget params still win for one-off overrides.
+Field-level **`UnifiedInputDecoration`** / **`decorationSet`** / **`fieldDefaults`** and per-widget params still win for one-off overrides.
+
+```dart
+UnifiedInputThemeScope(
+  data: UnifiedInputThemeData(
+    fieldDefaults: const UnifiedInputFieldDefaults(
+      labelMode: UnifiedFieldLabelMode.labelInColumn,
+      height: 52,
+      showClearButton: true,
+    ),
+    fieldDecorationSet: UnifiedInputDecorationSet(
+      focused: UnifiedInputDecoration(
+        borderSide: BorderSide(color: Colors.blue, width: 1.5),
+      ),
+    ),
+  ),
+  child: myForm,
+)
+```
 
 Live demos: **`example/lib/main.dart`** (app + nested card) and **`UnifiedInputsShowcasePage`** (scoped block near the top of the gallery).
 
@@ -747,7 +766,12 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.1.9`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.2.0`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+
+### Upgrading to 0.2.0
+
+- **Theme field defaults** — set **`UnifiedInputThemeData.fieldDefaults`** (`labelMode`, `height`, borders, `showClearButton`, `autovalidateMode`, …). See [Global theme](#global-theme-unifiedinputthemescope).
+- **`UnifiedBaseTextField`** — some params are nullable and inherit from theme; **`isValid(context)`** now needs a **`BuildContext`**.
 
 ### Upgrading to 0.1.9
 

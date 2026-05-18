@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
+import 'unified_input_field_defaults.dart';
 import 'unified_input_palette.dart';
 import '../phone/unified_input_phone_style.dart';
 import 'unified_picker_sheet_style.dart';
@@ -72,6 +73,7 @@ class UnifiedInputThemeData {
     this.defaultSuffixIcons,
     this.phoneStyle,
     this.fieldDecorationSet,
+    this.fieldDefaults,
   });
 
   /// When non-null, replaces inferred brightness from [Theme.of(context)].
@@ -164,6 +166,9 @@ class UnifiedInputThemeData {
   /// Default per-state field decorations for the whole subtree (merged under each field).
   final UnifiedInputDecorationSet? fieldDecorationSet;
 
+  /// Default [UnifiedBaseTextField] layout and behavior (`labelMode`, `height`, borders, …).
+  final UnifiedInputFieldDefaults? fieldDefaults;
+
   /// Returns a copy with the given fields replaced.
   UnifiedInputThemeData merge(UnifiedInputThemeData? other) {
     if (other == null) return this;
@@ -202,6 +207,7 @@ class UnifiedInputThemeData {
       defaultSuffixIcons: other.defaultSuffixIcons ?? defaultSuffixIcons,
       phoneStyle: other.phoneStyle ?? phoneStyle,
       fieldDecorationSet: other.fieldDecorationSet ?? fieldDecorationSet,
+      fieldDefaults: other.fieldDefaults ?? fieldDefaults,
     );
   }
 }

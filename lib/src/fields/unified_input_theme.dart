@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'unified_field_label_mode.dart';
 import 'unified_input_brightness.dart';
+import 'unified_input_field_defaults.dart';
 import 'unified_input_palette.dart';
 import '../phone/unified_input_phone_style.dart';
 import 'unified_input_theme_data.dart';
 import 'unified_picker_sheet_style.dart';
 import 'unified_suffix_icon.dart';
 
+export 'unified_input_field_defaults.dart';
 export 'unified_input_theme_data.dart';
 export 'unified_picker_sheet_chrome.dart';
 export 'unified_picker_sheet_style.dart';
@@ -319,5 +322,40 @@ class UnifiedInputThemeResolver {
     BuildContext context,
   ) =>
       _checkboxStyle(context);
+
+  static UnifiedInputFieldDefaults? _fieldDefaults(BuildContext context) =>
+      _theme(context).fieldDefaults;
+
+  /// Effective [UnifiedFieldLabelMode] when the field does not set [labelMode].
+  static UnifiedFieldLabelMode? fieldLabelMode(BuildContext context) =>
+      _fieldDefaults(context)?.labelMode;
+
+  /// Effective show-clear suffix when the field leaves [UnifiedBaseTextField.showClearButton] null.
+  static bool fieldShowClearButton(BuildContext context, {bool? field}) =>
+      field ?? _fieldDefaults(context)?.showClearButton ?? false;
+
+  /// Effective inline error strip when [UnifiedBaseTextField.showError] is null.
+  static bool fieldShowError(BuildContext context, {bool? field}) =>
+      field ?? _fieldDefaults(context)?.showError ?? true;
+
+  /// Effective reset-on-lock when [UnifiedBaseTextField.resetTextWhenLocked] is null.
+  static bool fieldResetTextWhenLocked(BuildContext context, {bool? field}) =>
+      field ?? _fieldDefaults(context)?.resetTextWhenLocked ?? true;
+
+  /// Effective autovalidate when [UnifiedBaseTextField.autovalidateMode] is null.
+  static AutovalidateMode fieldAutovalidateMode(
+    BuildContext context, {
+    AutovalidateMode? field,
+  }) =>
+      field ?? _fieldDefaults(context)?.autovalidateMode ?? AutovalidateMode.always;
+
+  /// Effective bidirectional typing when the field leaves the flag null.
+  static bool fieldMustResolveTextDirectionByInput(
+    BuildContext context, {
+    bool? field,
+  }) =>
+      field ??
+      _fieldDefaults(context)?.mustResolveTextDirectionByInput ??
+      false;
 }
 

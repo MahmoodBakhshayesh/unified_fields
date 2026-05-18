@@ -5,6 +5,7 @@ import 'unified_numeric_step_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
+import 'unified_input_theme.dart';
 
 /// Number field using [UnifiedNumericStepField] with [UnifiedInputDecoration] colors / typography.
 ///
@@ -117,6 +118,7 @@ class UnifiedNumberField extends StatelessWidget {
       brightness: brightness,
     );
     final d = chrome.resolved;
+    final palette = UnifiedInputThemeResolver.resolvePalette(context);
 
     return UnifiedNumericStepField(
       decorationSet: chrome.activeSet,
@@ -128,12 +130,9 @@ class UnifiedNumberField extends StatelessWidget {
       placeholder: placeholder ?? d.placeholder,
       labelStyle: d.labelStyle,
       padding: d.contentPadding,
-      borderRadius:
-          d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
-      borderSide:
-          d.borderSide ??
-          const BorderSide(color: Color(0xff58514C), width: 0.5),
-      backgroundColor: d.backgroundColor ?? Colors.black26,
+      borderRadius: d.borderRadius ?? palette.borderRadius,
+      borderSide: d.borderSide ?? palette.defaultBorderSide,
+      backgroundColor: d.backgroundColor ?? palette.bodyBackground,
       headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor,
       height: d.height,
       style: d.fieldStyle,

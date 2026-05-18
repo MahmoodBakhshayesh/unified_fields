@@ -316,13 +316,13 @@ class _UnifiedSinglePickerFieldState<T>
           placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
           labelStyle: dec.labelStyle,
           style: dec.fieldStyle,
-          backgroundColor: dec.backgroundColor ?? Colors.black26,
+          backgroundColor: dec.backgroundColor,
           headerBackgroundColor:
               dec.headerBackgroundColor ??
               dec.backgroundColor ??
               Colors.black26,
           borderRadius:
-              dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+              dec.borderRadius,
           borderSide: dec.borderSide,
           height: dec.height,
           rowLabelRatio: dec.rowLabelRatio,
@@ -666,13 +666,13 @@ class _UnifiedMultiPickerFieldState<T>
           placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
           labelStyle: dec.labelStyle,
           style: dec.fieldStyle,
-          backgroundColor: dec.backgroundColor ?? Colors.black26,
+          backgroundColor: dec.backgroundColor,
           headerBackgroundColor:
               dec.headerBackgroundColor ??
               dec.backgroundColor ??
               Colors.black26,
           borderRadius:
-              dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+              dec.borderRadius,
           borderSide: dec.borderSide,
           height: dec.height,
           rowLabelRatio: dec.rowLabelRatio,

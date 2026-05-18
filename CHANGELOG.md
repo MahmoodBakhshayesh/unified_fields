@@ -1,3 +1,18 @@
+## 0.2.0
+
+### Features
+
+* **`UnifiedInputFieldDefaults`** — set [UnifiedBaseTextField] layout and behavior on [UnifiedInputThemeData.fieldDefaults]: `labelMode`, `rowLabelRatio`, `height`, `borderRadius`, `borderSide`, `showError`, `showClearButton`, `resetTextWhenLocked`, `autovalidateMode`, `contentPadding`, `mustResolveTextDirectionByInput`, and related colors. Merged into [resolveUnifiedDecoration] before field overrides. Field-level params still win; `null` on [UnifiedBaseTextField] defers to theme.
+
+### Breaking changes
+
+* **[UnifiedBaseTextField]** — several constructor params are now nullable and defer to theme / palette when omitted (`backgroundColor`, `borderRadius`, `borderSide`, `height`, `labelInRow`, `showError`, `showClearButton`, `resetTextWhenLocked`, `mustResolveTextDirectionByInput`). [UnifiedBaseTextFieldState.isValid] now requires a [BuildContext] argument.
+
+### Fixes
+
+* **Customizable picker fields** — when `allowFreeText` is true (default), tapping the field focuses the text input for typing; the picker opens only via the suffix icon. Tap-to-open on the whole field applies when `allowFreeText` is false.
+* **`fieldDefaults`** — `borderRadius`, `labelMode` / label-in-row layout, and other chrome now apply on [UnifiedTextField], [UnifiedFormTextField], and fields using [UnifiedBaseTextField] (including when `decorationSet` is set). Removed hardcoded `18` radius / `Colors.black26` overrides on wrappers that blocked theme values.
+
 ## 0.1.9
 
 ### Features

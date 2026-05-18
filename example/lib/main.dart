@@ -7,15 +7,18 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     UnifiedInputThemeScope(
-      data: const UnifiedInputThemeData(
-        requiredIconColor: Color(0xFF1565C0),
+      data: UnifiedInputThemeData(
+        requiredIconColor: const Color(0xFF1565C0),
         requiredIconSize: 9,
-        validationColor: Color(0xFFD32F2F),
+        validationColor: const Color(0xFFD32F2F),
         disabledFieldOpacity: 0.38,
-
+        fieldDefaults: UnifiedInputFieldDefaults(
+          labelMode: UnifiedFieldLabelMode.labelInRow,
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+        ),
         placeholderOpacityWhenDisabled: 0.38,
-        pickerSheetBackgroundColor: Color(0xFFF5F7FA),
-        defaultSuffixIcons: UnifiedInputDefaultSuffixIcons(
+        pickerSheetBackgroundColor: const Color(0xFFF5F7FA),
+        defaultSuffixIcons: const UnifiedInputDefaultSuffixIcons(
           date: Icons.calendar_month_outlined,
           time: Icons.access_time,
           duration: Icons.timelapse_outlined,
@@ -268,6 +271,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     ),
                     placeholder: 'e.g. Ada Lovelace',
                     isRequired: true,
+
                     binding: _name,
                     fieldController: _nameC,
                     // locked: true,
@@ -443,6 +447,9 @@ class _ThemeScopeDemoCard extends StatelessWidget {
               data: const UnifiedInputThemeData(
                 requiredIconColor: Color(0xFFE65100),
                 requiredIconSize: 11,
+                fieldDefaults: UnifiedInputFieldDefaults(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(2))
+                ),
                 validationColor: Color(0xFF6A1B9A),
                 disabledFieldColor: Color(0xFF757575),
                 disabledFieldOpacity: 0.5,
@@ -452,6 +459,7 @@ class _ThemeScopeDemoCard extends StatelessWidget {
                 children: [
                   UnifiedTextField(
                     label: 'Nested scope (orange *)',
+
                     isRequired: true,
                     initialValue: 'Overrides required icon only',
                   ),

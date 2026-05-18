@@ -10,12 +10,14 @@ enum UnifiedFieldLabelMode {
   floatingLabel,
 }
 
-/// Resolves [UnifiedFieldLabelMode] from explicit [mode] or legacy [labelInRow].
+/// Resolves [UnifiedFieldLabelMode] from explicit [mode], [themeMode], or legacy [labelInRow].
 UnifiedFieldLabelMode resolveUnifiedFieldLabelMode({
   UnifiedFieldLabelMode? mode,
   bool labelInRow = false,
+  UnifiedFieldLabelMode? themeMode,
 }) {
   if (mode != null) return mode;
+  if (themeMode != null) return themeMode;
   if (labelInRow) return UnifiedFieldLabelMode.labelInRow;
   return UnifiedFieldLabelMode.floatingLabel;
 }

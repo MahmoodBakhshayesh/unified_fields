@@ -289,6 +289,7 @@ class _UnifiedCustomizablePickerFieldState<T>
     );
     final dec = chrome.resolved;
     final readOnly = widget.locked || _inactive || !widget.allowFreeText;
+    final canType = widget.allowFreeText && !readOnly;
 
     final palette = UnifiedInputThemeResolver.resolvePalette(context);
     final suffix = widget.locked || _inactive
@@ -305,7 +306,7 @@ class _UnifiedCustomizablePickerFieldState<T>
       brightness: widget.brightness,
       controller: _txt,
       readOnly: readOnly,
-      interactionBlocked: true,
+      interactionBlocked: !canType,
       focusNode: widget.pickerController.focusNode,
       errorText: widget.pickerController.errorText,
       isDisabled: _inactive,
@@ -315,11 +316,11 @@ class _UnifiedCustomizablePickerFieldState<T>
       placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
       labelStyle: dec.labelStyle,
       style: dec.fieldStyle,
-      backgroundColor: dec.backgroundColor ?? Colors.black26,
+      backgroundColor: dec.backgroundColor,
       headerBackgroundColor:
-          dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
+          dec.headerBackgroundColor ?? dec.backgroundColor,
       borderRadius:
-          dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+          dec.borderRadius,
       borderSide: dec.borderSide,
       height: dec.height,
       rowLabelRatio: dec.rowLabelRatio,
@@ -335,6 +336,8 @@ class _UnifiedCustomizablePickerFieldState<T>
       padding: dec.contentPadding,
       validator: widget.validator,
     );
+
+    if (canType) return field;
 
     return GestureDetector(
       onTap: widget.locked || _inactive ? null : () => _open(context),
@@ -620,6 +623,7 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
     );
     final dec = chrome.resolved;
     final readOnly = widget.locked || _inactive || !widget.allowFreeText;
+    final canType = widget.allowFreeText && !readOnly;
 
     final palette = UnifiedInputThemeResolver.resolvePalette(context);
     final suffix = widget.locked || _inactive
@@ -636,7 +640,7 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
       brightness: widget.brightness,
       controller: _txt,
       readOnly: readOnly,
-      interactionBlocked: true,
+      interactionBlocked: !canType,
       focusNode: widget.pickerController.focusNode,
       errorText: widget.pickerController.errorText,
       isDisabled: _inactive,
@@ -646,11 +650,11 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
       placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
       labelStyle: dec.labelStyle,
       style: dec.fieldStyle,
-      backgroundColor: dec.backgroundColor ?? Colors.black26,
+      backgroundColor: dec.backgroundColor,
       headerBackgroundColor:
-          dec.headerBackgroundColor ?? dec.backgroundColor ?? Colors.black26,
+          dec.headerBackgroundColor ?? dec.backgroundColor,
       borderRadius:
-          dec.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+          dec.borderRadius,
       borderSide: dec.borderSide,
       height: dec.height,
       rowLabelRatio: dec.rowLabelRatio,
@@ -666,6 +670,8 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
       padding: dec.contentPadding,
       validator: widget.validator,
     );
+
+    if (canType) return field;
 
     return GestureDetector(
       onTap: widget.locked || _inactive ? null : () => _open(context),

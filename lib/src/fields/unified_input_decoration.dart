@@ -110,8 +110,10 @@ class UnifiedInputDecoration {
       borderRadius: other.borderRadius ?? borderRadius,
       borderSide: other.borderSide ?? borderSide,
       height: other.height ?? height,
-      rowLabelRatio: other.rowLabelRatio,
-      labelInRow: other.labelInRow,
+      rowLabelRatio: other.rowLabelRatio.isNotEmpty
+          ? other.rowLabelRatio
+          : rowLabelRatio,
+      labelInRow: other.labelInRow || labelInRow,
       labelMode: other.labelMode ?? labelMode,
       requiredField: other.requiredField,
       showError: other.showError,
@@ -166,7 +168,12 @@ UnifiedInputDecoration resolveUnifiedDecoration(
   final palette = brightness != null
       ? UnifiedInputThemeResolver.paletteFor(brightness)
       : UnifiedInputThemeResolver.resolvePalette(context);
-  return const UnifiedInputDecoration().merge(overrides).applyPalette(palette);
+  final themeDefaults =
+      UnifiedInputThemeScope.themeDataOf(context).fieldDefaults;
+  return const UnifiedInputDecoration()
+      .merge(themeDefaults?.toDecoration())
+      .merge(overrides)
+      .applyPalette(palette);
 }
 
 /// Visual state used to pick a layer from [UnifiedInputDecorationSet].
@@ -299,7 +306,10 @@ class UnifiedInputDecorationSet {
     final palette = brightness != null
         ? UnifiedInputThemeResolver.paletteFor(brightness)
         : UnifiedInputThemeResolver.resolvePalette(context);
+    final themeDefaults =
+        UnifiedInputThemeScope.themeDataOf(context).fieldDefaults;
     var merged = const UnifiedInputDecoration()
+        .merge(themeDefaults?.toDecoration())
         .merge(base)
         .merge(fieldDecoration);
     final overlay = layerFor(state);
@@ -338,8 +348,13 @@ UnifiedInputDecorationSet composeFieldDecorationSet(
 }) {
   final themeSet =
       UnifiedInputThemeScope.themeDataOf(context).fieldDecorationSet;
+  final themeDefaults =
+      UnifiedInputThemeScope.themeDataOf(context).fieldDefaults;
+  final baseDecoration = const UnifiedInputDecoration()
+      .merge(themeDefaults?.toDecoration())
+      .merge(decoration);
   return const UnifiedInputDecorationSet()
       .merge(themeSet)
-      .merge(UnifiedInputDecorationSet(base: decoration))
+      .merge(UnifiedInputDecorationSet(base: baseDecoration))
       .merge(decorationSet);
 }

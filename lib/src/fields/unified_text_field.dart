@@ -36,13 +36,13 @@ class UnifiedTextField extends StatefulWidget {
     this.minLines,
     this.maxLength,
     this.obscureText = false,
-    this.showClearButton = false,
+    this.showClearButton,
     this.textCapitalization = TextCapitalization.none,
     this.textAlign = TextAlign.start,
     this.initialValue,
     this.placeholder,
     this.label,
-    this.mustResolveTextDirectionByInput = false,
+    this.mustResolveTextDirectionByInput,
     this.isPassword = false,
     this.isRequired = false,
   });
@@ -114,8 +114,8 @@ class UnifiedTextField extends StatefulWidget {
   /// Render entered text as obscured (alias for [isPassword]).
   final bool obscureText;
 
-  /// Show an "x" suffix to clear the field when it has content.
-  final bool showClearButton;
+  /// Show an "x" suffix to clear the field when it has content (`null` → theme).
+  final bool? showClearButton;
 
   /// Capitalization rule applied to typed text.
   final TextCapitalization textCapitalization;
@@ -132,8 +132,8 @@ class UnifiedTextField extends StatefulWidget {
   /// Field label.
   final String? label;
 
-  /// If true, the text direction is inferred from the typed content.
-  final bool mustResolveTextDirectionByInput;
+  /// If true, the text direction is inferred from the typed content (`null` → theme).
+  final bool? mustResolveTextDirectionByInput;
 
   /// When true, the field obscures content and adds a visibility toggle.
   final bool isPassword;
@@ -294,15 +294,12 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       placeholder: widget.placeholder ?? d.placeholder,
       labelStyle: d.labelStyle,
       style: d.fieldStyle,
-      backgroundColor: d.backgroundColor ?? Colors.black26,
-      headerBackgroundColor:
-          d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26,
-      borderRadius:
-          d.borderRadius ?? const BorderRadius.all(Radius.circular(18)),
+      backgroundColor: d.backgroundColor,
+      headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor,
+      borderRadius: d.borderRadius,
       borderSide: d.borderSide,
       height: d.height,
-      rowLabelRatio: d.rowLabelRatio,
-      labelInRow: d.labelInRow,
+      rowLabelRatio: d.rowLabelRatio.isNotEmpty ? d.rowLabelRatio : null,
       labelMode: d.labelMode,
       requiredField: widget.isRequired,
       showError: d.showError,
