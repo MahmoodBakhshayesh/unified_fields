@@ -1,7 +1,19 @@
+## 0.2.5
+
+### Fixes
+
+* **`textStyle` on [UnifiedPhoneField]** — respects [UnifiedInputFieldDefaults.textStyle] / `textStylePersian` from theme (placeholders and dial code included). Persian mode merges `textStyle` with `textStylePersian` instead of using only the Persian style. Optional per-field `style` override.
+* **`textStyle` on [UnifiedDateField] / [UnifiedDateRangeField]** — no longer hardcodes `TextStyle(fontSize: 14)`; defers to theme via [UnifiedBaseTextField] and [UnifiedInputThemeResolver.fieldTextStyle]. [UnifiedDateField] passes `digitCalendarKind` for Jalali / Persian digit styling. Optional per-field `style`; [UnifiedDateRangeField] adds `initialCalendarKind` for digit/Persian resolution.
+
+### Features
+
+* **`style`** on [UnifiedPhoneField], [UnifiedDateField], and [UnifiedDateRangeField] — same precedence as [UnifiedBaseTextField.style] (wins over theme `textStyle` when set).
+
 ## 0.2.4
 
 ### Features
 
+* **`textStyle` / `textStylePersian`** on [UnifiedInputFieldDefaults] — default value [TextStyle] for field text; Persian variant used when Persian digits are active (`usePersianDigitsGlobally`, Jalali calendar, or field-level `usePersianDigits`). Resolved via [UnifiedInputThemeResolver.fieldTextStyle]; decoration / widget `style` still win.
 * **`placeholderStyle`** — optional [TextStyle] on [UnifiedInputDecoration], [UnifiedInputFieldDefaults], and [UnifiedBaseTextField]. Placeholders inherit `fontFamily`, `fontSize`, and other typography from `fieldStyle` / `style` by default, with theme hint color/opacity; explicit `placeholderStyle` overrides win.
 * **Per–label-mode chrome** — [UnifiedInputLabelModeStyle] on [UnifiedInputFieldDefaults] (`labelInRowStyle`, `labelInColumnStyle`, `floatingLabelStyle`) for `labelStyle` and `labelPadding` per [UnifiedFieldLabelMode]. Field-level `UnifiedInputDecoration.labelPadding` / [UnifiedBaseTextField.labelPadding] override theme.
 * **`selectTextOnFocus`** — on text and number fields (including form wrappers): when enabled, focusing a non-empty editable field selects all text so the next keystroke replaces the value. Set per widget or via [UnifiedInputFieldDefaults].

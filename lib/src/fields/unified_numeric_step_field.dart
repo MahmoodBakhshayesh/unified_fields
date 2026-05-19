@@ -610,6 +610,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     return UnifiedBaseTextField(
       decorationSet: widget.decorationSet,
       brightness: widget.brightness,
+      digitCalendarKind: widget.digitCalendarKind,
       label: widget.label,
       labelStyle: widget.labelStyle,
       placeholderStyle: widget.placeholderStyle,

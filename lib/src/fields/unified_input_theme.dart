@@ -8,6 +8,8 @@ import '../phone/unified_input_phone_style.dart';
 import 'unified_input_theme_data.dart';
 import 'unified_picker_sheet_style.dart';
 import 'unified_suffix_icon.dart';
+import '../unified_date_picker_types.dart';
+import '../unified_fields_typography.dart';
 
 export 'unified_input_field_defaults.dart';
 export 'unified_input_label_mode_style.dart';
@@ -423,5 +425,33 @@ class UnifiedInputThemeResolver {
   /// Effective select-all-on-focus when [UnifiedBaseTextField.selectTextOnFocus] is null.
   static bool fieldSelectTextOnFocus(BuildContext context, {bool? field}) =>
       field ?? _fieldDefaults(context)?.selectTextOnFocus ?? false;
+
+  /// Resolves the field value [TextStyle]: decoration → widget → theme
+  /// ([UnifiedInputFieldDefaults.textStyle] or [textStylePersian] when Persian digits apply).
+  static TextStyle? fieldTextStyle(
+    BuildContext context, {
+    UnifiedFieldsCalendarKind? calendarKind,
+    bool? usePersianDigits,
+    TextStyle? decorationStyle,
+    TextStyle? widgetStyle,
+  }) {
+    final fd = _fieldDefaults(context);
+    final typography = UnifiedFieldsTypography.instance;
+    final persian = usePersianDigits ??
+        typography.shouldUsePersianDigits(calendarKind: calendarKind);
+    final TextStyle? themeStyle;
+    if (persian) {
+      final base = fd?.textStyle;
+      final override = fd?.textStylePersian;
+      if (base != null && override != null) {
+        themeStyle = base.merge(override);
+      } else {
+        themeStyle = override ?? base;
+      }
+    } else {
+      themeStyle = fd?.textStyle;
+    }
+    return decorationStyle ?? widgetStyle ?? themeStyle;
+  }
 }
 

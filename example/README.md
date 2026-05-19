@@ -49,16 +49,22 @@ UnifiedInputThemeScope(
 
 See the root [README](../README.md#global-theme-unifiedinputthemescope) for the full option list.
 
-## 0.2.4 field defaults (in `main.dart`)
+## 0.2.5 field defaults (in `main.dart`)
 
 The app-wide `fieldDefaults` demonstrate:
 
+- **`textStyle` / `textStylePersian`** — shared value typography on text, number, **phone**, and **date** fields
 - **`placeholderStyle`** — theme-wide hint typography
 - **`labelInRowStyle` / `labelInColumnStyle`** — per–label-mode `labelStyle` and `labelPadding`
 - **`selectTextOnFocus: true`** — tap the **Quantity** `UnifiedNumberField` (starts at `42`); the value is selected so typing replaces it
 
 ```dart
 fieldDefaults: const UnifiedInputFieldDefaults(
+  textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
+  textStylePersian: TextStyle(
+    fontSize: 15,
+    fontFamily: UnifiedFieldsTypography.kUnifiedFieldsDefaultPersianFontFamily,
+  ),
   placeholderStyle: TextStyle(fontSize: 14),
   labelInRowStyle: UnifiedInputLabelModeStyle(
     labelPadding: EdgeInsets.symmetric(horizontal: 10),
@@ -68,7 +74,9 @@ fieldDefaults: const UnifiedInputFieldDefaults(
 ),
 ```
 
+Check **Phone** (`usePersianDigits: true`) and **Date** fields — they use the same theme `textStyle` as **Full name**.
+
 ## Package version
 
-This example tracks the parent package (**currently 0.2.4**). See the root
+This example tracks the parent package (**currently 0.2.5**). See the root
 [`CHANGELOG.md`](../CHANGELOG.md) for release notes.

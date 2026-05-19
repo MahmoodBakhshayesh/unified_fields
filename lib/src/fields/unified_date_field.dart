@@ -105,6 +105,7 @@ class UnifiedDateField extends StatefulWidget {
     this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
     this.wheelStyle,
     this.showWeekdayInWheel = true,
+    this.style,
   });
 
   /// Visual chrome.
@@ -205,6 +206,9 @@ class UnifiedDateField extends StatefulWidget {
 
   /// When [pickerStyle] is wheels, show weekday names in the day column.
   final bool showWeekdayInWheel;
+
+  /// Value text style; overrides theme [UnifiedInputFieldDefaults.textStyle] when set.
+  final TextStyle? style;
 
   @override
   State<UnifiedDateField> createState() => _UnifiedDateFieldState();
@@ -445,10 +449,8 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
         label: widget.label ?? d.label,
         placeholder: widget.placeholder ?? d.placeholder,
         placeholderStyle: d.placeholderStyle,
-        style: UnifiedFieldsTypography.instance.mergeDigitStyle(
-          d.fieldStyle ?? const TextStyle(fontSize: 14),
-          calendarKind: _effectiveCalendarKind,
-        ),
+        style: widget.style ?? d.fieldStyle,
+        digitCalendarKind: _effectiveCalendarKind,
         backgroundColor: bg,
         headerBackgroundColor: headerBg,
         borderRadius:
@@ -509,6 +511,8 @@ class UnifiedDateRangeField extends StatefulWidget {
     this.isRequired = false,
     this.isDisabled = false,
     this.locked = false,
+    this.style,
+    this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
   });
 
   /// Visual chrome.
@@ -564,6 +568,12 @@ class UnifiedDateRangeField extends StatefulWidget {
 
   /// When true, greys out the field and shows a lock suffix icon.
   final bool locked;
+
+  /// Value text style; overrides theme [UnifiedInputFieldDefaults.textStyle] when set.
+  final TextStyle? style;
+
+  /// Calendar kind for digit localization and Persian [textStylePersian].
+  final UnifiedFieldsCalendarKind initialCalendarKind;
 
   @override
   State<UnifiedDateRangeField> createState() => _UnifiedDateRangeFieldState();
@@ -703,7 +713,8 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
         label: widget.label ?? d.label,
         placeholder: widget.placeholder ?? d.placeholder,
         placeholderStyle: d.placeholderStyle,
-        style: d.fieldStyle ?? const TextStyle(fontSize: 14),
+        style: widget.style ?? d.fieldStyle,
+        digitCalendarKind: widget.initialCalendarKind,
         backgroundColor: bg,
         headerBackgroundColor: headerBg,
         borderRadius:

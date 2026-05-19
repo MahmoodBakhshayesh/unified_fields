@@ -9,11 +9,18 @@ void main() {
         requiredIconColor: const Color(0xFF1565C0),
         requiredIconSize: 9,
         validationColor: const Color(0xFFD32F2F),
+
         disabledFieldOpacity: 0.38,
         fieldDefaults: const UnifiedInputFieldDefaults(
+
           labelMode: UnifiedFieldLabelMode.labelInRow,
           borderRadius: BorderRadius.all(Radius.circular(8)),
-          placeholderStyle: TextStyle(fontSize: 14),
+          textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
+          textStylePersian: TextStyle(
+            fontSize: 15,
+            fontFamily: UnifiedFieldsTypography.kUnifiedFieldsDefaultPersianFontFamily,
+          ),
+          placeholderStyle: TextStyle(fontSize: 14,fontWeight: FontWeight.w500),
           labelInRowStyle: UnifiedInputLabelModeStyle(
             labelPadding: EdgeInsets.symmetric(horizontal: 10),
             labelStyle: TextStyle(
@@ -385,9 +392,9 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     // selectTextOnFocus: true is also set via fieldDefaults in main()
                     decoration: const UnifiedInputDecoration(
                       suffixIcon: Text('kg'),
-                      suffixWidth: 28,
                     ),
                     textAlign: TextAlign.start,
+
                   ),
                   const SizedBox(height: 12),
 

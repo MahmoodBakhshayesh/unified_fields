@@ -30,6 +30,8 @@ class UnifiedInputFieldDefaults {
     this.labelInColumnStyle,
     this.floatingLabelStyle,
     this.selectTextOnFocus,
+    this.textStyle,
+    this.textStylePersian,
   });
 
   /// Default label placement for fields that do not set [UnifiedBaseTextField.labelMode].
@@ -90,6 +92,12 @@ class UnifiedInputFieldDefaults {
   /// keystroke replaces the value.
   final bool? selectTextOnFocus;
 
+  /// Default value [TextStyle] for field text (applied when decoration / widget style omit `fieldStyle`).
+  final TextStyle? textStyle;
+
+  /// Value [TextStyle] when Persian digits are active; falls back to [textStyle].
+  final TextStyle? textStylePersian;
+
   /// Maps layout fields into [UnifiedInputDecoration] for palette merge.
   UnifiedInputDecoration toDecoration() {
     var merged = UnifiedInputDecoration(
@@ -135,6 +143,8 @@ class UnifiedInputFieldDefaults {
           mustResolveTextDirectionByInput,
       placeholderStyle: other.placeholderStyle ?? placeholderStyle,
       selectTextOnFocus: other.selectTextOnFocus ?? selectTextOnFocus,
+      textStyle: other.textStyle ?? textStyle,
+      textStylePersian: other.textStylePersian ?? textStylePersian,
     );
   }
 }

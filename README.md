@@ -35,7 +35,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.2.4
+  unified_fields: ^0.2.5
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -138,6 +138,17 @@ UnifiedTextField(
 ```
 
 ### Placeholder, label, and focus defaults (0.2.4+)
+
+**Value text style** — set on `UnifiedInputFieldDefaults` (or per field via `UnifiedInputDecoration.fieldStyle`, `UnifiedBaseTextField.style`, or `style` on phone/date fields):
+
+```dart
+fieldDefaults: const UnifiedInputFieldDefaults(
+  textStyle: TextStyle(fontSize: 16, color: Colors.black87),
+  textStylePersian: TextStyle(fontFamily: 'KookFaNum'),
+),
+```
+
+Applies to text/number fields, **`UnifiedPhoneField`**, **`UnifiedDateField`**, and **`UnifiedDateRangeField`**. When Persian digits are active (Jalali calendar, `usePersianDigits`, or global Persian mode), `textStylePersian` is **merged** onto `textStyle` (font family, weight, size, etc.).
 
 **Placeholder style** — set on decoration or theme; inherits field typography (`fontFamily`, `fontSize`, …) unless you override:
 
@@ -699,7 +710,7 @@ UnifiedInputThemeScope(
 | `pickerHeaderStyle` | `UnifiedInputPickerHeaderStyle`: header `padding`, `backgroundColor`, `titleStyle`, `clearButtonColor` |
 | `multiPickerCheckboxStyle` | `UnifiedInputMultiPickerCheckboxStyle`: `size`, `borderRadius`, `fillColor`, `checkColor`, `borderColor` |
 | `fieldDecorationSet` | Default per-state layers (`focused`, `error`, `disabled`, …) for all fields in the scope |
-| `fieldDefaults` | Default [UnifiedBaseTextField] layout/behavior: `labelMode`, `height`, `borderRadius`, `placeholderStyle`, per-mode `labelInRowStyle` / `labelInColumnStyle` / `floatingLabelStyle` (`labelStyle` + `labelPadding`), `selectTextOnFocus`, `showClearButton`, `autovalidateMode`, … |
+| `fieldDefaults` | Default [UnifiedBaseTextField] layout/behavior: `labelMode`, `height`, `borderRadius`, `textStyle` / `textStylePersian`, `placeholderStyle`, per-mode `labelInRowStyle` / `labelInColumnStyle` / `floatingLabelStyle`, `selectTextOnFocus`, `showClearButton`, `autovalidateMode`, … |
 | `defaultSuffixIcons` | Default suffix per field type (`date`, `time`, `duration`, `picker`, …) |
 
 Field-level **`UnifiedInputDecoration`** / **`decorationSet`** / **`fieldDefaults`** and per-widget params still win for one-off overrides.
@@ -710,6 +721,8 @@ UnifiedInputThemeScope(
     fieldDefaults: const UnifiedInputFieldDefaults(
       labelMode: UnifiedFieldLabelMode.labelInColumn,
       height: 52,
+      textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+      textStylePersian: TextStyle(fontSize: 16, fontFamily: 'KookFaNum'),
       placeholderStyle: TextStyle(fontSize: 15, color: Colors.grey),
       labelInColumnStyle: UnifiedInputLabelModeStyle(
         labelPadding: EdgeInsets.only(bottom: 6, top: 4),
@@ -812,7 +825,12 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.2.4`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.2.5`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+
+### Upgrading to 0.2.5
+
+* **`textStyle` / `textStylePersian`** — now apply to **`UnifiedPhoneField`**, **`UnifiedDateField`**, and **`UnifiedDateRangeField`** via `fieldDefaults` (no per-field hardcoded 14px on dates). Persian mode merges both styles; override one field with `style:` on the widget or `UnifiedInputDecoration.fieldStyle`.
+* **`UnifiedDateRangeField`** — optional `initialCalendarKind` for Jalali digit font / Persian value style when displaying ranges.
 
 ### Upgrading to 0.2.4
 

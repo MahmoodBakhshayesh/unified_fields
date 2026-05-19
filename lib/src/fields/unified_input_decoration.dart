@@ -159,7 +159,7 @@ class UnifiedInputDecoration {
             color: palette.labelColor,
           ),
       labelPadding: labelPadding,
-      fieldStyle: fieldStyle ?? TextStyle(color: palette.fieldTextColor),
+      fieldStyle: fieldStyle,
       placeholderStyle: placeholderStyle,
       backgroundColor: backgroundColor ?? palette.bodyBackground,
       headerBackgroundColor: headerBackgroundColor ?? palette.headerBackground,

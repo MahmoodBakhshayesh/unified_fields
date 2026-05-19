@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../unified_date_picker_types.dart';
 import '../unified_fields_typography.dart';
 import 'unified_field_label_mode.dart';
 import 'unified_input_brightness.dart';
@@ -80,6 +81,7 @@ class UnifiedBaseTextField extends StatefulWidget {
     this.mustResolveTextDirectionByInput,
     this.decorationSet,
     this.brightness,
+    this.digitCalendarKind,
   });
 
   /// External [TextEditingController]; if null one is created internally.
@@ -246,6 +248,9 @@ class UnifiedBaseTextField extends StatefulWidget {
 
   /// Brightness used when resolving [decorationSet] (and when [decorationSet] is null, ignored).
   final UnifiedInputBrightness? brightness;
+
+  /// Calendar kind for Persian digit / [UnifiedInputFieldDefaults.textStylePersian] selection.
+  final UnifiedFieldsCalendarKind? digitCalendarKind;
 
   @override
   State<UnifiedBaseTextField> createState() => UnifiedBaseTextFieldState();
@@ -704,7 +709,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec,
   ) {
     final base =
-        dec.fieldStyle ?? widget.style ?? TextStyle(color: palette.fieldTextColor);
+        _resolvedFieldTextStyle(dec) ?? TextStyle(color: palette.fieldTextColor);
     final textBase = base.color ?? palette.fieldTextColor;
     TextStyle resolved;
     if (_visuallyDisabled && _useLegacyDisabledChrome()) {
@@ -726,7 +731,10 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     } else {
       resolved = base;
     }
-    return UnifiedFieldsTypography.instance.mergeDigitStyle(resolved);
+    return UnifiedFieldsTypography.instance.mergeDigitStyle(
+      resolved,
+      calendarKind: widget.digitCalendarKind,
+    );
   }
 
   Color _effectiveBackgroundColor(
@@ -897,6 +905,14 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     );
   }
 
+  TextStyle? _resolvedFieldTextStyle(UnifiedInputDecoration dec) =>
+      UnifiedInputThemeResolver.fieldTextStyle(
+        context,
+        calendarKind: widget.digitCalendarKind,
+        decorationStyle: dec.fieldStyle,
+        widgetStyle: widget.style,
+      );
+
   TextStyle _placeholderStyle(
     UnifiedInputPalette palette,
     UnifiedInputDecoration dec,
@@ -905,7 +921,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       context,
       palette,
       disabled: _visuallyDisabled,
-      fieldStyle: dec.fieldStyle ?? widget.style,
+      fieldStyle: _resolvedFieldTextStyle(dec),
       placeholderOverride: dec.placeholderStyle ?? widget.placeholderStyle,
     );
   }

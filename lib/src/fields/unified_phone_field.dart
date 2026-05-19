@@ -61,6 +61,7 @@ class UnifiedPhoneField extends StatefulWidget {
     this.width,
     this.usePersianDigits,
     this.digitCalendarKind,
+    this.style,
   });
 
   /// Visual chrome.
@@ -155,6 +156,9 @@ class UnifiedPhoneField extends StatefulWidget {
 
   /// Jalali (`digitCalendarKind: jalali`) enables Persian digits unless [usePersianDigits] overrides.
   final UnifiedFieldsCalendarKind? digitCalendarKind;
+
+  /// Value text style; overrides theme [UnifiedInputFieldDefaults.textStyle] when set.
+  final TextStyle? style;
 
   @override
   State<UnifiedPhoneField> createState() => _UnifiedPhoneFieldState();
@@ -351,13 +355,26 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     super.dispose();
   }
 
+  TextStyle? _resolvedFieldTextStyle(UnifiedInputDecoration d) =>
+      UnifiedInputThemeResolver.fieldTextStyle(
+        context,
+        calendarKind: widget.digitCalendarKind,
+        usePersianDigits: _persianDigits,
+        decorationStyle: d.fieldStyle,
+        widgetStyle: widget.style,
+      );
+
   TextStyle _fieldTextStyle(
     UnifiedInputDecoration d,
     UnifiedInputPalette palette,
     UnifiedInputPhoneStyle ps, {
     bool dialCode = false,
   }) {
-    final base = d.fieldStyle ?? TextStyle(color: palette.fieldTextColor);
+    final resolved = _resolvedFieldTextStyle(d);
+    var base = resolved ?? TextStyle(color: palette.fieldTextColor);
+    if (resolved != null && base.color == null) {
+      base = base.copyWith(color: palette.fieldTextColor);
+    }
     if (dialCode && _dialCodeInvalid &&
         _invalidDisplay(ps) == UnifiedInvalidDialCodeDisplay.highlightText) {
       return base.copyWith(color: ps.invalidDialCodeTextColor);
@@ -546,7 +563,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
         context,
         palette,
         disabled: widget.disabled || widget.isDisabled,
-        fieldStyle: d.fieldStyle,
+        fieldStyle: _resolvedFieldTextStyle(d),
         placeholderOverride: d.placeholderStyle,
       ),
     );
