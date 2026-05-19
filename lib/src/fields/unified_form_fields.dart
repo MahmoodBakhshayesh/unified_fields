@@ -265,6 +265,7 @@ class UnifiedFormTextField extends StatefulWidget {
     this.locked = false,
     this.isDisabled = false,
     this.autofocus = false,
+    this.selectTextOnFocus,
     this.keyboardType,
     this.textInputAction,
     this.inputFormatters,
@@ -340,6 +341,9 @@ class UnifiedFormTextField extends StatefulWidget {
 
   /// Autofocus the field on first build.
   final bool autofocus;
+
+  /// When true, focuses selects all text so the next keystroke replaces it.
+  final bool? selectTextOnFocus;
 
   /// Keyboard type.
   final TextInputType? keyboardType;
@@ -574,6 +578,7 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
           placeholder: widget.placeholder ?? d.placeholder ?? d.label,
           labelStyle: d.labelStyle,
           style: d.fieldStyle,
+          placeholderStyle: d.placeholderStyle,
           backgroundColor: d.backgroundColor,
           headerBackgroundColor:
           d.headerBackgroundColor ?? d.backgroundColor,
@@ -598,6 +603,7 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
           readOnly: widget.readOnly,
           locked: widget.locked,
           autofocus: widget.autofocus,
+          selectTextOnFocus: widget.selectTextOnFocus,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction ?? TextInputAction.done,
           inputFormatters: widget.inputFormatters,

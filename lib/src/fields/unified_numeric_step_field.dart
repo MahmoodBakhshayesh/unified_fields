@@ -48,6 +48,7 @@ class UnifiedNumericStepField extends StatefulWidget {
     this.label,
     this.placeholder,
     this.labelStyle,
+    this.placeholderStyle,
     this.padding,
     this.borderRadius = const BorderRadius.all(Radius.circular(18)),
     this.borderSide = const BorderSide(color: Color(0xff58514C), width: 0.5),
@@ -64,6 +65,7 @@ class UnifiedNumericStepField extends StatefulWidget {
     this.readOnly = false,
     this.locked = false,
     this.autofocus = false,
+    this.selectTextOnFocus,
     this.textInputAction,
     this.validator,
     this.showError = true,
@@ -105,6 +107,9 @@ class UnifiedNumericStepField extends StatefulWidget {
 
   /// Override for the label text style.
   final TextStyle? labelStyle;
+
+  /// Placeholder / hint text style.
+  final TextStyle? placeholderStyle;
 
   /// Inner content padding.
   final EdgeInsetsGeometry? padding;
@@ -163,6 +168,9 @@ class UnifiedNumericStepField extends StatefulWidget {
 
   /// Autofocus the field on first build.
   final bool autofocus;
+
+  /// When true, focuses selects all text so the next keystroke replaces it.
+  final bool? selectTextOnFocus;
 
   /// Keyboard action button.
   final TextInputAction? textInputAction;
@@ -604,6 +612,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       brightness: widget.brightness,
       label: widget.label,
       labelStyle: widget.labelStyle,
+      placeholderStyle: widget.placeholderStyle,
       focusNode: _focusNode,
       controller: _effectiveController,
       errorText: widget.fieldController?.errorText,
@@ -625,6 +634,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       locked: widget.locked,
       readOnly: widget.readOnly,
       autofocus: widget.autofocus,
+      selectTextOnFocus: widget.selectTextOnFocus,
       textInputAction: widget.textInputAction ?? TextInputAction.done,
       requiredField: widget.requiredField,
       showError: widget.showError,

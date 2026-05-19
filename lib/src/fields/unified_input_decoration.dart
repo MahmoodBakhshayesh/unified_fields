@@ -19,8 +19,14 @@ class UnifiedInputDecoration {
   /// Override for the label text style.
   final TextStyle? labelStyle;
 
+  /// Override for label padding (layout depends on [labelMode]).
+  final EdgeInsetsGeometry? labelPadding;
+
   /// Override for the inner field text style.
   final TextStyle? fieldStyle;
+
+  /// Override for placeholder / hint text ([UnifiedBaseTextField.placeholder]).
+  final TextStyle? placeholderStyle;
 
   /// Field background color.
   final Color? backgroundColor;
@@ -83,7 +89,9 @@ class UnifiedInputDecoration {
     this.label,
     this.placeholder,
     this.labelStyle,
+    this.labelPadding,
     this.fieldStyle,
+    this.placeholderStyle,
     this.backgroundColor,
     this.headerBackgroundColor,
     this.borderRadius,
@@ -111,7 +119,9 @@ class UnifiedInputDecoration {
       label: other.label ?? label,
       placeholder: other.placeholder ?? placeholder,
       labelStyle: other.labelStyle ?? labelStyle,
+      labelPadding: other.labelPadding ?? labelPadding,
       fieldStyle: other.fieldStyle ?? fieldStyle,
+      placeholderStyle: other.placeholderStyle ?? placeholderStyle,
       backgroundColor: other.backgroundColor ?? backgroundColor,
       headerBackgroundColor:
           other.headerBackgroundColor ?? headerBackgroundColor,
@@ -148,7 +158,9 @@ class UnifiedInputDecoration {
             fontWeight: FontWeight.w400,
             color: palette.labelColor,
           ),
+      labelPadding: labelPadding,
       fieldStyle: fieldStyle ?? TextStyle(color: palette.fieldTextColor),
+      placeholderStyle: placeholderStyle,
       backgroundColor: backgroundColor ?? palette.bodyBackground,
       headerBackgroundColor: headerBackgroundColor ?? palette.headerBackground,
       borderRadius: borderRadius ?? palette.borderRadius,

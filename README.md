@@ -35,7 +35,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.2.3
+  unified_fields: ^0.2.4
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -92,7 +92,7 @@ dependencies:
 
 ### One visual language
 
-Fields share **`UnifiedInputDecoration`** (label, placeholder, radii, validation colors, prefix/suffix) and **`UnifiedInputBrightness`** (light / dark palette). For colors that should be the same on every field (disabled chrome, required `*`, validation red, picker sheet background), wrap your app or a screen in **`UnifiedInputThemeScope`** — see [Global theme](#global-theme-unifiedinputthemescope).
+Fields share **`UnifiedInputDecoration`** (label, placeholder, `labelStyle`, `fieldStyle`, `placeholderStyle`, radii, validation colors, prefix/suffix) and **`UnifiedInputBrightness`** (light / dark palette). For colors that should be the same on every field (disabled chrome, required `*`, validation red, picker sheet background), wrap your app or a screen in **`UnifiedInputThemeScope`** — see [Global theme](#global-theme-unifiedinputthemescope).
 
 ### Per-state decoration (`decorationSet`)
 
@@ -136,6 +136,47 @@ UnifiedTextField(
   isRequired: true,
 )
 ```
+
+### Placeholder, label, and focus defaults (0.2.4+)
+
+**Placeholder style** — set on decoration or theme; inherits field typography (`fontFamily`, `fontSize`, …) unless you override:
+
+```dart
+UnifiedTextField(
+  decoration: const UnifiedInputDecoration(
+    fieldStyle: TextStyle(fontFamily: 'Vazirmatn', fontSize: 16),
+    // placeholder uses Vazirmatn 16 + theme hint color
+    placeholderStyle: TextStyle(fontStyle: FontStyle.italic),
+  ),
+  placeholder: 'Search…',
+)
+```
+
+**Label style / padding per layout mode** — on `UnifiedInputFieldDefaults`:
+
+```dart
+fieldDefaults: const UnifiedInputFieldDefaults(
+  labelInRowStyle: UnifiedInputLabelModeStyle(
+    labelStyle: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+    labelPadding: EdgeInsets.symmetric(horizontal: 12),
+  ),
+  labelInColumnStyle: UnifiedInputLabelModeStyle(
+    labelPadding: EdgeInsets.only(top: 4, bottom: 6),
+  ),
+),
+```
+
+**Select all on focus** — useful for number fields; replace value on first keystroke:
+
+```dart
+UnifiedNumberField(
+  controller: quantityController, // e.g. text: '42'
+  selectTextOnFocus: true,
+  label: 'Quantity',
+)
+```
+
+Or app-wide: `UnifiedInputFieldDefaults(selectTextOnFocus: true)`.
 
 ### `UnifiedFormField<T>`
 
@@ -658,7 +699,7 @@ UnifiedInputThemeScope(
 | `pickerHeaderStyle` | `UnifiedInputPickerHeaderStyle`: header `padding`, `backgroundColor`, `titleStyle`, `clearButtonColor` |
 | `multiPickerCheckboxStyle` | `UnifiedInputMultiPickerCheckboxStyle`: `size`, `borderRadius`, `fillColor`, `checkColor`, `borderColor` |
 | `fieldDecorationSet` | Default per-state layers (`focused`, `error`, `disabled`, …) for all fields in the scope |
-| `fieldDefaults` | Default [UnifiedBaseTextField] layout/behavior: `labelMode`, `height`, `borderRadius`, `showClearButton`, `autovalidateMode`, … |
+| `fieldDefaults` | Default [UnifiedBaseTextField] layout/behavior: `labelMode`, `height`, `borderRadius`, `placeholderStyle`, per-mode `labelInRowStyle` / `labelInColumnStyle` / `floatingLabelStyle` (`labelStyle` + `labelPadding`), `selectTextOnFocus`, `showClearButton`, `autovalidateMode`, … |
 | `defaultSuffixIcons` | Default suffix per field type (`date`, `time`, `duration`, `picker`, …) |
 
 Field-level **`UnifiedInputDecoration`** / **`decorationSet`** / **`fieldDefaults`** and per-widget params still win for one-off overrides.
@@ -669,6 +710,11 @@ UnifiedInputThemeScope(
     fieldDefaults: const UnifiedInputFieldDefaults(
       labelMode: UnifiedFieldLabelMode.labelInColumn,
       height: 52,
+      placeholderStyle: TextStyle(fontSize: 15, color: Colors.grey),
+      labelInColumnStyle: UnifiedInputLabelModeStyle(
+        labelPadding: EdgeInsets.only(bottom: 6, top: 4),
+        labelStyle: TextStyle(fontWeight: FontWeight.w600),
+      ),
       showClearButton: true,
     ),
     fieldDecorationSet: UnifiedInputDecorationSet(
@@ -766,7 +812,13 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.2.3`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.2.4`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+
+### Upgrading to 0.2.4
+
+* **`placeholderStyle`** — on `UnifiedInputDecoration`, `UnifiedBaseTextField`, or `UnifiedInputFieldDefaults`. Placeholders copy `fieldStyle` typography by default; set `placeholderStyle` only to differ (e.g. italic or lighter color).
+* **Label chrome per mode** — `labelInRowStyle`, `labelInColumnStyle`, `floatingLabelStyle` on `UnifiedInputFieldDefaults` (`UnifiedInputLabelModeStyle` with `labelStyle` + `labelPadding`). Per-field: `UnifiedInputDecoration.labelPadding` / `UnifiedBaseTextField.labelPadding`.
+* **`selectTextOnFocus`** — `true` on `UnifiedTextField`, `UnifiedNumberField`, form wrappers, or `fieldDefaults` so focusing selects the whole value for easy overwrite.
 
 ### Upgrading to 0.2.3
 

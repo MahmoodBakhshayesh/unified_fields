@@ -29,6 +29,7 @@ class UnifiedTextField extends StatefulWidget {
     this.readOnly = false,
     this.locked = false,
     this.autofocus = false,
+    this.selectTextOnFocus,
     this.keyboardType,
     this.textInputAction,
     this.inputFormatters,
@@ -92,6 +93,9 @@ class UnifiedTextField extends StatefulWidget {
 
   /// Whether the field should request focus on first build.
   final bool autofocus;
+
+  /// When true, focuses selects all text so the next keystroke replaces it.
+  final bool? selectTextOnFocus;
 
   /// Keyboard type.
   final TextInputType? keyboardType;
@@ -292,6 +296,7 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       placeholder: widget.placeholder ?? d.placeholder,
       labelStyle: d.labelStyle,
       style: d.fieldStyle,
+      placeholderStyle: d.placeholderStyle,
       backgroundColor: d.backgroundColor,
       headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor,
       borderRadius: d.borderRadius,
@@ -325,6 +330,7 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       readOnly: widget.readOnly,
       locked: widget.locked,
       autofocus: widget.autofocus,
+      selectTextOnFocus: widget.selectTextOnFocus,
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction ?? TextInputAction.done,
       inputFormatters: widget.inputFormatters,

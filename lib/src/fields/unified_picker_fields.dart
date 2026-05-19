@@ -341,6 +341,7 @@ class _UnifiedSinglePickerFieldState<T>
           placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
           labelStyle: dec.labelStyle,
           style: dec.fieldStyle,
+          placeholderStyle: dec.placeholderStyle,
           backgroundColor: dec.backgroundColor,
           headerBackgroundColor:
               dec.headerBackgroundColor ??
@@ -715,6 +716,7 @@ class _UnifiedMultiPickerFieldState<T>
           placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
           labelStyle: dec.labelStyle,
           style: dec.fieldStyle,
+          placeholderStyle: dec.placeholderStyle,
           backgroundColor: dec.backgroundColor,
           headerBackgroundColor:
               dec.headerBackgroundColor ??

@@ -444,6 +444,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
         errorText: widget.fieldController?.errorText,
         label: widget.label ?? d.label,
         placeholder: widget.placeholder ?? d.placeholder,
+        placeholderStyle: d.placeholderStyle,
         style: UnifiedFieldsTypography.instance.mergeDigitStyle(
           d.fieldStyle ?? const TextStyle(fontSize: 14),
           calendarKind: _effectiveCalendarKind,
@@ -701,6 +702,7 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
         errorText: widget.fieldController?.errorText,
         label: widget.label ?? d.label,
         placeholder: widget.placeholder ?? d.placeholder,
+        placeholderStyle: d.placeholderStyle,
         style: d.fieldStyle ?? const TextStyle(fontSize: 14),
         backgroundColor: bg,
         headerBackgroundColor: headerBg,

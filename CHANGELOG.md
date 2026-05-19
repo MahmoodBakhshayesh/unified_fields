@@ -1,3 +1,11 @@
+## 0.2.4
+
+### Features
+
+* **`placeholderStyle`** — optional [TextStyle] on [UnifiedInputDecoration], [UnifiedInputFieldDefaults], and [UnifiedBaseTextField]. Placeholders inherit `fontFamily`, `fontSize`, and other typography from `fieldStyle` / `style` by default, with theme hint color/opacity; explicit `placeholderStyle` overrides win.
+* **Per–label-mode chrome** — [UnifiedInputLabelModeStyle] on [UnifiedInputFieldDefaults] (`labelInRowStyle`, `labelInColumnStyle`, `floatingLabelStyle`) for `labelStyle` and `labelPadding` per [UnifiedFieldLabelMode]. Field-level `UnifiedInputDecoration.labelPadding` / [UnifiedBaseTextField.labelPadding] override theme.
+* **`selectTextOnFocus`** — on text and number fields (including form wrappers): when enabled, focusing a non-empty editable field selects all text so the next keystroke replaces the value. Set per widget or via [UnifiedInputFieldDefaults].
+
 ## 0.2.3
 
 ### Features

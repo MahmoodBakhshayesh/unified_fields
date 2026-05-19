@@ -10,6 +10,7 @@ import 'unified_picker_sheet_style.dart';
 import 'unified_suffix_icon.dart';
 
 export 'unified_input_field_defaults.dart';
+export 'unified_input_label_mode_style.dart';
 export 'unified_input_theme_data.dart';
 export 'unified_picker_sheet_chrome.dart';
 export 'unified_picker_sheet_style.dart';
@@ -221,23 +222,55 @@ class UnifiedInputThemeResolver {
   static double lockedFieldBackgroundOpacity(BuildContext context) =>
       _theme(context).lockedFieldBackgroundOpacity ?? 0.65;
 
-  /// Placeholder [TextStyle] for enabled / disabled states.
+  /// Theme placeholder color/opacity only (no typography).
   static TextStyle placeholderStyle(
     BuildContext context,
     UnifiedInputPalette palette, {
     required bool disabled,
     double? fontSize,
   }) {
-    final theme = _theme(context);
-    final color = theme.placeholderColor ?? palette.hintColor;
-    final opacity = disabled
-        ? (theme.placeholderOpacityWhenDisabled ?? theme.placeholderOpacity ?? 0.45)
-        : (theme.placeholderOpacity ?? 0.72);
     return TextStyle(
-      color: _withOpacity(color, opacity),
+      color: _placeholderColor(context, palette, disabled: disabled),
       fontSize: fontSize ?? 16,
       fontWeight: FontWeight.w400,
     );
+  }
+
+  /// Placeholder [TextStyle]: copies typography from [fieldStyle], applies theme hint
+  /// color/opacity, then merges [placeholderOverride] on top.
+  static TextStyle resolvePlaceholderStyle(
+    BuildContext context,
+    UnifiedInputPalette palette, {
+    required bool disabled,
+    TextStyle? fieldStyle,
+    TextStyle? placeholderOverride,
+  }) {
+    final field = fieldStyle ?? const TextStyle();
+    final hintChrome = TextStyle(
+      color: _placeholderColor(context, palette, disabled: disabled),
+      fontSize: field.fontSize ?? 16,
+      fontWeight: field.fontWeight ?? FontWeight.w400,
+    );
+    var resolved = field.merge(hintChrome);
+    if (placeholderOverride != null) {
+      resolved = resolved.merge(placeholderOverride);
+    }
+    return resolved;
+  }
+
+  static Color _placeholderColor(
+    BuildContext context,
+    UnifiedInputPalette palette, {
+    required bool disabled,
+  }) {
+    final theme = _theme(context);
+    final color = theme.placeholderColor ?? palette.hintColor;
+    final opacity = disabled
+        ? (theme.placeholderOpacityWhenDisabled ??
+              theme.placeholderOpacity ??
+              0.45)
+        : (theme.placeholderOpacity ?? 0.72);
+    return _withOpacity(color, opacity);
   }
 
   /// Required-field marker icon.
@@ -386,5 +419,9 @@ class UnifiedInputThemeResolver {
       field ??
       _fieldDefaults(context)?.mustResolveTextDirectionByInput ??
       false;
+
+  /// Effective select-all-on-focus when [UnifiedBaseTextField.selectTextOnFocus] is null.
+  static bool fieldSelectTextOnFocus(BuildContext context, {bool? field}) =>
+      field ?? _fieldDefaults(context)?.selectTextOnFocus ?? false;
 }
 

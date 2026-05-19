@@ -30,6 +30,7 @@ class UnifiedNumberField extends StatelessWidget {
     this.readOnly = false,
     this.locked = false,
     this.autofocus = false,
+    this.selectTextOnFocus,
     this.allowDecimals = false,
     this.step = 1,
     this.min,
@@ -87,6 +88,9 @@ class UnifiedNumberField extends StatelessWidget {
 
   /// Autofocus on mount.
   final bool autofocus;
+
+  /// When true, focuses selects all text so the next keystroke replaces it.
+  final bool? selectTextOnFocus;
 
   /// Whether to allow decimal input.
   final bool allowDecimals;
@@ -150,6 +154,7 @@ class UnifiedNumberField extends StatelessWidget {
       label: label ?? d.label,
       placeholder: placeholder ?? d.placeholder,
       labelStyle: d.labelStyle,
+      placeholderStyle: d.placeholderStyle,
       padding: d.contentPadding,
       borderRadius: d.borderRadius ?? palette.borderRadius,
       borderSide: d.borderSide ?? palette.defaultBorderSide,
@@ -167,6 +172,7 @@ class UnifiedNumberField extends StatelessWidget {
       locked: locked,
       readOnly: readOnly,
       autofocus: autofocus,
+      selectTextOnFocus: selectTextOnFocus,
       textInputAction: textInputAction,
       validator: validator,
       requiredField: isRequired || d.requiredField,

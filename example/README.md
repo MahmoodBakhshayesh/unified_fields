@@ -49,7 +49,26 @@ UnifiedInputThemeScope(
 
 See the root [README](../README.md#global-theme-unifiedinputthemescope) for the full option list.
 
+## 0.2.4 field defaults (in `main.dart`)
+
+The app-wide `fieldDefaults` demonstrate:
+
+- **`placeholderStyle`** — theme-wide hint typography
+- **`labelInRowStyle` / `labelInColumnStyle`** — per–label-mode `labelStyle` and `labelPadding`
+- **`selectTextOnFocus: true`** — tap the **Quantity** `UnifiedNumberField` (starts at `42`); the value is selected so typing replaces it
+
+```dart
+fieldDefaults: const UnifiedInputFieldDefaults(
+  placeholderStyle: TextStyle(fontSize: 14),
+  labelInRowStyle: UnifiedInputLabelModeStyle(
+    labelPadding: EdgeInsets.symmetric(horizontal: 10),
+    labelStyle: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+  ),
+  selectTextOnFocus: true,
+),
+```
+
 ## Package version
 
-This example tracks the parent package (**currently 0.2.3**). See the root
+This example tracks the parent package (**currently 0.2.4**). See the root
 [`CHANGELOG.md`](../CHANGELOG.md) for release notes.

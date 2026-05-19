@@ -15,6 +15,7 @@ import 'unified_input_brightness.dart';
 import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_palette.dart';
+import 'unified_input_label_mode_style.dart';
 import 'unified_input_theme.dart';
 
 /// Phone input with country flag prefix, optional dial-code section, phone suffix, and mask.
@@ -505,9 +506,19 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     );
   }
 
-  TextStyle _labelStyle(UnifiedInputDecoration d, UnifiedInputPalette palette) =>
+  TextStyle _labelStyle(
+    UnifiedInputDecoration d,
+    UnifiedInputPalette palette,
+    UnifiedFieldLabelMode labelMode,
+  ) =>
       _mergeDigitStyle(
-        d.labelStyle ??
+        UnifiedInputLabelModeStyle.resolveLabelStyle(
+              mode: labelMode,
+              decorationStyle: d.labelStyle,
+              fieldDefaults: UnifiedInputThemeScope.themeDataOf(context)
+                  .fieldDefaults,
+            ) ??
+            d.labelStyle ??
             TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
@@ -515,21 +526,48 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
             ),
       );
 
+  EdgeInsetsGeometry _labelPadding(
+    UnifiedInputDecoration d,
+    UnifiedFieldLabelMode labelMode,
+  ) =>
+      UnifiedInputLabelModeStyle.resolveLabelPadding(
+        mode: labelMode,
+        decorationPadding: d.labelPadding,
+        fieldDefaults:
+            UnifiedInputThemeScope.themeDataOf(context).fieldDefaults,
+      );
+
+  TextStyle _placeholderTextStyle(
+    UnifiedInputDecoration d,
+    UnifiedInputPalette palette,
+  ) {
+    return _mergeDigitStyle(
+      UnifiedInputThemeResolver.resolvePlaceholderStyle(
+        context,
+        palette,
+        disabled: widget.disabled || widget.isDisabled,
+        fieldStyle: d.fieldStyle,
+        placeholderOverride: d.placeholderStyle,
+      ),
+    );
+  }
+
   Widget _labelBlock(
     UnifiedInputDecoration d,
     UnifiedInputPalette palette,
     String? errorText,
   ) {
     if (d.label == null) return const SizedBox.shrink();
+    const mode = UnifiedFieldLabelMode.labelInColumn;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4, top: 8),
+      padding: _labelPadding(d, mode),
       child: IgnorePointer(
         child: Row(
           children: [
             Expanded(
               child: Row(
                 children: [
-                  Text(d.label!, style: _labelStyle(d, palette)),
+                  Text(d.label!, style: _labelStyle(d, palette, mode)),
                   if (d.requiredField)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6, right: 4),
@@ -564,7 +602,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
         Flexible(
           child: Text(
             d.label!,
-            style: _labelStyle(d, palette),
+            style: _labelStyle(d, palette, UnifiedFieldLabelMode.labelInRow),
             textAlign: TextAlign.center,
           ),
         ),
@@ -607,13 +645,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
             inputFormatters: _inputFormatters(),
             style: fieldStyle,
             placeholder: _localizedPlaceholder(widget.placeholder ?? d.placeholder),
-            placeholderStyle: _mergeDigitStyle(
-              UnifiedInputThemeResolver.placeholderStyle(
-                context,
-                palette,
-                disabled: widget.disabled || widget.isDisabled,
-              ),
-            ),
+            placeholderStyle: _placeholderTextStyle(d, palette),
             padding:
                 d.contentPadding ?? const EdgeInsets.symmetric(horizontal: 8),
             suffix: _phoneSuffix(d, palette),
@@ -703,7 +735,10 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
                 child: d.label == null
                     ? const SizedBox.shrink()
                     : Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: _labelPadding(
+                          d,
+                          UnifiedFieldLabelMode.labelInRow,
+                        ),
                         child: _labelRowCompact(d, palette),
                       ),
               ),
@@ -735,13 +770,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
       decoration: InputDecoration(
         labelText: d.label,
         hintText: _localizedPlaceholder(d.placeholder),
-        hintStyle: _mergeDigitStyle(
-          UnifiedInputThemeResolver.placeholderStyle(
-            context,
-            palette,
-            disabled: widget.disabled || widget.isDisabled,
-          ),
-        ),
+        hintStyle: _placeholderTextStyle(d, palette),
         filled: true,
         fillColor: d.backgroundColor,
         contentPadding: EdgeInsets.zero,

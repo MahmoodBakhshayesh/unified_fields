@@ -7,6 +7,7 @@ import 'unified_field_label_mode.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_palette.dart';
+import 'unified_input_label_mode_style.dart';
 import 'unified_input_theme.dart';
 
 /// Lean Cupertino-styled field: label (column or row), editable area, optional inline error.
@@ -30,7 +31,9 @@ class UnifiedBaseTextField extends StatefulWidget {
     this.label,
     this.placeholder,
     this.labelStyle,
+    this.labelPadding,
     this.style,
+    this.placeholderStyle,
     this.backgroundColor,
     this.headerBackgroundColor,
     this.borderRadius,
@@ -55,6 +58,7 @@ class UnifiedBaseTextField extends StatefulWidget {
     /// When [locked] becomes true, reset text to [initialValue] / empty.
     this.resetTextWhenLocked,
     this.autofocus = false,
+    this.selectTextOnFocus,
     this.isPassword = false,
     this.showClearButton,
     this.requiredField = false,
@@ -96,8 +100,14 @@ class UnifiedBaseTextField extends StatefulWidget {
   /// Override for the label text style.
   final TextStyle? labelStyle;
 
+  /// Override for label padding (interpretation depends on [labelMode]).
+  final EdgeInsetsGeometry? labelPadding;
+
   /// Override for the editing text style.
   final TextStyle? style;
+
+  /// Override for placeholder / hint text (`null` → theme / [UnifiedInputDecoration]).
+  final TextStyle? placeholderStyle;
 
   /// Background color of the editing area (`null` → theme / palette).
   final Color? backgroundColor;
@@ -168,6 +178,10 @@ class UnifiedBaseTextField extends StatefulWidget {
 
   /// Whether the inner field should request focus on first build.
   final bool autofocus;
+
+  /// When true, focusing a non-empty editable field selects all text so typing
+  /// replaces the current value (`null` → [UnifiedInputFieldDefaults] / theme).
+  final bool? selectTextOnFocus;
 
   /// Render entered text as obscured and add a visibility toggle.
   final bool isPassword;
@@ -248,6 +262,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   final ValueNotifier<int> _tick = ValueNotifier(0);
   bool _userInteracted = false;
   bool _validationRequested = false;
+  bool _focusListenerAttached = false;
 
   FocusNode get _effectiveFocusNode {
     if (widget.focusNode != null) return widget.focusNode!;
@@ -310,13 +325,59 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       _ownsController = true;
     }
     _ctrl.addListener(_onTextChanged);
-    if (widget.decorationSet?.isConfigured ?? false) {
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncFocusListener();
+  }
+
+  bool _shouldListenToFocus(BuildContext context) =>
+      (widget.decorationSet?.isConfigured ?? false) ||
+      UnifiedInputThemeResolver.fieldSelectTextOnFocus(
+        context,
+        field: widget.selectTextOnFocus,
+      );
+
+  void _syncFocusListener() {
+    final needed = _shouldListenToFocus(context);
+    if (needed && !_focusListenerAttached) {
       _effectiveFocusNode.addListener(_onFocusChanged);
+      _focusListenerAttached = true;
+    } else if (!needed && _focusListenerAttached) {
+      _detachFocusListener(widget.focusNode);
+      _focusListenerAttached = false;
     }
   }
 
   void _onFocusChanged() {
-    if ((widget.decorationSet?.isConfigured ?? false) && mounted) {
+    if (!mounted) return;
+
+    if (UnifiedInputThemeResolver.fieldSelectTextOnFocus(
+          context,
+          field: widget.selectTextOnFocus,
+        ) &&
+        _effectiveFocusNode.hasFocus &&
+        !_visuallyDisabled &&
+        !widget.readOnly &&
+        !widget.locked &&
+        !widget.interactionBlocked) {
+      final text = _ctrl.text;
+      if (text.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_effectiveFocusNode.hasFocus) return;
+          final current = _ctrl.text;
+          if (current.isEmpty) return;
+          _ctrl.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: current.length,
+          );
+        });
+      }
+    }
+
+    if ((widget.decorationSet?.isConfigured ?? false)) {
       setState(() {});
     }
   }
@@ -353,15 +414,11 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       _obscure = widget.isPassword;
     }
 
-    if (oldWidget.decorationSet != widget.decorationSet) {
-      if (oldWidget.decorationSet?.isConfigured ?? false) {
-        _detachFocusListener(oldWidget.focusNode);
-      }
-      if (widget.decorationSet?.isConfigured ?? false) {
-        _effectiveFocusNode.addListener(_onFocusChanged);
-      }
+    if (oldWidget.decorationSet != widget.decorationSet ||
+        oldWidget.selectTextOnFocus != widget.selectTextOnFocus) {
+      _syncFocusListener();
     } else if (oldWidget.focusNode != widget.focusNode) {
-      if (widget.decorationSet?.isConfigured ?? false) {
+      if (_focusListenerAttached) {
         _detachFocusListener(oldWidget.focusNode);
         _effectiveFocusNode.addListener(_onFocusChanged);
       }
@@ -375,6 +432,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   void _detachFocusListener(FocusNode? previousExternal) {
     final node = previousExternal ?? (_ownsFocusNode ? _internalFocusNode : null);
     node?.removeListener(_onFocusChanged);
+    _focusListenerAttached = false;
   }
 
   void _onTextChanged() {
@@ -393,7 +451,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
 
   @override
   void dispose() {
-    if (widget.decorationSet?.isConfigured ?? false) {
+    if (_focusListenerAttached) {
       _detachFocusListener(widget.focusNode);
     }
     if (_ownsFocusNode) {
@@ -437,8 +495,16 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     if (widget.labelStyle != null) {
       d = d.merge(UnifiedInputDecoration(labelStyle: widget.labelStyle));
     }
+    if (widget.labelPadding != null) {
+      d = d.merge(UnifiedInputDecoration(labelPadding: widget.labelPadding));
+    }
     if (widget.style != null) {
       d = d.merge(UnifiedInputDecoration(fieldStyle: widget.style));
+    }
+    if (widget.placeholderStyle != null) {
+      d = d.merge(
+        UnifiedInputDecoration(placeholderStyle: widget.placeholderStyle),
+      );
     }
     if (widget.backgroundColor != null) {
       d = d.merge(UnifiedInputDecoration(backgroundColor: widget.backgroundColor));
@@ -563,9 +629,19 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       _visuallyDisabled ||
       widget.locked;
 
-  Color _labelColor(UnifiedInputPalette palette, UnifiedInputDecoration dec) {
+  Color _labelColor(
+    UnifiedInputPalette palette,
+    UnifiedInputDecoration dec,
+    UnifiedFieldLabelMode labelMode,
+  ) {
+    final fieldDefaults =
+        UnifiedInputThemeScope.themeDataOf(context).fieldDefaults;
+    final modeStyle = UnifiedInputLabelModeStyle.forMode(fieldDefaults, labelMode);
     final base =
-        dec.labelStyle?.color ?? widget.labelStyle?.color ?? palette.labelColor;
+        dec.labelStyle?.color ??
+        widget.labelStyle?.color ??
+        modeStyle?.labelStyle?.color ??
+        palette.labelColor;
     if (widget.decorationSet?.isConfigured ?? false) {
       if ((_visuallyDisabled && !_useLegacyDisabledChrome()) ||
           (widget.locked && !_useLegacyLockedChrome())) {
@@ -592,16 +668,35 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   TextStyle _resolveLabelStyle(
     UnifiedInputPalette palette,
     UnifiedInputDecoration dec,
+    UnifiedFieldLabelMode labelMode,
   ) {
+    final fieldDefaults =
+        UnifiedInputThemeScope.themeDataOf(context).fieldDefaults;
     final base =
-        dec.labelStyle ??
-        widget.labelStyle ??
+        UnifiedInputLabelModeStyle.resolveLabelStyle(
+          mode: labelMode,
+          decorationStyle: dec.labelStyle,
+          widgetStyle: widget.labelStyle,
+          fieldDefaults: fieldDefaults,
+        ) ??
         TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: palette.labelColor,
         );
-    return base.copyWith(color: _labelColor(palette, dec));
+    return base.copyWith(color: _labelColor(palette, dec, labelMode));
+  }
+
+  EdgeInsetsGeometry _resolveLabelPadding(
+    UnifiedInputDecoration dec,
+    UnifiedFieldLabelMode labelMode,
+  ) {
+    return UnifiedInputLabelModeStyle.resolveLabelPadding(
+      mode: labelMode,
+      decorationPadding: dec.labelPadding,
+      widgetPadding: widget.labelPadding,
+      fieldDefaults: UnifiedInputThemeScope.themeDataOf(context).fieldDefaults,
+    );
   }
 
   TextStyle _resolveFieldStyle(
@@ -694,9 +789,10 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec,
   ) {
     if (widget.label == null) return const SizedBox.shrink();
-    final defaultLabelStyle = _resolveLabelStyle(palette, dec);
+    const mode = UnifiedFieldLabelMode.labelInColumn;
+    final defaultLabelStyle = _resolveLabelStyle(palette, dec, mode);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4, top: 8),
+      padding: _resolveLabelPadding(dec, mode),
       child: IgnorePointer(
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -805,11 +901,12 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputPalette palette,
     UnifiedInputDecoration dec,
   ) {
-    return UnifiedInputThemeResolver.placeholderStyle(
+    return UnifiedInputThemeResolver.resolvePlaceholderStyle(
       context,
       palette,
       disabled: _visuallyDisabled,
-      fontSize: dec.fieldStyle?.fontSize ?? widget.style?.fontSize,
+      fieldStyle: dec.fieldStyle ?? widget.style,
+      placeholderOverride: dec.placeholderStyle ?? widget.placeholderStyle,
     );
   }
 
@@ -1005,10 +1102,11 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec,
   ) {
     if (widget.label == null) return null;
-    return Row(
+    const mode = UnifiedFieldLabelMode.floatingLabel;
+    final label = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(widget.label!, style: _resolveLabelStyle(palette, dec)),
+        Text(widget.label!, style: _resolveLabelStyle(palette, dec, mode)),
         if (widget.requiredField)
           Padding(
             padding: const EdgeInsets.only(left: 2, bottom: 8),
@@ -1019,6 +1117,10 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
             ),
           ),
       ],
+    );
+    return Padding(
+      padding: _resolveLabelPadding(dec, mode),
+      child: label,
     );
   }
 
@@ -1156,7 +1258,10 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                       child: widget.label == null
                           ? const SizedBox.shrink()
                           : Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding: _resolveLabelPadding(
+                                dec,
+                                UnifiedFieldLabelMode.labelInRow,
+                              ),
                               child: _labelRowCompact(palette, dec),
                             ),
                     ),
@@ -1258,7 +1363,11 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputPalette palette,
     UnifiedInputDecoration dec,
   ) {
-    final defaultLabelStyle = _resolveLabelStyle(palette, dec);
+    final defaultLabelStyle = _resolveLabelStyle(
+      palette,
+      dec,
+      UnifiedFieldLabelMode.labelInRow,
+    );
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,

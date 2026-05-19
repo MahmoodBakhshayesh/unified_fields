@@ -525,6 +525,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
           placeholder: widget.placeholder ?? d.placeholder ?? d.label,
           labelStyle: d.labelStyle,
           style: d.fieldStyle,
+          placeholderStyle: d.placeholderStyle,
           backgroundColor: d.backgroundColor,
           headerBackgroundColor:
           d.headerBackgroundColor ?? d.backgroundColor,

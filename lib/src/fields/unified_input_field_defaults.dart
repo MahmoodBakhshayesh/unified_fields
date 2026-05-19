@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'unified_field_label_mode.dart';
 import 'unified_input_decoration.dart';
+import 'unified_input_label_mode_style.dart';
 
 /// Default layout and behavior for [UnifiedBaseTextField] via [UnifiedInputThemeData.fieldDefaults].
 ///
@@ -24,6 +25,11 @@ class UnifiedInputFieldDefaults {
     this.autovalidateMode,
     this.contentPadding,
     this.mustResolveTextDirectionByInput,
+    this.placeholderStyle,
+    this.labelInRowStyle,
+    this.labelInColumnStyle,
+    this.floatingLabelStyle,
+    this.selectTextOnFocus,
   });
 
   /// Default label placement for fields that do not set [UnifiedBaseTextField.labelMode].
@@ -31,6 +37,15 @@ class UnifiedInputFieldDefaults {
 
   /// Legacy row label flag; ignored when [labelMode] is set on these defaults.
   final bool? labelInRow;
+
+  /// Label style/padding when [UnifiedFieldLabelMode.labelInRow] is active.
+  final UnifiedInputLabelModeStyle? labelInRowStyle;
+
+  /// Label style/padding when [UnifiedFieldLabelMode.labelInColumn] is active.
+  final UnifiedInputLabelModeStyle? labelInColumnStyle;
+
+  /// Label style/padding when [UnifiedFieldLabelMode.floatingLabel] is active.
+  final UnifiedInputLabelModeStyle? floatingLabelStyle;
 
   /// Flex ratio for label vs body in [UnifiedFieldLabelMode.labelInRow].
   final List<int>? rowLabelRatio;
@@ -68,6 +83,13 @@ class UnifiedInputFieldDefaults {
   /// Infer [TextDirection] from the first typed character (RTL scripts).
   final bool? mustResolveTextDirectionByInput;
 
+  /// Default placeholder / hint [TextStyle] for [UnifiedBaseTextField].
+  final TextStyle? placeholderStyle;
+
+  /// When true, focusing a non-empty editable field selects all text so the next
+  /// keystroke replaces the value.
+  final bool? selectTextOnFocus;
+
   /// Maps layout fields into [UnifiedInputDecoration] for palette merge.
   UnifiedInputDecoration toDecoration() {
     var merged = UnifiedInputDecoration(
@@ -80,6 +102,7 @@ class UnifiedInputFieldDefaults {
       headerBackgroundColor: headerBackgroundColor,
       showError: showError ?? true,
       contentPadding: contentPadding,
+      placeholderStyle: placeholderStyle,
     );
     if (labelInRow != null) {
       merged = merged.merge(UnifiedInputDecoration(labelInRow: labelInRow!));
@@ -93,6 +116,9 @@ class UnifiedInputFieldDefaults {
     return UnifiedInputFieldDefaults(
       labelMode: other.labelMode ?? labelMode,
       labelInRow: other.labelInRow ?? labelInRow,
+      labelInRowStyle: other.labelInRowStyle ?? labelInRowStyle,
+      labelInColumnStyle: other.labelInColumnStyle ?? labelInColumnStyle,
+      floatingLabelStyle: other.floatingLabelStyle ?? floatingLabelStyle,
       rowLabelRatio: other.rowLabelRatio ?? rowLabelRatio,
       height: other.height ?? height,
       borderRadius: other.borderRadius ?? borderRadius,
@@ -107,6 +133,8 @@ class UnifiedInputFieldDefaults {
       contentPadding: other.contentPadding ?? contentPadding,
       mustResolveTextDirectionByInput: other.mustResolveTextDirectionByInput ??
           mustResolveTextDirectionByInput,
+      placeholderStyle: other.placeholderStyle ?? placeholderStyle,
+      selectTextOnFocus: other.selectTextOnFocus ?? selectTextOnFocus,
     );
   }
 }

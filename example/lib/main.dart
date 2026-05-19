@@ -10,9 +10,21 @@ void main() {
         requiredIconSize: 9,
         validationColor: const Color(0xFFD32F2F),
         disabledFieldOpacity: 0.38,
-        fieldDefaults: UnifiedInputFieldDefaults(
+        fieldDefaults: const UnifiedInputFieldDefaults(
           labelMode: UnifiedFieldLabelMode.labelInRow,
           borderRadius: BorderRadius.all(Radius.circular(8)),
+          placeholderStyle: TextStyle(fontSize: 14),
+          labelInRowStyle: UnifiedInputLabelModeStyle(
+            labelPadding: EdgeInsets.symmetric(horizontal: 10),
+            labelStyle: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          labelInColumnStyle: UnifiedInputLabelModeStyle(
+            labelPadding: EdgeInsets.only(top: 4, bottom: 6),
+          ),
+          selectTextOnFocus: true,
         ),
 
         pickerHeaderStyle: UnifiedInputPickerHeaderStyle(
@@ -82,6 +94,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
   final _time = UnifiedInputPicker<TimeOfDay>(initialValue: null);
   final _duration = UnifiedInputPicker<Duration>(initialValue: const Duration(minutes: 5));
   final UnifiedPhoneFieldController phoneC = UnifiedPhoneFieldController();
+  final _quantity = TextEditingController(text: '42');
   late final CustomizableSinglePickerController<String> _customSingle;
   late final CustomizableMultiPickerController<String> _customMulti;
 
@@ -107,6 +120,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
     _duration.dispose();
     _customSingle.dispose();
     _customMulti.dispose();
+    _quantity.dispose();
     super.dispose();
   }
   final testFC = CustomizableSinglePickerController<String>();
@@ -365,12 +379,14 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     // pickerColumns: [UnifiedFieldsDurationColumn.year,UnifiedFieldsDurationColumn.month,UnifiedFieldsDurationColumn.week],
                   ),
                   UnifiedNumberField(
-                    decoration: UnifiedInputDecoration(
-                      suffixIcon: Text("aswerewr"),
-
+                    label: 'Quantity',
+                    placeholder: '0',
+                    controller: _quantity,
+                    // selectTextOnFocus: true is also set via fieldDefaults in main()
+                    decoration: const UnifiedInputDecoration(
+                      suffixIcon: Text('kg'),
+                      suffixWidth: 28,
                     ),
-                    // stepButtonPlacement: UnifiedNumericStepButtonPlacement.trailing,
-                    // stepButtons: UnifiedNumericStepButtons.none,
                     textAlign: TextAlign.start,
                   ),
                   const SizedBox(height: 12),

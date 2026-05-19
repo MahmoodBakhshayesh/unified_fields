@@ -2361,6 +2361,7 @@ class UnifiedFormNumberField extends StatefulWidget {
     this.locked = false,
     this.readOnly = false,
     this.autofocus = false,
+    this.selectTextOnFocus,
     this.allowDecimals = false,
     this.step = 1,
     this.min,
@@ -2437,6 +2438,9 @@ class UnifiedFormNumberField extends StatefulWidget {
 
   /// Autofocus the field on first build.
   final bool autofocus;
+
+  /// When true, focuses selects all text so the next keystroke replaces it.
+  final bool? selectTextOnFocus;
 
   /// When true, allow decimal values in the field.
   final bool allowDecimals;
@@ -2642,6 +2646,7 @@ class _UnifiedFormNumberFieldState extends State<UnifiedFormNumberField> {
           locked: widget.locked,
           readOnly: widget.readOnly,
           autofocus: widget.autofocus,
+          selectTextOnFocus: widget.selectTextOnFocus,
           allowDecimals: widget.allowDecimals,
           step: widget.step,
           min: widget.min,

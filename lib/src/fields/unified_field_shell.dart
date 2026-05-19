@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../unified_colors.dart';
 import 'unified_field_label_mode.dart';
 import 'unified_input_decoration.dart';
+import 'unified_input_label_mode_style.dart';
+import 'unified_input_theme.dart';
 
 /// Shared chrome: optional label (column or row), bordered body, optional inline validation panel.
 ///
@@ -161,12 +163,27 @@ class _LabelRow extends StatelessWidget {
     final dec = decoration;
     if (dec.label == null) return const SizedBox.shrink();
 
-    final inRow = (dec.labelMode ??
-            resolveUnifiedFieldLabelMode(labelInRow: dec.labelInRow)) ==
-        UnifiedFieldLabelMode.labelInRow;
-    final pad = inRow
-        ? EdgeInsets.zero
-        : const EdgeInsets.only(bottom: 4, top: 8);
+    final labelMode = dec.labelMode ??
+        resolveUnifiedFieldLabelMode(labelInRow: dec.labelInRow);
+    final fieldDefaults =
+        UnifiedInputThemeScope.themeDataOf(context).fieldDefaults;
+    final pad = UnifiedInputLabelModeStyle.resolveLabelPadding(
+      mode: labelMode,
+      decorationPadding: dec.labelPadding,
+      fieldDefaults: fieldDefaults,
+    );
+    final labelStyle =
+        UnifiedInputLabelModeStyle.resolveLabelStyle(
+          mode: labelMode,
+          decorationStyle: dec.labelStyle,
+          fieldDefaults: fieldDefaults,
+        ) ??
+        dec.labelStyle ??
+        const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: UnifiedColors.textColorDark,
+        );
 
     return Padding(
       padding: pad,
@@ -176,13 +193,7 @@ class _LabelRow extends StatelessWidget {
           children: [
             Text(
               dec.label!,
-              style:
-                  dec.labelStyle ??
-                  const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: UnifiedColors.textColorDark,
-                  ),
+              style: labelStyle,
             ),
             if (dec.requiredField)
               const Padding(

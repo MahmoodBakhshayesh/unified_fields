@@ -13,6 +13,7 @@ export 'unified_input_brightness.dart';
 export 'unified_input_decoration.dart';
 export 'unified_picker_sheet_style.dart';
 export 'unified_input_field_defaults.dart';
+export 'unified_input_label_mode_style.dart';
 export 'unified_field_decoration_context.dart';
 export 'unified_field_label_mode.dart';
 export 'unified_phone_field.dart';
