@@ -8,6 +8,7 @@ import '../controllers/unified_number_field_controller.dart';
 import '../unified_colors.dart';
 import '../unified_date_picker_types.dart';
 import '../unified_fields_typography.dart';
+import '../unified_number_format.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
@@ -25,7 +26,7 @@ double _pow10(int digits) {
 /// When [UnifiedNumericStepField.allowDecimals] is true and [fractionDigits] is null,
 /// step rounding uses this many fraction digits. Display formatting stays natural unless
 /// [fractionDigits] is set explicitly.
-const int _kDecimalStepQuantizeDigits = 2;
+const int _kDecimalStepQuantizeDigits = kUnifiedNumberDefaultDecimalQuantizeDigits;
 
 /// Numeric step field on [UnifiedBaseTextField]: +/- controls and typed entry.
 ///
@@ -244,6 +245,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
 
   Timer? _holdInitialDelayTimer;
   Timer? _holdRepeatTimer;
+  bool _suppressDisplaySync = false;
 
   static const Duration _holdRepeatInitialDelay = Duration(milliseconds: 450);
   static const Duration _holdRepeatInterval = Duration(milliseconds: 55);
@@ -251,11 +253,18 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   int get _quantizeFractionDigits =>
       widget.fractionDigits ?? _kDecimalStepQuantizeDigits;
 
+  bool get _shouldLocalizeDigits => unifiedNumberInputAllowsLocalizedDigits(
+        calendarKind: widget.digitCalendarKind,
+      );
+
   @override
   void initState() {
     super.initState();
     _initControllers();
+    _effectiveController.addListener(_onDisplayTextChanged);
     widget.fieldController?.addListener(_onFieldController);
+    _syncLocalizedDisplayFromFieldController();
+    _localizeDisplayIfNeeded();
   }
 
   void _initControllers() {
@@ -275,19 +284,73 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     );
   }
 
-  void _onFieldController() => setState(() {});
+  void _onFieldController() {
+    _syncLocalizedDisplayFromFieldController();
+    setState(() {});
+  }
+
+  void _setDisplayText(String text, {TextSelection? selection}) {
+    _suppressDisplaySync = true;
+    _effectiveController.value = TextEditingValue(
+      text: text,
+      selection:
+          selection ?? TextSelection.collapsed(offset: text.length),
+    );
+    _suppressDisplaySync = false;
+  }
+
+  void _localizeDisplayIfNeeded() {
+    if (!_shouldLocalizeDigits) return;
+    final raw = _effectiveController.text;
+    if (raw.isEmpty) return;
+    final localized = localizeUnifiedNumberDisplayText(
+      raw,
+      calendarKind: widget.digitCalendarKind,
+    );
+    if (localized == raw) return;
+    final offset = _effectiveController.selection.baseOffset;
+    _setDisplayText(
+      localized,
+      selection: TextSelection.collapsed(
+        offset: offset.clamp(0, localized.length),
+      ),
+    );
+  }
+
+  void _onDisplayTextChanged() {
+    if (_suppressDisplaySync) return;
+    _localizeDisplayIfNeeded();
+  }
+
+  void _syncLocalizedDisplayFromFieldController() {
+    final fc = widget.fieldController;
+    if (fc == null || fc.value == null) return;
+    final formatted = formatUnifiedNumberFieldText(
+      fc.value!,
+      allowDecimals: widget.allowDecimals,
+      fractionDigits: widget.fractionDigits ?? fc.fractionDigits,
+      calendarKind: widget.digitCalendarKind,
+    );
+    if (_effectiveController.text != formatted) {
+      _setDisplayText(formatted);
+    }
+  }
 
   @override
   void didUpdateWidget(covariant UnifiedNumericStepField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.fieldController != widget.fieldController ||
         oldWidget.controller != widget.controller) {
+      _effectiveController.removeListener(_onDisplayTextChanged);
       _focusNode.removeListener(_onFocusChanged);
       if (_ownsFocusNode) _focusNode.dispose();
       if (_ownsController) _effectiveController.dispose();
       oldWidget.fieldController?.removeListener(_onFieldController);
       widget.fieldController?.addListener(_onFieldController);
       _initControllers();
+      _effectiveController.addListener(_onDisplayTextChanged);
+      _syncLocalizedDisplayFromFieldController();
+      _localizeDisplayIfNeeded();
     } else if (oldWidget.focusNode != widget.focusNode) {
       _focusNode.removeListener(_onFocusChanged);
       if (_ownsFocusNode) {
@@ -304,11 +367,15 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
         widget.validator,
       );
     }
+    if (oldWidget.digitCalendarKind != widget.digitCalendarKind) {
+      _localizeDisplayIfNeeded();
+    }
   }
 
   @override
   void dispose() {
     _endStepHold();
+    _effectiveController.removeListener(_onDisplayTextChanged);
     widget.fieldController?.removeListener(_onFieldController);
     _focusNode.removeListener(_onFocusChanged);
     if (_ownsFocusNode) {
@@ -334,8 +401,8 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     final clamped = _clamp(parsed);
     if (clamped != parsed) {
       final formatted = _formatCommitted(clamped);
-      _effectiveController.value = TextEditingValue(
-        text: formatted,
+      _setDisplayText(
+        formatted,
         selection: TextSelection.collapsed(offset: formatted.length),
       );
       widget.onChanged?.call(clamped);
@@ -345,8 +412,8 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     if (widget.allowDecimals && _hasTrailingDecimalPointForTyping(raw)) {
       final formatted = _formatCommitted(parsed);
       if (formatted != raw) {
-        _effectiveController.value = TextEditingValue(
-          text: formatted,
+        _setDisplayText(
+          formatted,
           selection: TextSelection.collapsed(offset: formatted.length),
         );
         widget.onChanged?.call(parsed);
@@ -440,8 +507,8 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     }
 
     final formatted = _formatCommitted(next);
-    _effectiveController.value = TextEditingValue(
-      text: formatted,
+    _setDisplayText(
+      formatted,
       selection: TextSelection.collapsed(offset: formatted.length),
     );
     widget.onChanged?.call(next);
@@ -451,36 +518,19 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     }
   }
 
-  String _formatCommitted(num value) {
-    final String raw;
-    if (!widget.allowDecimals) {
-      raw = value.round().toString();
-    } else {
-      final fd = widget.fractionDigits;
-      if (fd != null) {
-        raw = value.toDouble().toStringAsFixed(fd);
-      } else {
-        final d = value.toDouble();
-        if (!d.isFinite) {
-          raw = d.toString();
-        } else if (d % 1 == 0) {
-          raw = d.toInt().toString();
-        } else {
-          raw = d.toString();
-        }
-      }
-    }
-    return UnifiedFieldsTypography.instance.localizeDigits(
-      raw,
-      calendarKind: widget.digitCalendarKind,
-    );
-  }
+  String _formatCommitted(num value) => formatUnifiedNumberFieldText(
+        value,
+        allowDecimals: widget.allowDecimals,
+        fractionDigits: widget.fractionDigits,
+        calendarKind: widget.digitCalendarKind,
+      );
 
   List<TextInputFormatter> get _formatters {
-    if (widget.allowDecimals) {
-      return [FilteringTextInputFormatter.allow(RegExp(r'^[-+]?\d*\.?\d*'))];
-    }
-    return [FilteringTextInputFormatter.allow(RegExp(r'^[-+]?\d*'))];
+    final pattern = unifiedNumberInputPattern(
+      allowDecimals: widget.allowDecimals,
+      calendarKind: widget.digitCalendarKind,
+    );
+    return [FilteringTextInputFormatter.allow(pattern)];
   }
 
   TextInputType get _keyboardType {

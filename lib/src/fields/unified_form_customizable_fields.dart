@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../controllers/field_controller_sync.dart';
 import 'unified_customizable_async_picker_field.dart';
 import 'unified_customizable_picker_controller.dart';
 import 'unified_cutomizable_picker_fields.dart';
@@ -220,13 +221,22 @@ class _UnifiedFormCustomizablePickerFieldState<T>
       GlobalKey<FormFieldState<CustomizableSinglePickerController<T>>>();
 
   void _onControllerChanged() {
-    _fieldKey.currentState?.didChange(widget.pickerController);
+    final fieldState = _fieldKey.currentState;
+    if (fieldState == null) return;
+    fieldState.didChange(widget.pickerController);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unifiedFormClearErrorIfValid(fieldState);
+    });
   }
 
   @override
   void initState() {
     super.initState();
     widget.pickerController.addListener(_onControllerChanged);
+    syncCustomizableSingleFormValidatorToFieldController(
+      widget.pickerController,
+      widget.validator,
+    );
   }
 
   @override
@@ -237,6 +247,13 @@ class _UnifiedFormCustomizablePickerFieldState<T>
     if (oldWidget.pickerController != widget.pickerController) {
       oldWidget.pickerController.removeListener(_onControllerChanged);
       widget.pickerController.addListener(_onControllerChanged);
+    }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.pickerController != widget.pickerController) {
+      syncCustomizableSingleFormValidatorToFieldController(
+        widget.pickerController,
+        widget.validator,
+      );
     }
   }
 
@@ -260,6 +277,10 @@ class _UnifiedFormCustomizablePickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
+    syncCustomizableSingleFormValidatorToFieldController(
+      widget.pickerController,
+      widget.validator,
+    );
     return UnifiedFormField<CustomizableSinglePickerController<T>>(
       formFieldKey: _fieldKey,
       initialValue: widget.pickerController,
@@ -433,13 +454,22 @@ class _UnifiedFormCustomizableMultiPickerFieldState<T>
   _fieldKey = GlobalKey<FormFieldState<CustomizableMultiPickerController<T>>>();
 
   void _onControllerChanged() {
-    _fieldKey.currentState?.didChange(widget.pickerController);
+    final fieldState = _fieldKey.currentState;
+    if (fieldState == null) return;
+    fieldState.didChange(widget.pickerController);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unifiedFormClearErrorIfValid(fieldState);
+    });
   }
 
   @override
   void initState() {
     super.initState();
     widget.pickerController.addListener(_onControllerChanged);
+    syncCustomizableMultiFormValidatorToFieldController(
+      widget.pickerController,
+      widget.validator,
+    );
   }
 
   @override
@@ -450,6 +480,13 @@ class _UnifiedFormCustomizableMultiPickerFieldState<T>
     if (oldWidget.pickerController != widget.pickerController) {
       oldWidget.pickerController.removeListener(_onControllerChanged);
       widget.pickerController.addListener(_onControllerChanged);
+    }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.pickerController != widget.pickerController) {
+      syncCustomizableMultiFormValidatorToFieldController(
+        widget.pickerController,
+        widget.validator,
+      );
     }
   }
 
@@ -473,6 +510,10 @@ class _UnifiedFormCustomizableMultiPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
+    syncCustomizableMultiFormValidatorToFieldController(
+      widget.pickerController,
+      widget.validator,
+    );
     return UnifiedFormField<CustomizableMultiPickerController<T>>(
       formFieldKey: _fieldKey,
       initialValue: widget.pickerController,
@@ -647,13 +688,22 @@ class _UnifiedFormCustomizableAsyncPickerFieldState<T>
       GlobalKey<FormFieldState<CustomizableSinglePickerController<T>>>();
 
   void _onControllerChanged() {
-    _fieldKey.currentState?.didChange(widget.pickerController);
+    final fieldState = _fieldKey.currentState;
+    if (fieldState == null) return;
+    fieldState.didChange(widget.pickerController);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unifiedFormClearErrorIfValid(fieldState);
+    });
   }
 
   @override
   void initState() {
     super.initState();
     widget.pickerController.addListener(_onControllerChanged);
+    syncCustomizableSingleFormValidatorToFieldController(
+      widget.pickerController,
+      widget.validator,
+    );
   }
 
   @override
@@ -664,6 +714,13 @@ class _UnifiedFormCustomizableAsyncPickerFieldState<T>
     if (oldWidget.pickerController != widget.pickerController) {
       oldWidget.pickerController.removeListener(_onControllerChanged);
       widget.pickerController.addListener(_onControllerChanged);
+    }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.pickerController != widget.pickerController) {
+      syncCustomizableSingleFormValidatorToFieldController(
+        widget.pickerController,
+        widget.validator,
+      );
     }
   }
 
@@ -687,6 +744,10 @@ class _UnifiedFormCustomizableAsyncPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
+    syncCustomizableSingleFormValidatorToFieldController(
+      widget.pickerController,
+      widget.validator,
+    );
     return UnifiedFormField<CustomizableSinglePickerController<T>>(
       formFieldKey: _fieldKey,
       initialValue: widget.pickerController,
@@ -860,13 +921,22 @@ class _UnifiedFormCustomizableAsyncMultiPickerFieldState<T>
   _fieldKey = GlobalKey<FormFieldState<CustomizableMultiPickerController<T>>>();
 
   void _onControllerChanged() {
-    _fieldKey.currentState?.didChange(widget.pickerController);
+    final fieldState = _fieldKey.currentState;
+    if (fieldState == null) return;
+    fieldState.didChange(widget.pickerController);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unifiedFormClearErrorIfValid(fieldState);
+    });
   }
 
   @override
   void initState() {
     super.initState();
     widget.pickerController.addListener(_onControllerChanged);
+    syncCustomizableMultiFormValidatorToFieldController(
+      widget.pickerController,
+      widget.validator,
+    );
   }
 
   @override
@@ -877,6 +947,13 @@ class _UnifiedFormCustomizableAsyncMultiPickerFieldState<T>
     if (oldWidget.pickerController != widget.pickerController) {
       oldWidget.pickerController.removeListener(_onControllerChanged);
       widget.pickerController.addListener(_onControllerChanged);
+    }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.pickerController != widget.pickerController) {
+      syncCustomizableMultiFormValidatorToFieldController(
+        widget.pickerController,
+        widget.validator,
+      );
     }
   }
 
@@ -900,6 +977,10 @@ class _UnifiedFormCustomizableAsyncMultiPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
+    syncCustomizableMultiFormValidatorToFieldController(
+      widget.pickerController,
+      widget.validator,
+    );
     return UnifiedFormField<CustomizableMultiPickerController<T>>(
       formFieldKey: _fieldKey,
       initialValue: widget.pickerController,

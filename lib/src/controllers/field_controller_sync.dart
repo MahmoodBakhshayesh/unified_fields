@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import '../fields/unified_input_picker.dart';
 import 'base_unified_field_controller.dart';
 import 'unified_number_field_controller.dart';
+import '../fields/unified_customizable_picker_controller.dart';
 import 'unified_picker_field_controller.dart';
 
 /// Focus node: [fieldController] → [binding] → [direct].
@@ -133,6 +134,27 @@ void syncUnifiedFieldListValue<T>({
   if (formFieldState != null) {
     unifiedFormClearErrorIfValid(formFieldState);
   }
+}
+
+/// Copies a [FormField] validator onto [CustomizableSinglePickerController] for
+/// [UnifiedFieldValidation.validateFields].
+void syncCustomizableSingleFormValidatorToFieldController<T>(
+  CustomizableSinglePickerController<T>? fieldController,
+  FormFieldValidator<CustomizableSinglePickerController<T>>? widgetValidator,
+) {
+  if (fieldController == null || widgetValidator == null) return;
+  fieldController.validator =
+      (_) => widgetValidator(fieldController);
+}
+
+/// Copies a [FormField] validator onto [CustomizableMultiPickerController].
+void syncCustomizableMultiFormValidatorToFieldController<T>(
+  CustomizableMultiPickerController<T>? fieldController,
+  FormFieldValidator<CustomizableMultiPickerController<T>>? widgetValidator,
+) {
+  if (fieldController == null || widgetValidator == null) return;
+  fieldController.validator =
+      (_) => widgetValidator(fieldController);
 }
 
 /// Copies a [FormField] / widget validator onto [fieldController].

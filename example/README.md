@@ -88,6 +88,11 @@ fieldDefaults: const UnifiedInputFieldDefaults(
 
 Check **Phone** (`usePersianDigits: true`) and **Date** fields — they use the same theme `textStyle` as **Full name**.
 
+## 1.0.0 highlights
+
+- **Stable release** — depend on `unified_fields: ^1.0.0` (pubspec `1.0.0+1`)
+- **Bug fixes** — Persian digits on `UnifiedNumberField` with `usePersianDigitsGlobally`; date/range/duration `initState` + theme format styles; customizable form pickers clear errors when input becomes valid
+
 ## 0.2.8 highlights
 
 - **Patch** — `UnifiedDateField`, `UnifiedDateRangeField`, and `UnifiedDurationField` no longer read theme during `initState` (fixes crash with `UnifiedInputTheme` + `dateFormatStyle` / `durationFormatStyle`)
@@ -107,7 +112,7 @@ Check **Phone** (`usePersianDigits: true`) and **Date** fields — they use the 
 
 ## Package version
 
-This example tracks the parent package (**currently 0.2.8**). See the root
+This example tracks the parent package (**currently 1.0.0**). See the root
 [`CHANGELOG.md`](../CHANGELOG.md) for release notes.
 
 ## Publish checklist (package maintainers)
@@ -121,4 +126,4 @@ dart pub publish --dry-run
 dart pub publish   # when ready
 ```
 
-Ensure `CHANGELOG.md` and `pubspec.yaml` version match (**0.2.8**).
+Ensure `CHANGELOG.md` and `pubspec.yaml` version match (**1.0.0+1**).

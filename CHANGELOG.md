@@ -1,7 +1,24 @@
+## 1.0.0
+
+First stable release. The public API from **0.2.x** is unchanged; this version marks production readiness and rolls up bug fixes from **0.2.7** and **0.2.8**. Pubspec version is **`1.0.0+1`** (build metadata `+1` for consumers that track build numbers).
+
+### Fixes (included from 0.2.7 / 0.2.8)
+
+* **Customizable form pickers** — [UnifiedFormCustomizablePickerField] and multi/async variants clear the form error when the value becomes valid (`unifiedFormClearErrorIfValid` on controller updates). [CustomizableSinglePickerController] / [CustomizableMultiPickerController] revalidate on `applyTyped` / `applySelected`. Form `validator:` syncs to the controller for [UnifiedFieldValidation.validateFields] (`syncCustomizableSingleFormValidatorToFieldController` / `syncCustomizableMultiFormValidatorToFieldController`).
+* **`UnifiedNumberField` / `UnifiedNumericStepField`** — [UnifiedFieldsTypography.usePersianDigitsGlobally] localizes displayed digits on init, while typing, and from [UnifiedNumberFieldController]; input formatters accept Persian digits; theme `textStylePersian` applies via [UnifiedInputThemeResolver.fieldTextStyle]. Helpers: `formatUnifiedNumberFieldText`, `localizeUnifiedNumberDisplayText`.
+* **`UnifiedDateField` / `UnifiedDateRangeField` / `UnifiedDurationField`** — no longer read [UnifiedInputThemeScope] during `initState` when resolving `dateFormatStyle` / `durationFormatStyle` (fixes `dependOnInheritedWidgetOfExactType` was called before initState completed).
+* **Typed form validators** (0.2.7) — `FormFieldValidator<List<T>>`, nullable pickers, and `UnifiedFieldValidation.validateFields` stay aligned with `FormState.validate`.
+
+### Docs
+
+* README: **Upgrading to 1.0.0**, Persian digits on number fields, customizable picker validation. Example README updated.
+
 ## 0.2.8
 
 ### Fixes
 
+* **Customizable form pickers** — [UnifiedFormCustomizablePickerField], multi/async variants call [unifiedFormClearErrorIfValid] when the picker controller changes; [CustomizableSinglePickerController] / [CustomizableMultiPickerController] revalidate on `applyTyped` / `applySelected`. Form `validator:` syncs to the controller for [UnifiedFieldValidation.validateFields].
+* **`UnifiedNumberField` / `UnifiedNumericStepField`** — respect [UnifiedFieldsTypography.usePersianDigitsGlobally]: display text is localized on init, while typing, and from [UnifiedNumberFieldController]; input formatters accept Persian digits; theme `textStylePersian` applies via [UnifiedInputThemeResolver.fieldTextStyle].
 * **`UnifiedDateField` / `UnifiedDateRangeField` / `UnifiedDurationField`** — complete fix for `dependOnInheritedWidgetOfExactType<UnifiedInputThemeScope>() was called before initState() completed` when theme `dateFormatStyle` / `durationFormatStyle` is set. Format styles are cached in `didChangeDependencies` on all three widgets; `initState` uses field-only resolution until dependencies are available.
 
 ### Docs

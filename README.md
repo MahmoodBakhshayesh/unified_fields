@@ -36,7 +36,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.2.8
+  unified_fields: ^1.0.0
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -85,7 +85,7 @@ dependencies:
 | **Duration** | `UnifiedDurationField`, `showUnifiedFieldsDurationPicker`, `UnifiedFieldsDurationColumn`, `UnifiedFieldsDurationColumnPresets`, `UnifiedDurationGranularity`, `UnifiedFieldsDurationPickerStyle` | Wheel picker with fixed granularity or custom column order (year · week · day · hour, …) |
 | **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedFieldLabelMode`, `UnifiedInputDecoration`, `UnifiedInputDecorationSet`, `UnifiedInputFieldDefaults`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPhoneStyle`, `UnifiedPickerSheetStyle`, `UnifiedBasePickerSheetStyle`, `UnifiedPickerSheetModalSettings`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, per-state borders/fills, theme field defaults, phone/dial chrome, picker sheet chrome + modal flags, global theme scope, picker headers, aligned suffix icons |
 | **Controllers** | `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, `UnifiedAsyncPickerFieldController`, `UnifiedDateFieldController`, `UnifiedTimeOfDayFieldController`, `UnifiedDurationFieldController`, `UnifiedNumberFieldController`, `UnifiedPhoneFieldController`, `UnifiedFormController` | Listenable value + validation + imperative `openPicker` / `requestFocus` |
-| **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsTypography`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedPickerDefaultGridDelegate`, `unifiedPickerItemLabel`, `unifiedPickerDefaultItemWidget`, `unifiedPickerResolveListItem`, `showUnifiedSinglePickerSheet`, `showUnifiedMultiPickerSheet`, `showCustomWheelPicker`, `showUnifiedFieldsPickerBottomSheet`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, Persian digits, picker grid/list/wheel helpers, layout helpers, default colors, sheet actions |
+| **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsTypography`, `formatUnifiedNumberFieldText`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedPickerDefaultGridDelegate`, `unifiedPickerItemLabel`, `unifiedPickerDefaultItemWidget`, `unifiedPickerResolveListItem`, `showUnifiedSinglePickerSheet`, `showUnifiedMultiPickerSheet`, `showCustomWheelPicker`, `showUnifiedFieldsPickerBottomSheet`, `unifiedFormErrorText`, `unifiedFormClearErrorIfValid`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, Persian digits, number display helpers, picker grid/list/wheel helpers, layout helpers, default colors, sheet actions |
 | **Demo** | `UnifiedInputsShowcasePage` | Scrollable gallery of widgets + palette toggle |
 
 ---
@@ -249,6 +249,10 @@ typedef UnifiedFormResetValue<T> = T Function();
 | Lists | `UnifiedFormMultiPickerField`: `resetValue: () => const <T>[]` or `() => myList` |
 
 Nullable **return type** is carried by **`T`** on the picker (e.g. `RoastLevel?`), not by `T?` on the typedef.
+
+### Invalid → valid while editing
+
+After **`FormState.validate()`** shows an error, unified form fields clear that error when the current value passes **`validator`** again (without re-running full-form validate on every keystroke). This applies to text, pickers, dates, numbers, and **`UnifiedFormCustomizable*`** fields. Controllers with **`fieldController`** use the same rule via **`applyValueFromUser`** / **`validate()`**.
 
 ---
 
@@ -649,6 +653,8 @@ UnifiedMultiPickerField<String>(
 
 **Customizable** APIs (`unified_cutomizable_picker_fields.dart` — filename keeps the historical typo **cutomizable**): single or multi selection with **`CustomizableSinglePickerController`** / **`CustomizableMultiPickerController`** plus async siblings for remote data. Each controller carries either typed text **or** the selected value(s); the matching **`UnifiedFormCustomizable…`** wrappers expose `resetValue` snapshots so `FormState.reset` restores both the mode and the payload in one step.
 
+**Form validation:** `validator` receives the **controller** (not `T?`). Inspect `fieldDisplayText`, `selectedItem`, `selectedItems`, or `inputKind`. After `FormState.validate()` shows an error, typing or picking a valid value clears the error automatically (same invalid→valid behavior as other unified form fields).
+
 ---
 
 ## Phone (`UnifiedPhoneField`)
@@ -958,7 +964,7 @@ void main() {
 }
 ```
 
-By default only Shamsi UI uses Persian digits (`usePersianDigitsInShamsi: true`). Set `usePersianDigitsGlobally: true` to apply the font and digit mapping to every field (including `UnifiedBaseTextField`, numeric step fields, duration wheels, and **`UnifiedPhoneField`**).
+By default only Shamsi UI uses Persian digits (`usePersianDigitsInShamsi: true`). Set `usePersianDigitsGlobally: true` to apply the font and digit mapping to every field (including `UnifiedBaseTextField`, **`UnifiedNumberField`** / **`UnifiedFormNumberField`**, duration wheels, and **`UnifiedPhoneField`**). Numeric fields localize on init, while typing, and when the controller value changes.
 
 On the phone field, set **`usePersianDigits: true`** or **`digitCalendarKind: UnifiedFieldsCalendarKind.jalali`** to localize dial codes and national digits (input accepts ۰–۹). Use **`UnifiedCountry.localizedDialCode`** / **`UnifiedPhoneNumber.localizedDisplay`** outside the field.
 
@@ -1025,13 +1031,23 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.2.8`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`1.0.0`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+
+### Upgrading to 1.0.0
+
+From **0.2.8** or **0.2.7**:
+
+* **No intentional API breaks.** Semver major marks a stable API; depend with `unified_fields: ^1.0.0`.
+* **Bug fixes you may have hit on 0.2.x** — Persian digits on number fields with `usePersianDigitsGlobally`; `initState` crash when theme `dateFormatStyle` / `durationFormatStyle` is set; customizable form pickers not clearing errors when the value becomes valid.
+* **Customizable validators** — use `(c) => …` where `c` is `CustomizableSinglePickerController<T>` / `CustomizableMultiPickerController<T>`; see [Pickers](#pickers-unifiedpickerfield--sheets).
+
+From **0.2.6** or earlier, continue with the sections below.
 
 ### Upgrading to 0.2.8
 
 From **0.2.7**:
 
-* **No API changes.** Patch release fixing `initState` + `UnifiedInputTheme` on date, date range, and duration fields when theme format styles are set. Upgrade if you saw `dependOnInheritedWidgetOfExactType` was called before `initState` completed.
+* Same fixes as listed under [Upgrading to 1.0.0](#upgrading-to-100) (now shipped in **1.0.0**).
 
 ### Upgrading to 0.2.7
 

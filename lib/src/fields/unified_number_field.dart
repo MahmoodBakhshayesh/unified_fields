@@ -148,6 +148,11 @@ class UnifiedNumberField extends StatelessWidget {
     );
     final d = chrome.resolved;
     final palette = UnifiedInputThemeResolver.resolvePalette(context);
+    final fieldStyle = UnifiedInputThemeResolver.fieldTextStyle(
+      context,
+      decorationStyle: d.fieldStyle,
+      widgetStyle: style,
+    );
 
     return UnifiedNumericStepField(
       decorationSet: chrome.activeSet,
@@ -165,7 +170,7 @@ class UnifiedNumberField extends StatelessWidget {
       backgroundColor: d.backgroundColor ?? palette.bodyBackground,
       headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor,
       height: d.height,
-      style: style ?? d.fieldStyle,
+      style: fieldStyle ?? style ?? d.fieldStyle,
       allowDecimals: allowDecimals,
       step: step,
       min: min,

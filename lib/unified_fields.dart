@@ -10,6 +10,7 @@ library;
 export 'src/unified_colors.dart';
 export 'src/unified_fields_strings.dart';
 export 'src/unified_fields_typography.dart';
+export 'src/unified_number_format.dart';
 export 'src/unified_time_picker_types.dart';
 export 'src/unified_time_format.dart';
 export 'src/unified_hms_wheel_picker_sheet.dart';

@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '../unified_fields_typography.dart';
+import '../unified_number_format.dart';
 import 'base_unified_field_controller.dart';
 import 'unified_text_field_controller.dart';
 
@@ -18,7 +20,13 @@ class UnifiedNumberFieldController extends BaseUnifiedFieldController<num> {
     this.max,
     this.fractionDigits,
   }) : text = UnifiedTextFieldController(
-         initialValue: initialValue?.toString(),
+         initialValue: initialValue == null
+             ? null
+             : formatUnifiedNumberFieldText(
+                 initialValue,
+                 allowDecimals: allowDecimals,
+                 fractionDigits: fractionDigits,
+               ),
          focusNode: focusNode,
        ),
        super(initialValue: initialValue) {
@@ -44,16 +52,27 @@ class UnifiedNumberFieldController extends BaseUnifiedFieldController<num> {
   final int? fractionDigits;
 
   void _syncFromText() {
+    final normalized = UnifiedFieldsTypography.fromPersianDigits(
+      text.textController.text.trim(),
+    );
     final parsed =
-        num.tryParse(text.textController.text.trim()) ??
-        double.tryParse(text.textController.text.trim());
+        num.tryParse(normalized) ?? double.tryParse(normalized);
     applyValueFromUser(parsed);
+  }
+
+  String _displayTextForValue(num? next) {
+    if (next == null) return '';
+    return formatUnifiedNumberFieldText(
+      next,
+      allowDecimals: allowDecimals,
+      fractionDigits: fractionDigits,
+    );
   }
 
   @override
   set value(num? next) {
     super.value = next;
-    final s = next?.toString() ?? '';
+    final s = _displayTextForValue(next);
     if (text.textController.text != s) {
       text.textController.text = s;
     }

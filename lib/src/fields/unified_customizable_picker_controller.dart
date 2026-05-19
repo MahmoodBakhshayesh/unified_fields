@@ -89,12 +89,17 @@ class CustomizableSinglePickerController<T>
     return super.validate();
   }
 
+  void _revalidateAfterUserEdit() {
+    if (hasError) validate();
+  }
+
   /// Switches to typed mode and updates the typed text.
   void applyTyped(String text) {
     _kind = CustomizablePickerInputKind.typed;
     _typedText = text;
     _selected = null;
     silentSetValue(null);
+    _revalidateAfterUserEdit();
     notifyListeners();
   }
 
@@ -104,6 +109,7 @@ class CustomizableSinglePickerController<T>
     _selected = v;
     _typedText = '';
     silentSetValue(v);
+    _revalidateAfterUserEdit();
     notifyListeners();
   }
 
@@ -321,12 +327,17 @@ class CustomizableMultiPickerController<T>
     return super.validate();
   }
 
+  void _revalidateAfterUserEdit() {
+    if (hasError) validate();
+  }
+
   /// Switches to typed mode and updates the typed text.
   void applyTyped(String text) {
     _kind = CustomizablePickerInputKind.typed;
     _typedText = text;
     _selected = const [];
     silentSetValue(null);
+    _revalidateAfterUserEdit();
     notifyListeners();
   }
 
@@ -336,6 +347,7 @@ class CustomizableMultiPickerController<T>
     _selected = List<T>.from(values);
     _typedText = '';
     silentSetValue(_selected);
+    _revalidateAfterUserEdit();
     notifyListeners();
   }
 

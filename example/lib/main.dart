@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:unified_fields/unified_fields.dart';
 
 void main() {
+  UnifiedFieldsTypography.instance = const UnifiedFieldsTypography(
+    usePersianDigitsGlobally: true, // all unified text / number fields
+    // persianFontFamily: 'YourAppNumFont', // optional
+  );
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     UnifiedInputThemeScope(
@@ -17,10 +21,11 @@ void main() {
 
           labelMode: UnifiedFieldLabelMode.labelInRow,
           borderRadius: BorderRadius.all(Radius.circular(8)),
-          textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w900),
+          textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w100,fontFamily: 'KookFaNum',color: Colors.blue),
           textStylePersian: TextStyle(
             fontSize: 15,
             fontFamily: UnifiedFieldsTypography.kUnifiedFieldsDefaultPersianFontFamily,
+            color: Colors.red
           ),
           placeholderStyle: TextStyle(fontSize: 14,fontWeight: FontWeight.w500),
           labelInRowStyle: UnifiedInputLabelModeStyle(
