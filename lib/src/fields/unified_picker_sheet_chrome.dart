@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../unified_fields_strings.dart';
 import '../unified_sheet_button.dart';
 import 'unified_input_theme.dart';
-import 'unified_picker_sheet_style.dart';
 
 /// Shared title bar for [PickerSheetWidget] and [MultiPickerSheetWidget].
 ///
@@ -17,7 +16,6 @@ class UnifiedPickerSheetHeader extends StatelessWidget {
     super.key,
     required this.title,
     this.titleWidget,
-    this.helpText,
     this.helpWidget,
     this.showClear = false,
     this.onClear,
@@ -25,6 +23,7 @@ class UnifiedPickerSheetHeader extends StatelessWidget {
     this.closeButton,
     this.clearButton,
     this.pickerHeaderStyle,
+    this.sheetBorderRadius,
   });
 
   /// Title text (already localized by the caller when needed).
@@ -33,10 +32,7 @@ class UnifiedPickerSheetHeader extends StatelessWidget {
   /// When set, used instead of [Text] for [title].
   final Widget? titleWidget;
 
-  /// Help line (overrides theme [UnifiedInputPickerHeaderStyle.helpText] when set).
-  final String? helpText;
-
-  /// Custom help widget; wins over [helpText].
+  /// Help slot (overrides theme [UnifiedInputPickerHeaderStyle.helpWidget] when set).
   final Widget? helpWidget;
 
   /// Whether to show the Clear action.
@@ -56,6 +52,9 @@ class UnifiedPickerSheetHeader extends StatelessWidget {
 
   /// Merged on top of [UnifiedInputThemeData.pickerHeaderStyle] for this sheet.
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
+
+  /// Top corners of the sheet; defaults to 12px top radius when null.
+  final BorderRadius? sheetBorderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -94,12 +93,11 @@ class UnifiedPickerSheetHeader extends StatelessWidget {
             textDirection: textDirection,
           ),
     );
-    final helpChild = helpWidget ??
-        _helpFromString(
-          helpText ?? style.helpText,
-          helpStyle,
-          textDirection: textDirection,
-        );
+    final helpChild = _styledHelp(
+      helpWidget ?? style.helpWidget,
+      helpStyle,
+      textDirection: textDirection,
+    );
     final closeChild = closeButton ?? const CloseButton();
     final clearChild = showClear
         ? (clearButton ??
@@ -133,10 +131,17 @@ class UnifiedPickerSheetHeader extends StatelessWidget {
       }
     }
 
+    final sheetRadius = sheetBorderRadius ??
+        const BorderRadius.vertical(top: Radius.circular(12));
+    final headerRadius = BorderRadius.only(
+      topLeft: sheetRadius.topLeft,
+      topRight: sheetRadius.topRight,
+    );
+
     return Container(
       decoration: BoxDecoration(
         color: background,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        borderRadius: headerRadius,
       ),
       padding: padding,
       child: Directionality(
@@ -150,19 +155,21 @@ class UnifiedPickerSheetHeader extends StatelessWidget {
     );
   }
 
-  static Widget? _helpFromString(
-    String? text,
+  static Widget? _styledHelp(
+    Widget? widget,
     TextStyle style, {
     required TextDirection textDirection,
   }) {
-    if (text == null || text.isEmpty) return null;
+    if (widget == null) return null;
     return Padding(
       padding: const EdgeInsetsDirectional.symmetric(horizontal: 8),
-      child: Text(
-        text,
-        style: style,
-        textAlign: TextAlign.start,
+      child: Directionality(
         textDirection: textDirection,
+        child: DefaultTextStyle.merge(
+          style: style,
+          textAlign: TextAlign.start,
+          child: widget,
+        ),
       ),
     );
   }

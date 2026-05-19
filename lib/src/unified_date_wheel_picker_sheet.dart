@@ -26,6 +26,7 @@ class UnifiedFieldsDateWheelPickerSheet extends StatefulWidget {
     this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
     this.granularity = UnifiedFieldsDatePickerGranularity.day,
     this.wheelStyle,
+    this.datePickerStyle,
     this.showWeekdayInWheel = true,
     this.onConfirmedCalendarKind,
   });
@@ -53,6 +54,9 @@ class UnifiedFieldsDateWheelPickerSheet extends StatefulWidget {
 
   /// Optional wheel chrome; defaults from theme + [UnifiedInputPalette].
   final UnifiedFieldsDateWheelStyle? wheelStyle;
+
+  /// Pre-resolved sheet chrome (header, toggles, confirm); includes [wheelStyle] slot.
+  final UnifiedInputDatePickerStyle? datePickerStyle;
 
   /// When true (default), the day wheel shows weekday names beside the day numeral.
   final bool showWeekdayInWheel;
@@ -83,8 +87,15 @@ class _UnifiedFieldsDateWheelPickerSheetState
   String _digitText(String text) => UnifiedFieldsTypography.instance
       .localizeDigits(text, calendarKind: _kind);
 
-  TextStyle _digitStyle(TextStyle style) => UnifiedFieldsTypography.instance
-      .mergeDigitStyle(style, calendarKind: _kind);
+  UnifiedInputDatePickerStyle _pickerChrome(BuildContext context) =>
+      widget.datePickerStyle ??
+      UnifiedInputThemeResolver.resolveDatePickerStyle(context);
+
+  TextStyle _digitStyle(BuildContext context, TextStyle style) =>
+      UnifiedFieldsTypography.instance.mergeDigitStyle(
+        _pickerChrome(context).calendarTextStyle(style, _kind),
+        calendarKind: _kind,
+      );
 
   late DateTime _first;
   late DateTime _last;
@@ -389,6 +400,7 @@ class _UnifiedFieldsDateWheelPickerSheetState
           label,
           textAlign: TextAlign.center,
           style: _digitStyle(
+            context,
             TextStyle(
               fontSize: 12,
               letterSpacing: 0.2,
@@ -414,6 +426,7 @@ class _UnifiedFieldsDateWheelPickerSheetState
           _digitText(label),
           textAlign: TextAlign.center,
           style: _digitStyle(
+            context,
             TextStyle(fontSize: 17, height: 1.0, color: color),
           ),
           maxLines: 1,
@@ -431,6 +444,7 @@ class _UnifiedFieldsDateWheelPickerSheetState
     required double weekdayWidth,
   }) {
     final textStyle = _digitStyle(
+      context,
       TextStyle(fontSize: 17, height: 1.0, color: color),
     );
     if (row.weekday == null) {
@@ -791,10 +805,15 @@ class _UnifiedFieldsDateWheelPickerSheetState
     final theme = Theme.of(context);
     final palette = _palette(theme.brightness);
     final strings = UnifiedFieldsStrings.instance;
+    final chrome = widget.datePickerStyle ??
+        UnifiedInputThemeResolver.resolveDatePickerStyle(
+          context,
+          palette: palette,
+        );
     final wheelStyle = UnifiedFieldsDateWheelStyle.forPicker(
       palette,
       theme,
-      overrides: widget.wheelStyle,
+      overrides: chrome.wheelStyle?.merge(widget.wheelStyle) ?? widget.wheelStyle,
       context: context,
     );
     final titleText = (widget.title ?? '').trim();
@@ -804,10 +823,7 @@ class _UnifiedFieldsDateWheelPickerSheetState
     ).isNotEmpty;
 
     return Material(
-      color: UnifiedInputThemeResolver.resolvePickerSheetBackground(
-        context,
-        palette: palette,
-      ),
+      color: chrome.sheetBackgroundColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -819,17 +835,14 @@ class _UnifiedFieldsDateWheelPickerSheetState
                 Expanded(
                   child: Text(
                     titleText.isEmpty ? strings.date : titleText,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: palette.fieldTextColor,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: _digitStyle(context, chrome.titleStyle!),
                   ),
                 ),
                 IconButton(
                   tooltip: strings.cancel,
                   icon: Icon(
                     Icons.close_rounded,
-                    color: palette.fieldTextColor.withValues(alpha: 0.85),
+                    color: chrome.closeIconColor,
                   ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
@@ -844,15 +857,15 @@ class _UnifiedFieldsDateWheelPickerSheetState
                   visualDensity: VisualDensity.compact,
                   foregroundColor: WidgetStateProperty.resolveWith((states) {
                     if (states.contains(WidgetState.selected)) {
-                      return theme.colorScheme.onPrimary;
+                      return chrome.calendarToggleSelectedForeground;
                     }
-                    return palette.fieldTextColor;
+                    return chrome.calendarToggleForeground;
                   }),
                   backgroundColor: WidgetStateProperty.resolveWith((states) {
                     if (states.contains(WidgetState.selected)) {
-                      return theme.colorScheme.primary;
+                      return chrome.calendarToggleSelectedBackground;
                     }
-                    return palette.sheetHeaderBackground;
+                    return chrome.calendarToggleBackground;
                   }),
                 ),
                 segments: [
@@ -880,6 +893,11 @@ class _UnifiedFieldsDateWheelPickerSheetState
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
+                  style: chrome.cancelButtonTextStyle != null
+                      ? TextButton.styleFrom(
+                          textStyle: chrome.cancelButtonTextStyle,
+                        )
+                      : null,
                   child: Text(strings.cancel),
                 ),
                 const Spacer(),
@@ -888,6 +906,11 @@ class _UnifiedFieldsDateWheelPickerSheetState
                     widget.onConfirmedCalendarKind?.call(_kind);
                     Navigator.of(context).pop(_selected);
                   },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: chrome.confirmButtonBackground,
+                    foregroundColor: chrome.confirmButtonForeground,
+                    textStyle: chrome.confirmButtonTextStyle,
+                  ),
                   child: Text(strings.confirm),
                 ),
               ],

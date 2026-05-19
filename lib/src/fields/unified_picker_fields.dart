@@ -11,7 +11,6 @@ import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_item_builders.dart';
 import 'unified_picker_sheet.dart';
-import 'unified_picker_sheet_style.dart';
 
 /// Single-select field backed by [PickerSheetWidget] (search + scroll-to-item list).
 class UnifiedSinglePickerField<T> extends StatefulWidget {
@@ -45,6 +44,7 @@ class UnifiedSinglePickerField<T> extends StatefulWidget {
     this.pickerSheetStyle,
     this.pickerSheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.pickerSheetModalSettings,
   });
 
   /// Choices shown in the picker sheet.
@@ -130,6 +130,9 @@ class UnifiedSinglePickerField<T> extends StatefulWidget {
   /// Header override (wins over [pickerSheetStyle] and theme).
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
+  /// Modal flags override (`isScrollControlled`, `isDismissible`, …).
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
+
   @override
   State<UnifiedSinglePickerField<T>> createState() =>
       _UnifiedSinglePickerFieldState<T>();
@@ -141,7 +144,7 @@ class _UnifiedSinglePickerFieldState<T>
 
   String _display(T? v) {
     if (v == null) return '';
-    return widget.valueToString?.call(v) ?? v.toString();
+    return unifiedPickerItemLabel(v, valueToString: widget.valueToString);
   }
 
   T? get _effective => unifiedEffectiveValue(
@@ -267,9 +270,10 @@ class _UnifiedSinglePickerFieldState<T>
       brightness: widget.brightness,
     );
     FocusScope.of(context).requestFocus(FocusNode());
-    final dynamic result = await showModalBottomSheet<dynamic>(
+    final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
-      isScrollControlled: true,
+      pickerSheetStyle: widget.pickerSheetStyle,
+      modalSettings: widget.pickerSheetModalSettings,
       builder: (c) => Padding(
         padding: EdgeInsets.zero,
         child: PickerSheetWidget<T>(
@@ -280,6 +284,7 @@ class _UnifiedSinglePickerFieldState<T>
           searchBuilder: widget.searchBuilder,
           items: widget.items,
           label: dec.placeholder ?? dec.label ?? widget.label,
+          valueToString: widget.valueToString,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,
@@ -417,6 +422,7 @@ class UnifiedMultiPickerField<T> extends StatefulWidget {
     this.pickerSheetStyle,
     this.pickerSheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.pickerSheetModalSettings,
   });
 
   /// Choices shown in the picker sheet.
@@ -502,6 +508,9 @@ class UnifiedMultiPickerField<T> extends StatefulWidget {
   /// Header override (wins over [pickerSheetStyle] and theme).
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
+  /// Modal flags override (`isScrollControlled`, `isDismissible`, …).
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
+
   @override
   State<UnifiedMultiPickerField<T>> createState() =>
       _UnifiedMultiPickerFieldState<T>();
@@ -518,7 +527,11 @@ class _UnifiedMultiPickerFieldState<T>
   );
 
   String _display(List<T> vs) =>
-      vs.map((e) => widget.valueToString?.call(e) ?? e.toString()).join(', ');
+      vs
+          .map(
+            (e) => unifiedPickerItemLabel(e, valueToString: widget.valueToString),
+          )
+          .join(', ');
 
   void _syncText() {
     _txt.text = _display(_effective);
@@ -639,9 +652,10 @@ class _UnifiedMultiPickerFieldState<T>
       pickerHeaderStyle: widget.pickerHeaderStyle,
     );
     FocusScope.of(context).requestFocus(FocusNode());
-    final dynamic result = await showModalBottomSheet<dynamic>(
+    final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
-      isScrollControlled: true,
+      pickerSheetStyle: widget.pickerSheetStyle,
+      modalSettings: widget.pickerSheetModalSettings,
       builder: (c) => Padding(
         padding: EdgeInsets.zero,
         child: MultiPickerSheetWidget<T>(
@@ -652,6 +666,7 @@ class _UnifiedMultiPickerFieldState<T>
           searchBuilder: widget.searchBuilder,
           items: widget.items,
           label: dec.placeholder ?? dec.label ?? widget.label,
+          valueToString: widget.valueToString,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,

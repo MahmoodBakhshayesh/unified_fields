@@ -1,8 +1,9 @@
 name: unified_fields
+
 description: >-
   Unified Flutter form fields, phone input with country flags, pickers,
   Jalali/Gregorian date and time, Persian digits, and Form validate/save/reset.
-version: 0.2.5
+version: 0.2.6
 homepage: https://github.com/MahmoodBakhshayesh/unified_fields
 repository: https://github.com/MahmoodBakhshayesh/unified_fields
 issue_tracker: https://github.com/MahmoodBakhshayesh/unified_fields/issues

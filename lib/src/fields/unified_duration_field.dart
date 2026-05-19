@@ -75,8 +75,16 @@ Future<Duration?> showUnifiedFieldsDurationPicker({
       UnifiedFieldsCalendarKind.gregorian,
   UnifiedFieldsDateWheelStyle? wheelStyle,
   ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind,
-  bool barrierDismissible = true,
+  bool? barrierDismissible,
+  UnifiedPickerSheetStyle? pickerSheetStyle,
+  UnifiedPickerSheetModalSettings? pickerSheetModalSettings,
 }) {
+  final modal = UnifiedPickerSheetModalSettings.resolve(
+    context,
+    pickerSheetStyle: pickerSheetStyle,
+    fieldOverride: pickerSheetModalSettings,
+    legacyIsDismissible: barrierDismissible,
+  );
   final columns = resolveUnifiedDurationColumns(
     pickerColumns: pickerColumns,
     granularity: granularity,
@@ -84,10 +92,10 @@ Future<Duration?> showUnifiedFieldsDurationPicker({
   final clamped = unifiedClampDuration(initial, min, max);
 
   if (pickerStyle == UnifiedFieldsDurationPickerStyle.cupertino) {
-    return showModalBottomSheet<Duration?>(
+    return showUnifiedFieldsPickerBottomSheet<Duration?>(
       context: context,
-      isScrollControlled: true,
-      isDismissible: barrierDismissible,
+      pickerSheetStyle: pickerSheetStyle,
+      modalSettings: modal,
       builder: (ctx) {
         final palette = UnifiedInputThemeResolver.resolvePalette(context);
         return UnifiedDurationPickerSheet(
@@ -118,7 +126,7 @@ Future<Duration?> showUnifiedFieldsDurationPicker({
   if (context.unifiedFieldsUseDialogLayout) {
     return showDialog<Duration>(
       context: context,
-      barrierDismissible: barrierDismissible,
+      barrierDismissible: modal.isDismissible!,
       builder: (ctx) => Dialog(
         clipBehavior: Clip.antiAlias,
         insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
@@ -134,12 +142,10 @@ Future<Duration?> showUnifiedFieldsDurationPicker({
     ).then((d) => d == null ? null : unifiedClampDuration(d, min, max));
   }
 
-  return showModalBottomSheet<Duration>(
+  return showUnifiedFieldsPickerBottomSheet<Duration>(
     context: context,
-    isScrollControlled: true,
-    isDismissible: barrierDismissible,
-    enableDrag: false,
-    useSafeArea: true,
+    pickerSheetStyle: pickerSheetStyle,
+    modalSettings: modal,
     clipBehavior: Clip.antiAlias,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(22)),

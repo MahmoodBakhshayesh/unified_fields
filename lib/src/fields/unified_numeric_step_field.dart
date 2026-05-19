@@ -628,7 +628,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       keyboardType: _keyboardType,
       inputFormatters: _formatters,
       textAlign: widget.textAlign,
-      style: widget.style ?? TextStyle(color: UnifiedColors.textColorDark),
+      style: widget.style,
       padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 4),
       disabled: widget.disabled,
       isDisabled: widget.isDisabled,

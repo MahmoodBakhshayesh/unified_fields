@@ -68,8 +68,7 @@ class CustomizableSinglePickerController<T>
       case CustomizablePickerInputKind.selected:
         final v = _selected;
         if (v == null) return '';
-        final fn = valueToString;
-        return fn != null ? fn(v as T) : v.toString();
+        return unifiedPickerItemLabel(v as T, valueToString: valueToString);
       case CustomizablePickerInputKind.typed:
         return _typedText;
     }
@@ -230,6 +229,7 @@ class CustomizableSinglePickerController<T>
       hasClear: _boundShowClearButton,
       searchAutoFocus: _boundSearchAutoFocus,
       searchBuilder: _boundSearchBuilder,
+      valueToString: valueToString,
       itemToWidget: _boundItemToWidget,
       gridItemBuilder: _boundGridItemBuilder,
       gridDelegate: _boundGridDelegate,
@@ -296,9 +296,10 @@ class CustomizableMultiPickerController<T>
   String get fieldDisplayText {
     switch (_kind) {
       case CustomizablePickerInputKind.selected:
-        final fn = valueToString;
         return _selected
-            .map((e) => fn != null ? fn(e) : e.toString())
+            .map(
+              (e) => unifiedPickerItemLabel(e, valueToString: valueToString),
+            )
             .join(', ');
       case CustomizablePickerInputKind.typed:
         return _typedText;
@@ -462,6 +463,7 @@ class CustomizableMultiPickerController<T>
       hasClear: _boundShowClearButton,
       searchAutoFocus: _boundSearchAutoFocus,
       searchBuilder: _boundSearchBuilder,
+      valueToString: valueToString,
       itemToWidget: _boundItemToWidget,
       gridItemBuilder: _boundGridItemBuilder,
       gridDelegate: _boundGridDelegate,

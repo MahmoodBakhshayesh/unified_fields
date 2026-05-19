@@ -21,6 +21,7 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
     this.mode = DatePickerEntryMode.calendar,
     this.pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
     this.wheelStyle,
+    this.datePickerStyle,
     this.showWeekdayInWheel = true,
   }) : _calendarKind = calendarKind,
        super(initialValue: initialValue);
@@ -48,6 +49,9 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
 
   /// Optional wheel chrome when [pickerStyle] is [UnifiedFieldsDatePickerStyle.wheels].
   final UnifiedFieldsDateWheelStyle? wheelStyle;
+
+  /// Picker sheet chrome (calendar + header); merged with theme [datePickerStyle].
+  final UnifiedInputDatePickerStyle? datePickerStyle;
 
   /// Show weekday names in the day wheel column.
   final bool showWeekdayInWheel;
@@ -103,6 +107,7 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
       pickerStyle: pickerStyle,
       initialCalendarKind: calendarKind,
       wheelStyle: wheelStyle,
+      datePickerStyle: datePickerStyle,
       showWeekdayInWheel: showWeekdayInWheel,
       onConfirmedCalendarKind: (kind) => calendarKind = kind,
     );

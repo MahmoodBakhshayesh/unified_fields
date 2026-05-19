@@ -104,6 +104,7 @@ class UnifiedDateField extends StatefulWidget {
     this.pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
     this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
     this.wheelStyle,
+    this.datePickerStyle,
     this.showWeekdayInWheel = true,
     this.style,
   });
@@ -203,6 +204,12 @@ class UnifiedDateField extends StatefulWidget {
 
   /// Optional wheel chrome when [pickerStyle] is [UnifiedFieldsDatePickerStyle.wheels].
   final UnifiedFieldsDateWheelStyle? wheelStyle;
+
+  /// Picker sheet chrome (calendar days, sheet background, header, toggles, buttons).
+  ///
+  /// Merged with [UnifiedInputThemeData.datePickerStyle]. [wheelStyle] on this object
+  /// is combined with [wheelStyle] on the field.
+  final UnifiedInputDatePickerStyle? datePickerStyle;
 
   /// When [pickerStyle] is wheels, show weekday names in the day column.
   final bool showWeekdayInWheel;
@@ -407,6 +414,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
       pickerStyle: fc?.pickerStyle ?? widget.pickerStyle,
       initialCalendarKind: _effectiveCalendarKind,
       wheelStyle: fc?.wheelStyle ?? widget.wheelStyle,
+      datePickerStyle: fc?.datePickerStyle ?? widget.datePickerStyle,
       showWeekdayInWheel: fc?.showWeekdayInWheel ?? widget.showWeekdayInWheel,
       onConfirmedCalendarKind: _onPickerConfirmedCalendarKind,
     );
@@ -512,6 +520,7 @@ class UnifiedDateRangeField extends StatefulWidget {
     this.isDisabled = false,
     this.locked = false,
     this.style,
+    this.datePickerStyle,
     this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
   });
 
@@ -571,6 +580,9 @@ class UnifiedDateRangeField extends StatefulWidget {
 
   /// Value text style; overrides theme [UnifiedInputFieldDefaults.textStyle] when set.
   final TextStyle? style;
+
+  /// Picker sheet chrome; merged with [UnifiedInputThemeData.datePickerStyle].
+  final UnifiedInputDatePickerStyle? datePickerStyle;
 
   /// Calendar kind for digit localization and Persian [textStylePersian].
   final UnifiedFieldsCalendarKind initialCalendarKind;
@@ -671,6 +683,7 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
         lastDate: widget.max ?? DateTime(3000),
         title: title,
         showCalendarKindToggle: widget.showCalendarKindToggle,
+        datePickerStyle: widget.datePickerStyle,
       );
     }
     if (!context.mounted || picked == null) return;

@@ -11,7 +11,6 @@ import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_item_builders.dart';
 import 'unified_picker_sheet.dart';
-import 'unified_picker_sheet_style.dart';
 
 /// Like [UnifiedSinglePickerField] but loads choices with [itemProvider] when the
 /// field or dropdown [IconButton] is pressed (suffix spinner while loading, then sheet).
@@ -46,6 +45,7 @@ class UnifiedAsyncPickerField<T> extends StatefulWidget {
     this.pickerSheetStyle,
     this.pickerSheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.pickerSheetModalSettings,
   });
 
   /// Fetched when the user opens the picker; replaces a static [items] list.
@@ -130,6 +130,9 @@ class UnifiedAsyncPickerField<T> extends StatefulWidget {
   /// Header override (wins over [pickerSheetStyle] and theme).
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
+  /// Modal flags override (`isScrollControlled`, `isDismissible`, …).
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
+
   @override
   State<UnifiedAsyncPickerField<T>> createState() =>
       _UnifiedAsyncPickerFieldState<T>();
@@ -143,7 +146,7 @@ class _UnifiedAsyncPickerFieldState<T>
 
   String _display(T? v) {
     if (v == null) return '';
-    return widget.valueToString?.call(v) ?? v.toString();
+    return unifiedPickerItemLabel(v, valueToString: widget.valueToString);
   }
 
   T? get _effective => unifiedEffectiveValue(
@@ -278,9 +281,10 @@ class _UnifiedAsyncPickerFieldState<T>
       pickerHeaderStyle: widget.pickerHeaderStyle,
     );
     FocusScope.of(context).requestFocus(FocusNode());
-    final dynamic result = await showModalBottomSheet<dynamic>(
+    final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
-      isScrollControlled: true,
+      pickerSheetStyle: widget.pickerSheetStyle,
+      modalSettings: widget.pickerSheetModalSettings,
       builder: (c) => Padding(
         padding: EdgeInsets.zero,
         child: PickerSheetWidget<T>(
@@ -291,6 +295,7 @@ class _UnifiedAsyncPickerFieldState<T>
           searchBuilder: widget.searchBuilder,
           items: _items,
           label: dec.placeholder ?? dec.label ?? widget.label,
+          valueToString: widget.valueToString,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,
@@ -431,6 +436,7 @@ class UnifiedAsyncMultiPickerField<T> extends StatefulWidget {
     this.pickerSheetStyle,
     this.pickerSheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.pickerSheetModalSettings,
   });
 
   /// Fetched when the user opens the picker; replaces a static items list.
@@ -515,6 +521,9 @@ class UnifiedAsyncMultiPickerField<T> extends StatefulWidget {
   /// Header override (wins over [pickerSheetStyle] and theme).
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
+  /// Modal flags override (`isScrollControlled`, `isDismissible`, …).
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
+
   @override
   State<UnifiedAsyncMultiPickerField<T>> createState() =>
       _UnifiedAsyncMultiPickerFieldState<T>();
@@ -532,8 +541,11 @@ class _UnifiedAsyncMultiPickerFieldState<T>
     direct: widget.values,
   );
 
-  String _display(List<T> vs) =>
-      vs.map((e) => widget.valueToString?.call(e) ?? e.toString()).join(', ');
+  String _display(List<T> vs) => vs
+      .map(
+        (e) => unifiedPickerItemLabel(e, valueToString: widget.valueToString),
+      )
+      .join(', ');
 
   void _syncText() {
     _txt.text = _display(_effective);
@@ -663,9 +675,10 @@ class _UnifiedAsyncMultiPickerFieldState<T>
       pickerHeaderStyle: widget.pickerHeaderStyle,
     );
     FocusScope.of(context).requestFocus(FocusNode());
-    final dynamic result = await showModalBottomSheet<dynamic>(
+    final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
-      isScrollControlled: true,
+      pickerSheetStyle: widget.pickerSheetStyle,
+      modalSettings: widget.pickerSheetModalSettings,
       builder: (c) => Padding(
         padding: EdgeInsets.zero,
         child: MultiPickerSheetWidget<T>(
@@ -676,6 +689,7 @@ class _UnifiedAsyncMultiPickerFieldState<T>
           searchBuilder: widget.searchBuilder,
           items: _items,
           label: dec.placeholder ?? dec.label ?? widget.label,
+          valueToString: widget.valueToString,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,

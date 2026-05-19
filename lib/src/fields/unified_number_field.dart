@@ -45,6 +45,7 @@ class UnifiedNumberField extends StatelessWidget {
     this.decrementIcon = Icons.remove_rounded,
     this.incrementIcon = Icons.add_rounded,
     this.textAlign = TextAlign.center,
+    this.style,
   });
 
   /// Visual chrome.
@@ -134,6 +135,9 @@ class UnifiedNumberField extends StatelessWidget {
   /// Horizontal alignment of the numeric value.
   final TextAlign textAlign;
 
+  /// Value text style; overrides theme [UnifiedInputFieldDefaults.textStyle] when set.
+  final TextStyle? style;
+
   @override
   Widget build(BuildContext context) {
     final chrome = resolveUnifiedFieldDecorationContext(
@@ -161,7 +165,7 @@ class UnifiedNumberField extends StatelessWidget {
       backgroundColor: d.backgroundColor ?? palette.bodyBackground,
       headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor,
       height: d.height,
-      style: d.fieldStyle,
+      style: style ?? d.fieldStyle,
       allowDecimals: allowDecimals,
       step: step,
       min: min,

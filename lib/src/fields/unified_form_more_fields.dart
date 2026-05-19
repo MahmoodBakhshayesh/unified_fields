@@ -20,7 +20,7 @@ import 'unified_numeric_step_buttons.dart';
 import 'unified_number_field.dart';
 import 'unified_picker_fields.dart';
 import 'unified_picker_item_builders.dart';
-import 'unified_picker_sheet_style.dart';
+import 'unified_input_theme.dart';
 import 'unified_time_of_day_field.dart';
 
 bool _unifiedListsEqual<T>(List<T>? a, List<T> b) {
@@ -66,6 +66,7 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
     this.pickerSheetStyle,
     this.pickerSheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.pickerSheetModalSettings,
   });
 
   /// Choices shown in the picker sheet.
@@ -91,6 +92,9 @@ class UnifiedFormMultiPickerField<T> extends StatefulWidget {
 
   /// Header override (wins over [pickerSheetStyle] and theme).
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
+
+  /// Modal flags override (`isScrollControlled`, `isDismissible`, …).
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (e.g. `() => const []` to clear).
   final UnifiedFormResetValue<List<T>>? resetValue;
@@ -379,6 +383,7 @@ class _UnifiedFormMultiPickerFieldState<T>
           pickerSheetStyle: widget.pickerSheetStyle,
           pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
           pickerHeaderStyle: widget.pickerHeaderStyle,
+          pickerSheetModalSettings: widget.pickerSheetModalSettings,
         );
       },
     );
@@ -420,6 +425,7 @@ class UnifiedFormDateField extends StatefulWidget {
     this.pickerStyle = UnifiedFieldsDatePickerStyle.calendar,
     this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
     this.wheelStyle,
+    this.datePickerStyle,
     this.showWeekdayInWheel = true,
     this.shakeOnError = false,
     this.placeholder,
@@ -529,6 +535,9 @@ class UnifiedFormDateField extends StatefulWidget {
 
   /// Optional wheel chrome when [pickerStyle] is [UnifiedFieldsDatePickerStyle.wheels].
   final UnifiedFieldsDateWheelStyle? wheelStyle;
+
+  /// Picker sheet chrome; merged with [UnifiedInputThemeData.datePickerStyle].
+  final UnifiedInputDatePickerStyle? datePickerStyle;
 
   /// When [pickerStyle] is wheels, show weekday names in the day column.
   final bool showWeekdayInWheel;
@@ -771,6 +780,8 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
               widget.fieldController?.calendarKind ??
               widget.initialCalendarKind,
           wheelStyle: widget.fieldController?.wheelStyle ?? widget.wheelStyle,
+          datePickerStyle:
+              widget.fieldController?.datePickerStyle ?? widget.datePickerStyle,
           showWeekdayInWheel:
               widget.fieldController?.showWeekdayInWheel ??
               widget.showWeekdayInWheel,
@@ -1671,6 +1682,7 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
     this.pickerSheetStyle,
     this.pickerSheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.pickerSheetModalSettings,
   });
 
   /// Fetched when the user opens the picker.
@@ -1693,6 +1705,9 @@ class UnifiedFormAsyncPickerField<T> extends StatefulWidget {
 
   /// Header override (wins over [pickerSheetStyle] and theme).
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
+
+  /// Modal flags override (`isScrollControlled`, `isDismissible`, …).
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
@@ -1970,6 +1985,7 @@ class _UnifiedFormAsyncPickerFieldState<T>
           pickerSheetStyle: widget.pickerSheetStyle,
           pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
           pickerHeaderStyle: widget.pickerHeaderStyle,
+          pickerSheetModalSettings: widget.pickerSheetModalSettings,
         );
       },
     );
@@ -2010,6 +2026,7 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
     this.pickerSheetStyle,
     this.pickerSheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.pickerSheetModalSettings,
   });
 
   /// Fetched when the user opens the picker.
@@ -2035,6 +2052,9 @@ class UnifiedFormAsyncMultiPickerField<T> extends StatefulWidget {
 
   /// Header override (wins over [pickerSheetStyle] and theme).
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
+
+  /// Modal flags override (`isScrollControlled`, `isDismissible`, …).
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
 
   /// When non-null, [FormState.reset] restores `resetValue()` (e.g. `() => const []` to clear).
   final UnifiedFormResetValue<List<T>>? resetValue;
@@ -2332,6 +2352,7 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
           pickerSheetStyle: widget.pickerSheetStyle,
           pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
           pickerHeaderStyle: widget.pickerHeaderStyle,
+          pickerSheetModalSettings: widget.pickerSheetModalSettings,
         );
       },
     );

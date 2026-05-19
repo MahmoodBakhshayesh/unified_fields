@@ -1,17 +1,20 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'fields/unified_input_palette.dart';
 import 'fields/unified_input_theme.dart';
-import 'fields/unified_numeric_step_field.dart';
 import 'persian_jalali_calendar.dart';
 import 'unified_fields_context.dart';
 import 'unified_date_picker_types.dart';
 import 'unified_date_wheel_picker_sheet.dart';
 import 'unified_fields_strings.dart';
 import 'unified_fields_typography.dart';
+import 'unified_date_year_strip_style.dart';
 
 export 'unified_date_picker_types.dart';
+export 'unified_input_date_picker_style.dart';
+export 'unified_date_year_strip_style.dart';
 export 'unified_date_wheel_picker_sheet.dart'
     show UnifiedFieldsDateWheelPickerSheet, UnifiedFieldsDateWheelStyle;
 
@@ -23,10 +26,6 @@ int _clampPageIndex(int page, int pageCount) {
 }
 
 const int _kCalendarStaticRows = 6;
-const double _kCellHeight = 40;
-
-/// Diameter of the circular day indicator (selected / today) inside each grid cell.
-const double _kDayCircleSize = 34;
 
 /// Opens unified_fields calendar UI (bottom sheet on phone/tablet, centered dialog on desktop).
 Future<DateTime?> showUnifiedFieldsDatePicker({
@@ -35,7 +34,9 @@ Future<DateTime?> showUnifiedFieldsDatePicker({
   required DateTime firstDate,
   required DateTime lastDate,
   String? title,
-  bool barrierDismissible = true,
+  bool? barrierDismissible,
+  UnifiedPickerSheetStyle? pickerSheetStyle,
+  UnifiedPickerSheetModalSettings? pickerSheetModalSettings,
   bool showCalendarKindToggle = true,
   UnifiedFieldsDatePickerGranularity granularity =
       UnifiedFieldsDatePickerGranularity.day,
@@ -44,12 +45,20 @@ Future<DateTime?> showUnifiedFieldsDatePicker({
   UnifiedFieldsCalendarKind initialCalendarKind =
       UnifiedFieldsCalendarKind.gregorian,
   UnifiedFieldsDateWheelStyle? wheelStyle,
+  UnifiedInputDatePickerStyle? datePickerStyle,
   bool showWeekdayInWheel = true,
   ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind,
 }) {
   final first = DateUtils.dateOnly(firstDate);
   final last = DateUtils.dateOnly(lastDate);
   assert(!first.isAfter(last), 'firstDate must be on or before lastDate');
+
+  final resolvedStyle = UnifiedInputThemeResolver.resolveDatePickerStyle(
+    context,
+    overrides: datePickerStyle,
+  );
+  final effectiveWheelStyle =
+      resolvedStyle.wheelStyle?.merge(wheelStyle) ?? wheelStyle;
 
   final Widget sheet;
   if (pickerStyle == UnifiedFieldsDatePickerStyle.wheels) {
@@ -61,7 +70,8 @@ Future<DateTime?> showUnifiedFieldsDatePicker({
       showCalendarKindToggle: showCalendarKindToggle,
       initialCalendarKind: initialCalendarKind,
       granularity: granularity,
-      wheelStyle: wheelStyle,
+      wheelStyle: effectiveWheelStyle,
+      datePickerStyle: resolvedStyle,
       showWeekdayInWheel: showWeekdayInWheel,
       onConfirmedCalendarKind: onConfirmedCalendarKind,
     );
@@ -75,17 +85,26 @@ Future<DateTime?> showUnifiedFieldsDatePicker({
       showCalendarKindToggle: showCalendarKindToggle,
       granularity: granularity,
       initialCalendarKind: initialCalendarKind,
+      datePickerStyle: resolvedStyle,
       onConfirmedCalendarKind: onConfirmedCalendarKind,
     );
   }
 
   final isWheels = pickerStyle == UnifiedFieldsDatePickerStyle.wheels;
+  final modal = UnifiedPickerSheetModalSettings.resolve(
+    context,
+    pickerSheetStyle: pickerSheetStyle,
+    fieldOverride: pickerSheetModalSettings,
+    legacyIsDismissible: barrierDismissible,
+  );
+  final dismissible = modal.isDismissible!;
   return _presentPicker<DateTime>(
     context: context,
-    barrierDismissible: barrierDismissible,
-    enableDrag: !isWheels && barrierDismissible,
-    showDragHandle: !isWheels && barrierDismissible,
+    modal: modal,
+    enableDrag: !isWheels && dismissible,
+    showDragHandle: !isWheels && dismissible,
     scrollable: !isWheels,
+    dialogBorderRadius: resolvedStyle.dialogBorderRadius,
     child: sheet,
   );
 }
@@ -97,15 +116,23 @@ Future<DateTimeRange?> showUnifiedFieldsDatePickerRange({
   required DateTime firstDate,
   required DateTime lastDate,
   String? title,
-  bool barrierDismissible = true,
+  bool? barrierDismissible,
+  UnifiedPickerSheetStyle? pickerSheetStyle,
+  UnifiedPickerSheetModalSettings? pickerSheetModalSettings,
   bool showCalendarKindToggle = true,
   UnifiedFieldsCalendarKind initialCalendarKind =
       UnifiedFieldsCalendarKind.gregorian,
+  UnifiedInputDatePickerStyle? datePickerStyle,
   ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind,
 }) {
   final first = DateUtils.dateOnly(firstDate);
   final last = DateUtils.dateOnly(lastDate);
   assert(!first.isAfter(last), 'firstDate must be on or before lastDate');
+
+  final resolvedStyle = UnifiedInputThemeResolver.resolveDatePickerStyle(
+    context,
+    overrides: datePickerStyle,
+  );
 
   final sheet = UnifiedFieldsDatePickerSheet(
     pickRange: true,
@@ -116,32 +143,42 @@ Future<DateTimeRange?> showUnifiedFieldsDatePickerRange({
     title: title,
     showCalendarKindToggle: showCalendarKindToggle,
     initialCalendarKind: initialCalendarKind,
+    datePickerStyle: resolvedStyle,
     onConfirmedCalendarKind: onConfirmedCalendarKind,
   );
 
+  final modal = UnifiedPickerSheetModalSettings.resolve(
+    context,
+    pickerSheetStyle: pickerSheetStyle,
+    fieldOverride: pickerSheetModalSettings,
+    legacyIsDismissible: barrierDismissible,
+  );
   return _presentPicker<DateTimeRange>(
     context: context,
-    barrierDismissible: barrierDismissible,
+    modal: modal,
+    dialogBorderRadius: resolvedStyle.dialogBorderRadius,
     child: sheet,
   );
 }
 
 Future<T?> _presentPicker<T>({
   required BuildContext context,
-  required bool barrierDismissible,
+  required UnifiedPickerSheetModalSettings modal,
   required Widget child,
   bool? enableDrag,
   bool? showDragHandle,
   bool scrollable = true,
+  double? dialogBorderRadius,
 }) {
-  final drag = enableDrag ?? barrierDismissible;
-  final handle = showDragHandle ?? barrierDismissible;
+  final dismissible = modal.isDismissible!;
+  final drag = enableDrag ?? dismissible;
+  final handle = showDragHandle ?? dismissible;
   if (!context.mounted) return Future.value(null);
 
   if (context.unifiedFieldsUseDialogLayout) {
     return showDialog<T>(
       context: context,
-      barrierDismissible: barrierDismissible,
+      barrierDismissible: dismissible,
       builder: (ctx) {
         final maxH = MediaQuery.sizeOf(ctx).height * 0.92;
         final body = scrollable ? SingleChildScrollView(child: child) : child;
@@ -152,7 +189,7 @@ Future<T?> _presentPicker<T>({
             vertical: 24,
           ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(dialogBorderRadius ?? 20),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: 420, maxHeight: maxH),
@@ -165,10 +202,10 @@ Future<T?> _presentPicker<T>({
 
   return showModalBottomSheet<T>(
     context: context,
-    isScrollControlled: true,
-    isDismissible: barrierDismissible,
+    isScrollControlled: modal.isScrollControlled!,
+    isDismissible: dismissible,
     enableDrag: drag,
-    useSafeArea: true,
+    useSafeArea: modal.useSafeArea!,
     showDragHandle: handle,
     clipBehavior: Clip.antiAlias,
     shape: const RoundedRectangleBorder(
@@ -197,6 +234,7 @@ class UnifiedFieldsDatePickerSheet extends StatefulWidget {
     this.showCalendarKindToggle = true,
     this.granularity = UnifiedFieldsDatePickerGranularity.day,
     this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
+    this.datePickerStyle,
     this.onConfirmedCalendarKind,
   });
 
@@ -227,6 +265,9 @@ class UnifiedFieldsDatePickerSheet extends StatefulWidget {
   /// Calendar system shown when the sheet opens.
   final UnifiedFieldsCalendarKind initialCalendarKind;
 
+  /// Pre-resolved picker chrome (from theme + field overrides).
+  final UnifiedInputDatePickerStyle? datePickerStyle;
+
   /// Called with the active calendar kind when the user confirms.
   final ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind;
 
@@ -240,8 +281,11 @@ class _UnifiedFieldsDatePickerSheetState
   String _digitText(String text) => UnifiedFieldsTypography.instance
       .localizeDigits(text, calendarKind: _kind);
 
-  TextStyle _digitStyle(TextStyle style) => UnifiedFieldsTypography.instance
-      .mergeDigitStyle(style, calendarKind: _kind);
+  TextStyle _digitStyle(TextStyle style, UnifiedInputDatePickerStyle pickerStyle) =>
+      UnifiedFieldsTypography.instance.mergeDigitStyle(
+        pickerStyle.calendarTextStyle(style, _kind),
+        calendarKind: _kind,
+      );
 
   late DateTime _firstMonth;
   late int _monthCount;
@@ -496,6 +540,7 @@ class _UnifiedFieldsDatePickerSheetState
 
   Future<void> _openMonthYearJump() async {
     final palette = _palette(Theme.of(context).brightness);
+    final style = _pickerStyle(context, palette);
     final pageCount = _pageCountForKind(_kind);
     final page = _safeCurrentPage(pageCount);
 
@@ -511,6 +556,7 @@ class _UnifiedFieldsDatePickerSheetState
               bottom: MediaQuery.viewInsetsOf(ctx).bottom,
             ),
             child: _GregorianMonthYearJumpPanel(
+              style: style,
               palette: palette,
               firstDate: widget.firstDate,
               lastDate: widget.lastDate,
@@ -544,6 +590,7 @@ class _UnifiedFieldsDatePickerSheetState
         return Padding(
           padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
           child: _JalaliMonthYearJumpPanel(
+            style: style,
             palette: palette,
             firstDate: widget.firstDate,
             lastDate: widget.lastDate,
@@ -566,21 +613,29 @@ class _UnifiedFieldsDatePickerSheetState
     }
   }
 
+  UnifiedInputDatePickerStyle _pickerStyle(
+    BuildContext context,
+    UnifiedInputPalette palette,
+  ) =>
+      widget.datePickerStyle ??
+      UnifiedInputThemeResolver.resolveDatePickerStyle(
+        context,
+        palette: palette,
+      );
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final palette = _palette(theme.brightness);
+    final style = _pickerStyle(context, palette);
     final loc = MaterialLocalizations.of(context);
     final titleText = (widget.title ?? '').trim();
     final pageCount = _pageCountForKind(_kind);
-    final gridHeight = _kCalendarStaticRows * _kCellHeight;
+    final cellHeight = style.cellHeight!;
+    final gridHeight = _kCalendarStaticRows * cellHeight;
 
     return Material(
-      color: UnifiedInputThemeResolver.resolvePickerSheetBackground(
-        context,
-        palette: palette,
-      ),
-      // color: UnifiedColors.scaffoldBackgroundColorDark,
+      color: style.sheetBackgroundColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -594,17 +649,14 @@ class _UnifiedFieldsDatePickerSheetState
                     titleText.isEmpty
                         ? UnifiedFieldsStrings.instance.date
                         : titleText,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: palette.fieldTextColor,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: _digitStyle(style.titleStyle!, style),
                   ),
                 ),
                 IconButton(
                   tooltip: UnifiedFieldsStrings.instance.cancel,
                   icon: Icon(
                     Icons.close_rounded,
-                    color: palette.fieldTextColor.withValues(alpha: 0.85),
+                    color: style.closeIconColor,
                   ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
@@ -616,9 +668,7 @@ class _UnifiedFieldsDatePickerSheetState
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
               child: Text(
                 UnifiedFieldsStrings.instance.pickDateRangeHint,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: palette.hintColor,
-                ),
+                style: _digitStyle(style.rangeHintStyle!, style),
               ),
             ),
           if (widget.showCalendarKindToggle && _jalaliMonths.isNotEmpty)
@@ -629,15 +679,15 @@ class _UnifiedFieldsDatePickerSheetState
                   visualDensity: VisualDensity.compact,
                   foregroundColor: WidgetStateProperty.resolveWith((states) {
                     if (states.contains(WidgetState.selected)) {
-                      return theme.colorScheme.onPrimary;
+                      return style.calendarToggleSelectedForeground;
                     }
-                    return palette.fieldTextColor;
+                    return style.calendarToggleForeground;
                   }),
                   backgroundColor: WidgetStateProperty.resolveWith((states) {
                     if (states.contains(WidgetState.selected)) {
-                      return theme.colorScheme.primary;
+                      return style.calendarToggleSelectedBackground;
                     }
-                    return palette.sheetHeaderBackground;
+                    return style.calendarToggleBackground;
                   }),
                 ),
                 segments: [
@@ -664,7 +714,7 @@ class _UnifiedFieldsDatePickerSheetState
                 builder: (context, _) {
                   return _PickerTitleBar(
                     kind: _kind,
-                    palette: palette,
+                    style: style,
                     pageController: _pageController,
                     pageCount: pageCount,
                     firstGregorianMonth: _firstMonth,
@@ -677,7 +727,7 @@ class _UnifiedFieldsDatePickerSheetState
             const SizedBox(height: 6),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: _WeekdayHeader(loc: loc, palette: palette),
+              child: _WeekdayHeader(loc: loc, style: style, calendarKind: _kind),
             ),
             SizedBox(
               height: gridHeight,
@@ -692,7 +742,7 @@ class _UnifiedFieldsDatePickerSheetState
                       _firstMonth.month + pageIndex,
                     );
                     return _GregorianMonthGrid(
-                      theme: theme,
+                      style: style,
                       month: month,
                       firstDate: widget.firstDate,
                       lastDate: widget.lastDate,
@@ -700,9 +750,7 @@ class _UnifiedFieldsDatePickerSheetState
                       rangeMode: widget.pickRange,
                       rangeStart: _rangeStart,
                       rangeEnd: _rangeEnd,
-                      palette: palette,
                       loc: loc,
-                      rowHeight: _kCellHeight,
                       staticRows: _kCalendarStaticRows,
                       onDayTap: _handleDayTap,
                     );
@@ -714,7 +762,7 @@ class _UnifiedFieldsDatePickerSheetState
                         _jalaliMonths.length - 1,
                       )];
                   return _JalaliMonthGrid(
-                    theme: theme,
+                    style: style,
                     jalaliYear: jmPair.$1,
                     jalaliMonth: jmPair.$2,
                     firstDate: widget.firstDate,
@@ -723,9 +771,7 @@ class _UnifiedFieldsDatePickerSheetState
                     rangeMode: widget.pickRange,
                     rangeStart: _rangeStart,
                     rangeEnd: _rangeEnd,
-                    palette: palette,
                     loc: loc,
-                    rowHeight: _kCellHeight,
                     staticRows: _kCalendarStaticRows,
                     onDayTap: _handleDayTap,
                   );
@@ -737,7 +783,7 @@ class _UnifiedFieldsDatePickerSheetState
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
               child: SizedBox(
                 height: gridHeight,
-                child: _buildGranularityBody(theme, palette, loc),
+                child: _buildGranularityBody(theme, palette, loc, style),
               ),
             ),
           Padding(
@@ -746,11 +792,21 @@ class _UnifiedFieldsDatePickerSheetState
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
+                  style: style.cancelButtonTextStyle != null
+                      ? TextButton.styleFrom(
+                          textStyle: style.cancelButtonTextStyle,
+                        )
+                      : null,
                   child: Text(UnifiedFieldsStrings.instance.cancel),
                 ),
                 const Spacer(),
                 FilledButton(
                   onPressed: _confirm,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: style.confirmButtonBackground,
+                    foregroundColor: style.confirmButtonForeground,
+                    textStyle: style.confirmButtonTextStyle,
+                  ),
                   child: Text(UnifiedFieldsStrings.instance.confirm),
                 ),
               ],
@@ -765,12 +821,13 @@ class _UnifiedFieldsDatePickerSheetState
     ThemeData theme,
     UnifiedInputPalette palette,
     MaterialLocalizations loc,
+    UnifiedInputDatePickerStyle style,
   ) {
     switch (widget.granularity) {
       case UnifiedFieldsDatePickerGranularity.year:
-        return _buildYearGranularity(theme, palette);
+        return _buildYearGranularity(style);
       case UnifiedFieldsDatePickerGranularity.month:
-        return _buildMonthGranularity(theme, palette, loc);
+        return _buildMonthGranularity(theme, palette, loc, style);
       case UnifiedFieldsDatePickerGranularity.day:
         return const SizedBox.shrink();
     }
@@ -815,7 +872,7 @@ class _UnifiedFieldsDatePickerSheetState
     _confirm();
   }
 
-  Widget _buildYearGranularity(ThemeData theme, UnifiedInputPalette palette) {
+  Widget _buildYearGranularity(UnifiedInputDatePickerStyle style) {
     _yearScrollController ??= ScrollController();
     if (_pendingYearAutoScroll) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -825,8 +882,10 @@ class _UnifiedFieldsDatePickerSheetState
       });
     }
 
-    final accent = theme.colorScheme.primary;
-    final selectedBg = accent.withValues(alpha: 0.12);
+    final selectedBg = style.yearListSelectedBackground!;
+    final selectedColor = style.yearListSelectedTextColor!;
+    final textColor = style.yearListTextColor!;
+    final checkColor = style.yearListCheckmarkColor!;
 
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
       final years = <int>[
@@ -844,15 +903,17 @@ class _UnifiedFieldsDatePickerSheetState
             enabled: enabled,
             selected: sel,
             selectedTileColor: selectedBg,
-            selectedColor: accent,
-            trailing: sel ? Icon(Icons.check_rounded, color: accent) : null,
+            selectedColor: selectedColor,
+            trailing:
+                sel ? Icon(Icons.check_rounded, color: checkColor) : null,
             title: Text(
               _digitText('$y'),
               style: _digitStyle(
                 TextStyle(
-                  color: sel ? accent : palette.fieldTextColor,
+                  color: sel ? selectedColor : textColor,
                   fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
                 ),
+                style,
               ),
             ),
             onTap: enabled
@@ -865,7 +926,10 @@ class _UnifiedFieldsDatePickerSheetState
     final years = <int>{for (final e in _jalaliMonths) e.$1}.toList()..sort();
     if (years.isEmpty) {
       return Center(
-        child: Text('-', style: TextStyle(color: palette.hintColor)),
+        child: Text(
+          '-',
+          style: _digitStyle(style.rangeHintStyle!, style),
+        ),
       );
     }
     return ListView.builder(
@@ -881,15 +945,17 @@ class _UnifiedFieldsDatePickerSheetState
           enabled: enabled,
           selected: sel,
           selectedTileColor: selectedBg,
-          selectedColor: accent,
-          trailing: sel ? Icon(Icons.check_rounded, color: accent) : null,
+          selectedColor: selectedColor,
+          trailing:
+              sel ? Icon(Icons.check_rounded, color: checkColor) : null,
           title: Text(
             _digitText('$jy'),
             style: _digitStyle(
               TextStyle(
-                color: sel ? accent : palette.fieldTextColor,
+                color: sel ? selectedColor : textColor,
                 fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
               ),
+              style,
             ),
           ),
           onTap: enabled
@@ -906,6 +972,7 @@ class _UnifiedFieldsDatePickerSheetState
     ThemeData theme,
     UnifiedInputPalette palette,
     MaterialLocalizations loc,
+    UnifiedInputDatePickerStyle style,
   ) {
     if (_kind == UnifiedFieldsCalendarKind.gregorian) {
       final years = <int>[
@@ -914,29 +981,13 @@ class _UnifiedFieldsDatePickerSheetState
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: DropdownButton<int>(
-              isExpanded: true,
-              value: _gYearForMonthPicker.clamp(years.first, years.last),
-              items: years
-                  .map(
-                    (y) => DropdownMenuItem(
-                      value: y,
-                      child: Text(
-                        _digitText('$y'),
-                        style: _digitStyle(
-                          TextStyle(color: palette.fieldTextColor),
-                        ),
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (y) {
-                if (y == null) return;
-                setState(() => _gYearForMonthPicker = y);
-              },
-            ),
+          _HorizontalYearStrip(
+            years: years,
+            selectedYear: _gYearForMonthPicker.clamp(years.first, years.last),
+            onYearSelected: (y) => setState(() => _gYearForMonthPicker = y),
+            style: style,
+            calendarKind: UnifiedFieldsCalendarKind.gregorian,
+            yearLabel: UnifiedFieldsStrings.instance.yearLabel,
           ),
           Expanded(
             child: Padding(
@@ -1020,29 +1071,13 @@ class _UnifiedFieldsDatePickerSheetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: DropdownButton<int>(
-            isExpanded: true,
-            value: _jYearForMonthPicker.clamp(years.first, years.last),
-            items: years
-                .map(
-                  (jy) => DropdownMenuItem(
-                    value: jy,
-                    child: Text(
-                      _digitText('$jy'),
-                      style: _digitStyle(
-                        TextStyle(color: palette.fieldTextColor),
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-            onChanged: (jy) {
-              if (jy == null) return;
-              setState(() => _jYearForMonthPicker = jy);
-            },
-          ),
+        _HorizontalYearStrip(
+          years: years,
+          selectedYear: _jYearForMonthPicker.clamp(years.first, years.last),
+          onYearSelected: (jy) => setState(() => _jYearForMonthPicker = jy),
+          style: style,
+          calendarKind: UnifiedFieldsCalendarKind.jalali,
+          yearLabel: UnifiedFieldsStrings.instance.yearLabel,
         ),
         Expanded(
           child: Padding(
@@ -1102,14 +1137,21 @@ class _UnifiedFieldsDatePickerSheetState
                           child: Text(
                             label,
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: ok
-                                  ? palette.fieldTextColor
-                                  : palette.hintColor,
-                              fontWeight: sel
-                                  ? FontWeight.w700
-                                  : FontWeight.w400,
+                            style: UnifiedFieldsTypography.instance
+                                .mergeDigitStyle(
+                              style.calendarTextStyle(
+                                TextStyle(
+                                  fontSize: 12,
+                                  color: ok
+                                      ? palette.fieldTextColor
+                                      : palette.hintColor,
+                                  fontWeight: sel
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                ),
+                                UnifiedFieldsCalendarKind.jalali,
+                              ),
+                              calendarKind: UnifiedFieldsCalendarKind.jalali,
                             ),
                           ),
                         ),
@@ -1129,7 +1171,7 @@ class _UnifiedFieldsDatePickerSheetState
 class _PickerTitleBar extends StatelessWidget {
   const _PickerTitleBar({
     required this.kind,
-    required this.palette,
+    required this.style,
     required this.pageController,
     required this.pageCount,
     required this.firstGregorianMonth,
@@ -1138,7 +1180,7 @@ class _PickerTitleBar extends StatelessWidget {
   });
 
   final UnifiedFieldsCalendarKind kind;
-  final UnifiedInputPalette palette;
+  final UnifiedInputDatePickerStyle style;
   final PageController pageController;
   final int pageCount;
   final DateTime firstGregorianMonth;
@@ -1177,13 +1219,10 @@ class _PickerTitleBar extends StatelessWidget {
     final typography = UnifiedFieldsTypography.instance;
     final displayLabel = typography.localizeDigits(label, calendarKind: kind);
     final titleStyle = typography.mergeDigitStyle(
-      TextStyle(
-        fontSize: 17,
-        fontWeight: FontWeight.w600,
-        color: palette.fieldTextColor,
-      ),
+      style.calendarTextStyle(style.monthTitleStyle!, kind),
       calendarKind: kind,
     );
+    final navColor = style.monthNavIconColor!;
 
     void go(int delta) {
       final target = _clampPageIndex(page + delta, safePageCount);
@@ -1199,7 +1238,7 @@ class _PickerTitleBar extends StatelessWidget {
       children: [
         IconButton(
           onPressed: page > 0 ? () => go(-1) : null,
-          icon: Icon(Icons.chevron_left_rounded, color: palette.fieldTextColor),
+          icon: Icon(Icons.chevron_left_rounded, color: navColor),
         ),
         Expanded(
           child: InkWell(
@@ -1221,7 +1260,7 @@ class _PickerTitleBar extends StatelessWidget {
                   ),
                   Icon(
                     Icons.arrow_drop_down_rounded,
-                    color: palette.fieldTextColor.withValues(alpha: 0.9),
+                    color: navColor.withValues(alpha: 0.9),
                   ),
                 ],
               ),
@@ -1230,10 +1269,7 @@ class _PickerTitleBar extends StatelessWidget {
         ),
         IconButton(
           onPressed: page < safePageCount - 1 ? () => go(1) : null,
-          icon: Icon(
-            Icons.chevron_right_rounded,
-            color: palette.fieldTextColor,
-          ),
+          icon: Icon(Icons.chevron_right_rounded, color: navColor),
         ),
       ],
     );
@@ -1241,27 +1277,29 @@ class _PickerTitleBar extends StatelessWidget {
 }
 
 class _WeekdayHeader extends StatelessWidget {
-  const _WeekdayHeader({required this.loc, required this.palette});
+  const _WeekdayHeader({
+    required this.loc,
+    required this.style,
+    required this.calendarKind,
+  });
 
   final MaterialLocalizations loc;
-  final UnifiedInputPalette palette;
+  final UnifiedInputDatePickerStyle style;
+  final UnifiedFieldsCalendarKind calendarKind;
 
   @override
   Widget build(BuildContext context) {
     final labels = loc.narrowWeekdays;
+    final weekdayStyle = style.calendarTextStyle(
+      style.weekdayTextStyle!,
+      calendarKind,
+    );
     return Row(
       children: [
         for (final s in labels)
           Expanded(
             child: Center(
-              child: Text(
-                s,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: palette.hintColor,
-                ),
-              ),
+              child: Text(s, style: weekdayStyle),
             ),
           ),
       ],
@@ -1279,7 +1317,7 @@ int _weekdayGridOffset(DateTime date, MaterialLocalizations loc) {
 
 class _GregorianMonthGrid extends StatelessWidget {
   const _GregorianMonthGrid({
-    required this.theme,
+    required this.style,
     required this.month,
     required this.firstDate,
     required this.lastDate,
@@ -1287,14 +1325,12 @@ class _GregorianMonthGrid extends StatelessWidget {
     required this.rangeMode,
     required this.rangeStart,
     required this.rangeEnd,
-    required this.palette,
     required this.loc,
-    required this.rowHeight,
     required this.staticRows,
     required this.onDayTap,
   });
 
-  final ThemeData theme;
+  final UnifiedInputDatePickerStyle style;
   final DateTime month;
   final DateTime firstDate;
   final DateTime lastDate;
@@ -1302,9 +1338,7 @@ class _GregorianMonthGrid extends StatelessWidget {
   final bool rangeMode;
   final DateTime? rangeStart;
   final DateTime? rangeEnd;
-  final UnifiedInputPalette palette;
   final MaterialLocalizations loc;
-  final double rowHeight;
   final int staticRows;
   final ValueChanged<DateTime> onDayTap;
 
@@ -1316,9 +1350,8 @@ class _GregorianMonthGrid extends StatelessWidget {
     final leadingBlanks = DateUtils.firstDayOffset(year, monthIndex, loc);
 
     return _DayGrid(
-      theme: theme,
-      palette: palette,
-      rowHeight: rowHeight,
+      style: style,
+      rowHeight: style.cellHeight!,
       staticRows: staticRows,
       leadingBlanks: leadingBlanks,
       daysInMonth: daysInMonth,
@@ -1338,7 +1371,7 @@ class _GregorianMonthGrid extends StatelessWidget {
 
 class _JalaliMonthGrid extends StatelessWidget {
   const _JalaliMonthGrid({
-    required this.theme,
+    required this.style,
     required this.jalaliYear,
     required this.jalaliMonth,
     required this.firstDate,
@@ -1347,14 +1380,12 @@ class _JalaliMonthGrid extends StatelessWidget {
     required this.rangeMode,
     required this.rangeStart,
     required this.rangeEnd,
-    required this.palette,
     required this.loc,
-    required this.rowHeight,
     required this.staticRows,
     required this.onDayTap,
   });
 
-  final ThemeData theme;
+  final UnifiedInputDatePickerStyle style;
   final int jalaliYear;
   final int jalaliMonth;
   final DateTime firstDate;
@@ -1363,9 +1394,7 @@ class _JalaliMonthGrid extends StatelessWidget {
   final bool rangeMode;
   final DateTime? rangeStart;
   final DateTime? rangeEnd;
-  final UnifiedInputPalette palette;
   final MaterialLocalizations loc;
-  final double rowHeight;
   final int staticRows;
   final ValueChanged<DateTime> onDayTap;
 
@@ -1383,9 +1412,8 @@ class _JalaliMonthGrid extends StatelessWidget {
     );
 
     return _DayGrid(
-      theme: theme,
-      palette: palette,
-      rowHeight: rowHeight,
+      style: style,
+      rowHeight: style.cellHeight!,
       staticRows: staticRows,
       leadingBlanks: leadingBlanks,
       daysInMonth: daysInMonth,
@@ -1406,8 +1434,7 @@ class _JalaliMonthGrid extends StatelessWidget {
 
 class _DayGrid extends StatelessWidget {
   const _DayGrid({
-    required this.theme,
-    required this.palette,
+    required this.style,
     required this.rowHeight,
     required this.staticRows,
     required this.leadingBlanks,
@@ -1424,8 +1451,7 @@ class _DayGrid extends StatelessWidget {
     required this.onDayTap,
   });
 
-  final ThemeData theme;
-  final UnifiedInputPalette palette;
+  final UnifiedInputDatePickerStyle style;
   final double rowHeight;
   final int staticRows;
   final int leadingBlanks;
@@ -1450,7 +1476,7 @@ class _DayGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rowCount = staticRows;
-    final cs = theme.colorScheme;
+    final circleSize = style.dayCircleSize!;
 
     int dayAtIndex(int i) => i - leadingBlanks + 1;
 
@@ -1500,18 +1526,25 @@ class _DayGrid extends StatelessWidget {
                         );
 
                         final typography = UnifiedFieldsTypography.instance;
+                        final kind = calendarKindForDigits ??
+                            UnifiedFieldsCalendarKind.gregorian;
                         final labelStyle = typography.mergeDigitStyle(
-                          TextStyle(
-                            fontSize: 14,
-                            height: 1,
-                            fontWeight: isEndpoint
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                            color: isDisabled
-                                ? palette.hintColor.withValues(alpha: 0.35)
-                                : isEndpoint
-                                ? cs.onPrimary
-                                : palette.fieldTextColor,
+                          style.calendarTextStyle(
+                            TextStyle(
+                              fontSize: style.dayFontSize,
+                              height: 1,
+                              fontWeight: isEndpoint
+                                  ? style.dayFontWeightSelected
+                                  : style.dayFontWeight,
+                              color: isDisabled
+                                  ? style.dayDisabledTextColor
+                                  : isEndpoint
+                                  ? style.daySelectedTextColor
+                                  : isToday && !isEndpoint
+                                  ? style.dayTodayTextColor
+                                  : style.dayTextColor,
+                            ),
+                            kind,
                           ),
                           calendarKind: calendarKindForDigits,
                         );
@@ -1533,24 +1566,24 @@ class _DayGrid extends StatelessWidget {
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
                                   color: isMiddle
-                                      ? cs.primary.withValues(alpha: 0.14)
+                                      ? style.dayRangeMiddleBackgroundColor
                                       : Colors.transparent,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Center(
                                   child: showCircle
                                       ? SizedBox(
-                                          width: _kDayCircleSize,
-                                          height: _kDayCircleSize,
+                                          width: circleSize,
+                                          height: circleSize,
                                           child: DecoratedBox(
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               color: isEndpoint
-                                                  ? cs.primary
+                                                  ? style.daySelectedBackgroundColor
                                                   : Colors.transparent,
                                               border: isToday && !isEndpoint
                                                   ? Border.all(
-                                                      color: cs.primary,
+                                                      color: style.dayTodayBorderColor!,
                                                       width: 2,
                                                     )
                                                   : null,
@@ -1585,8 +1618,333 @@ class _DayGrid extends StatelessWidget {
   }
 }
 
+/// Mouse / trackpad drag + wheel on desktop for horizontal year strip.
+class _DatePickerHorizontalScrollBehavior extends MaterialScrollBehavior {
+  const _DatePickerHorizontalScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.unknown,
+      };
+}
+
+/// Horizontally scrollable year chips for month-granularity and jump panels.
+class _HorizontalYearStrip extends StatefulWidget {
+  const _HorizontalYearStrip({
+    required this.years,
+    required this.selectedYear,
+    required this.onYearSelected,
+    required this.style,
+    required this.calendarKind,
+    this.yearLabel,
+  });
+
+  final List<int> years;
+  final int selectedYear;
+  final ValueChanged<int> onYearSelected;
+  final UnifiedInputDatePickerStyle style;
+  final UnifiedFieldsCalendarKind calendarKind;
+  final String? yearLabel;
+
+  @override
+  State<_HorizontalYearStrip> createState() => _HorizontalYearStripState();
+}
+
+class _HorizontalYearStripState extends State<_HorizontalYearStrip> {
+  late final ScrollController _scrollController;
+  late UnifiedFieldsDateYearStripStyle _stripStyle;
+  var _listenMagnification = false;
+
+  double get _itemWidth => _stripStyle.itemWidth!;
+  double get _spacing => _stripStyle.spacing!;
+  double get _itemStride => _itemWidth + _spacing;
+  double get _horizontalPadding => 12;
+
+  @override
+  void initState() {
+    super.initState();
+    _stripStyle = widget.style.resolvedYearStripStyle();
+    _scrollController = ScrollController();
+    if (_stripStyle.useMagnification) {
+      _scrollController.addListener(_onScroll);
+      _listenMagnification = true;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
+  }
+
+  @override
+  void didUpdateWidget(covariant _HorizontalYearStrip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _stripStyle = widget.style.resolvedYearStripStyle();
+    if (oldWidget.selectedYear != widget.selectedYear) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
+    }
+  }
+
+  void _onScroll() {
+    if (mounted) setState(() {});
+  }
+
+  void _onPointerSignal(PointerSignalEvent event) {
+    if (event is! PointerScrollEvent || !_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final delta = event.scrollDelta.dx != 0
+        ? event.scrollDelta.dx
+        : event.scrollDelta.dy;
+    if (delta == 0) return;
+    _scrollController.jumpTo(
+      (position.pixels + delta).clamp(0.0, position.maxScrollExtent),
+    );
+  }
+
+  void _scrollToSelected({bool animate = true}) {
+    if (!_scrollController.hasClients || widget.years.isEmpty) return;
+    final index = widget.years.indexOf(widget.selectedYear);
+    if (index < 0) return;
+    final viewport = _scrollController.position.viewportDimension;
+    final itemCenter =
+        _horizontalPadding + index * _itemStride + _itemWidth / 2;
+    final target = itemCenter - viewport / 2;
+    final clamped = target.clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+    if (animate) {
+      _scrollController.animateTo(
+        clamped,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _scrollController.jumpTo(clamped);
+    }
+  }
+
+  double _scaleForIndex(int index) {
+    final mag = _stripStyle.magnification!;
+    if (!_stripStyle.useMagnification) return 1;
+    if (!_scrollController.hasClients) {
+      return widget.years[index] == widget.selectedYear ? mag : 1;
+    }
+    final itemCenter =
+        _horizontalPadding + index * _itemStride + _itemWidth / 2;
+    final viewportCenter =
+        _scrollController.offset + _scrollController.position.viewportDimension / 2;
+    final distance = (itemCenter - viewportCenter).abs();
+    final halfViewport = _scrollController.position.viewportDimension / 2;
+    if (halfViewport <= 0) return 1;
+    final t = (1 - (distance / halfViewport)).clamp(0.0, 1.0);
+    return 1 + (mag - 1) * t;
+  }
+
+  @override
+  void dispose() {
+    if (_listenMagnification) {
+      _scrollController.removeListener(_onScroll);
+    }
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Widget _edgeFade({required bool start}) {
+    final color = _stripStyle.fadeColor;
+    if (color == null) return const SizedBox.shrink();
+    return IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: start ? Alignment.centerLeft : Alignment.centerRight,
+            end: start ? Alignment.centerRight : Alignment.centerLeft,
+            colors: [color, color.withValues(alpha: 0)],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.years.isEmpty) return const SizedBox.shrink();
+
+    _stripStyle = widget.style.resolvedYearStripStyle();
+    final typography = UnifiedFieldsTypography.instance;
+    final captionStyle = typography.mergeDigitStyle(
+      widget.style.calendarTextStyle(
+        TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: widget.style.monthNavIconColor,
+        ),
+        widget.calendarKind,
+      ),
+      calendarKind: widget.calendarKind,
+    );
+
+    final stripHeight = _stripStyle.stripHeight!;
+    final magnifiedHeight = _stripStyle.useMagnification
+        ? stripHeight * _stripStyle.magnification!
+        : stripHeight;
+    final fadeExtent = (_stripStyle.fadeExtent ?? 0.22).clamp(0.0, 0.45);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (widget.yearLabel != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 6),
+            child: Text(widget.yearLabel!, style: captionStyle),
+          ),
+        SizedBox(
+          height: magnifiedHeight,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final fadeWidth = constraints.maxWidth * fadeExtent;
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    child: Listener(
+                      onPointerSignal: _onPointerSignal,
+                      child: ScrollConfiguration(
+                        behavior: const _DatePickerHorizontalScrollBehavior(),
+                        child: ListView.separated(
+                          controller: _scrollController,
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: _horizontalPadding,
+                            vertical: _stripStyle.useMagnification
+                                ? (magnifiedHeight - stripHeight) / 2
+                                : 0,
+                          ),
+                          itemCount: widget.years.length,
+                          separatorBuilder: (_, _) =>
+                              SizedBox(width: _spacing),
+                          itemBuilder: (context, index) {
+                            final year = widget.years[index];
+                            final selected = year == widget.selectedYear;
+                            final label = typography.localizeDigits(
+                              '$year',
+                              calendarKind: widget.calendarKind,
+                            );
+                            final scale = _scaleForIndex(index);
+                            return Transform.scale(
+                              scale: scale,
+                              alignment: Alignment.center,
+                              child: _YearStripChip(
+                                label: label,
+                                selected: selected,
+                                style: widget.style,
+                                calendarKind: widget.calendarKind,
+                                itemWidth: _itemWidth,
+                                onTap: () => widget.onYearSelected(year),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (_stripStyle.effectiveShowFade && fadeWidth > 0) ...[
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: fadeWidth,
+                      child: _edgeFade(start: true),
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: fadeWidth,
+                      child: _edgeFade(start: false),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+}
+
+class _YearStripChip extends StatelessWidget {
+  const _YearStripChip({
+    required this.label,
+    required this.selected,
+    required this.style,
+    required this.calendarKind,
+    required this.itemWidth,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final UnifiedInputDatePickerStyle style;
+  final UnifiedFieldsCalendarKind calendarKind;
+  final double itemWidth;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final fill = selected
+        ? style.monthJumpSelectedBackground
+        : style.monthJumpBackground;
+    final borderColor = selected
+        ? style.monthJumpSelectedBorderColor
+        : style.monthJumpBorderColor;
+    final textColor = selected
+        ? style.monthJumpSelectedTextColor
+        : style.monthJumpTextColor;
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Ink(
+          width: itemWidth,
+          height: itemWidth * 0.58,
+          decoration: BoxDecoration(
+            color: fill,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: borderColor!, width: 1),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: UnifiedFieldsTypography.instance.mergeDigitStyle(
+                style.calendarTextStyle(
+                  TextStyle(
+                    fontSize: style.monthJumpFontSize,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: textColor,
+                  ),
+                  calendarKind,
+                ),
+                calendarKind: calendarKind,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _GregorianMonthYearJumpPanel extends StatefulWidget {
   const _GregorianMonthYearJumpPanel({
+    required this.style,
     required this.palette,
     required this.firstDate,
     required this.lastDate,
@@ -1596,6 +1954,7 @@ class _GregorianMonthYearJumpPanel extends StatefulWidget {
     required this.yearLabel,
   });
 
+  final UnifiedInputDatePickerStyle style;
   final UnifiedInputPalette palette;
   final DateTime firstDate;
   final DateTime lastDate;
@@ -1613,7 +1972,6 @@ class _GregorianMonthYearJumpPanelState
     extends State<_GregorianMonthYearJumpPanel> {
   late int _year;
   late int _month;
-  late final TextEditingController _yearController;
 
   static const List<String> _monthAbbrevs = [
     'Jan',
@@ -1641,14 +1999,16 @@ class _GregorianMonthYearJumpPanelState
     if (!monthAllowed(_year, _month)) {
       _month = firstAllowedMonth(_year) ?? _month;
     }
-    _yearController = TextEditingController(text: '$_year');
   }
 
-  @override
-  void dispose() {
-    _yearController.dispose();
-    super.dispose();
-  }
+  List<int> get _years => [
+        for (
+          var y = widget.firstDate.year;
+          y <= widget.lastDate.year;
+          y++
+        )
+          y,
+      ];
 
   bool monthAllowed(int y, int m) {
     final dim = DateUtils.getDaysInMonth(y, m);
@@ -1665,8 +2025,7 @@ class _GregorianMonthYearJumpPanelState
     return null;
   }
 
-  void _onYearChanged(num v) {
-    final y = v.round().clamp(widget.firstDate.year, widget.lastDate.year);
+  void _onYearSelected(int y) {
     setState(() {
       _year = y;
       if (!monthAllowed(_year, _month)) {
@@ -1677,57 +2036,27 @@ class _GregorianMonthYearJumpPanelState
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Material(
-      color: widget.palette.sheetBackground,
+      color: widget.style.sheetBackgroundColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Text(
-              widget.title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: widget.palette.fieldTextColor,
-              ),
-            ),
+            child: Text(widget.title, style: widget.style.titleStyle),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: UnifiedNumericStepField(
-                    controller: _yearController,
-                    placeholder: widget.yearLabel,
-                    min: widget.firstDate.year,
-                    max: widget.lastDate.year,
-                    allowDecimals: false,
-                    step: 1,
-                    showError: false,
-                    height: 52,
-                    backgroundColor: widget.palette.sheetHeaderBackground,
-                    headerBackgroundColor: widget.palette.sheetHeaderBackground,
-                    borderSide: BorderSide(
-                      color: widget.palette.borderColor,
-                      width: 0.5,
-                    ),
-                    style: TextStyle(
-                      color: widget.palette.fieldTextColor,
-                      fontSize: 16,
-                    ),
-                    onChanged: _onYearChanged,
-                  ),
-                ),
-              ],
-            ),
+          _HorizontalYearStrip(
+            years: _years,
+            selectedYear: _year,
+            onYearSelected: _onYearSelected,
+            style: widget.style,
+            calendarKind: UnifiedFieldsCalendarKind.gregorian,
+            yearLabel: widget.yearLabel,
           ),
           _MonthJumpGrid(
-            palette: widget.palette,
-            theme: theme,
+            style: widget.style,
+            calendarKind: UnifiedFieldsCalendarKind.gregorian,
             labels: _monthAbbrevs,
             selectedMonth: _month,
             monthEnabled: (m) => monthAllowed(_year, m),
@@ -1739,6 +2068,10 @@ class _GregorianMonthYearJumpPanelState
               onPressed: monthAllowed(_year, _month)
                   ? () => Navigator.of(context).pop((_year, _month))
                   : null,
+              style: FilledButton.styleFrom(
+                backgroundColor: widget.style.confirmButtonBackground,
+                foregroundColor: widget.style.confirmButtonForeground,
+              ),
               child: Text(MaterialLocalizations.of(context).okButtonLabel),
             ),
           ),
@@ -1750,6 +2083,7 @@ class _GregorianMonthYearJumpPanelState
 
 class _JalaliMonthYearJumpPanel extends StatefulWidget {
   const _JalaliMonthYearJumpPanel({
+    required this.style,
     required this.palette,
     required this.firstDate,
     required this.lastDate,
@@ -1759,6 +2093,7 @@ class _JalaliMonthYearJumpPanel extends StatefulWidget {
     required this.yearLabel,
   });
 
+  final UnifiedInputDatePickerStyle style;
   final UnifiedInputPalette palette;
   final DateTime firstDate;
   final DateTime lastDate;
@@ -1775,7 +2110,6 @@ class _JalaliMonthYearJumpPanel extends StatefulWidget {
 class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
   late int _year;
   late int _month;
-  late final TextEditingController _yearController;
 
   static bool jalaliMonthSelectable(
     int jy,
@@ -1808,17 +2142,11 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
     )) {
       _month = firstAllowed() ?? 1;
     }
-    _yearController = TextEditingController(text: _formatYearText(_year));
   }
 
-  String _formatYearText(int year) => UnifiedFieldsTypography.instance
-      .localizeDigits('$year', calendarKind: UnifiedFieldsCalendarKind.jalali);
-
-  @override
-  void dispose() {
-    _yearController.dispose();
-    super.dispose();
-  }
+  List<int> get _years => [
+        for (var y = _minY; y <= _maxY; y++) y,
+      ];
 
   int? firstAllowed() {
     for (var m = 1; m <= 12; m++) {
@@ -1829,8 +2157,7 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
     return null;
   }
 
-  void _onYearChanged(num v) {
-    final y = v.round().clamp(_minY, _maxY);
+  void _onYearSelected(int y) {
     setState(() {
       _year = y;
       if (!jalaliMonthSelectable(
@@ -1841,19 +2168,13 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
       )) {
         _month = firstAllowed() ?? _month;
       }
-      final formatted = _formatYearText(_year);
-      if (_yearController.text != formatted) {
-        _yearController.text = formatted;
-      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Material(
-      color: widget.palette.sheetBackground,
+      color: widget.style.sheetBackgroundColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1862,49 +2183,23 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Text(
               widget.title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: widget.palette.fieldTextColor,
+              style: widget.style.calendarTextStyle(
+                widget.style.titleStyle!,
+                UnifiedFieldsCalendarKind.jalali,
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: UnifiedNumericStepField(
-                    controller: _yearController,
-                    placeholder: widget.yearLabel,
-                    min: _minY,
-                    max: _maxY,
-                    allowDecimals: false,
-                    step: 1,
-                    showError: false,
-                    height: 52,
-                    digitCalendarKind: UnifiedFieldsCalendarKind.jalali,
-                    backgroundColor: widget.palette.sheetHeaderBackground,
-                    headerBackgroundColor: widget.palette.sheetHeaderBackground,
-                    borderSide: BorderSide(
-                      color: widget.palette.borderColor,
-                      width: 0.5,
-                    ),
-                    style: UnifiedFieldsTypography.instance.mergeDigitStyle(
-                      TextStyle(
-                        color: widget.palette.fieldTextColor,
-                        fontSize: 16,
-                      ),
-                      calendarKind: UnifiedFieldsCalendarKind.jalali,
-                    ),
-                    onChanged: _onYearChanged,
-                  ),
-                ),
-              ],
-            ),
+          _HorizontalYearStrip(
+            years: _years,
+            selectedYear: _year,
+            onYearSelected: _onYearSelected,
+            style: widget.style,
+            calendarKind: UnifiedFieldsCalendarKind.jalali,
+            yearLabel: widget.yearLabel,
           ),
           _MonthJumpGrid(
-            palette: widget.palette,
-            theme: theme,
+            style: widget.style,
+            calendarKind: UnifiedFieldsCalendarKind.jalali,
             labels: [
               for (var mm = 1; mm <= 12; mm++)
                 PersianJalaliCalendar.persianMonthName(mm),
@@ -1930,6 +2225,10 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
                   )
                   ? () => Navigator.of(context).pop((_year, _month))
                   : null,
+              style: FilledButton.styleFrom(
+                backgroundColor: widget.style.confirmButtonBackground,
+                foregroundColor: widget.style.confirmButtonForeground,
+              ),
               child: Text(MaterialLocalizations.of(context).okButtonLabel),
             ),
           ),
@@ -1942,16 +2241,16 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
 /// Fixed 3×4 grid of equal-width month cells (no chip checkmark → no layout jump on selection).
 class _MonthJumpGrid extends StatelessWidget {
   const _MonthJumpGrid({
-    required this.palette,
-    required this.theme,
+    required this.style,
+    required this.calendarKind,
     required this.labels,
     required this.selectedMonth,
     required this.monthEnabled,
     required this.onMonthSelected,
   }) : assert(labels.length == 12);
 
-  final UnifiedInputPalette palette;
-  final ThemeData theme;
+  final UnifiedInputDatePickerStyle style;
+  final UnifiedFieldsCalendarKind calendarKind;
   final List<String> labels;
   final int selectedMonth;
   final bool Function(int month) monthEnabled;
@@ -1963,7 +2262,6 @@ class _MonthJumpGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
       child: LayoutBuilder(
@@ -1982,8 +2280,8 @@ class _MonthJumpGrid extends StatelessWidget {
                     label: labels[m - 1],
                     selected: selectedMonth == m,
                     enabled: monthEnabled(m),
-                    palette: palette,
-                    colorScheme: cs,
+                    style: style,
+                    calendarKind: calendarKind,
                     onTap: monthEnabled(m) ? () => onMonthSelected(m) : null,
                   ),
                 ),
@@ -2000,29 +2298,31 @@ class _MonthJumpCell extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.enabled,
-    required this.palette,
-    required this.colorScheme,
+    required this.style,
+    required this.calendarKind,
     required this.onTap,
   });
 
   final String label;
   final bool selected;
   final bool enabled;
-  final UnifiedInputPalette palette;
-  final ColorScheme colorScheme;
+  final UnifiedInputDatePickerStyle style;
+  final UnifiedFieldsCalendarKind calendarKind;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final fill = selected ? colorScheme.primary : palette.sheetHeaderBackground;
+    final fill = selected
+        ? style.monthJumpSelectedBackground
+        : style.monthJumpBackground;
     final borderColor = selected
-        ? colorScheme.primary
-        : palette.borderColor.withValues(alpha: 0.65);
+        ? style.monthJumpSelectedBorderColor
+        : style.monthJumpBorderColor;
     final textColor = !enabled
-        ? palette.hintColor.withValues(alpha: 0.4)
+        ? style.dayDisabledTextColor
         : selected
-        ? colorScheme.onPrimary
-        : palette.fieldTextColor;
+        ? style.monthJumpSelectedTextColor
+        : style.monthJumpTextColor;
 
     Widget child = Material(
       color: Colors.transparent,
@@ -2035,7 +2335,7 @@ class _MonthJumpCell extends StatelessWidget {
           decoration: BoxDecoration(
             color: fill,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: borderColor, width: 1),
+            border: Border.all(color: borderColor!, width: 1),
           ),
           child: Center(
             child: Padding(
@@ -2045,10 +2345,16 @@ class _MonthJumpCell extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  color: textColor,
+                style: UnifiedFieldsTypography.instance.mergeDigitStyle(
+                  style.calendarTextStyle(
+                    TextStyle(
+                      fontSize: style.monthJumpFontSize,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                      color: textColor,
+                    ),
+                    calendarKind,
+                  ),
+                  calendarKind: calendarKind,
                 ),
               ),
             ),
@@ -2058,7 +2364,7 @@ class _MonthJumpCell extends StatelessWidget {
     );
 
     if (!enabled) {
-      child = Opacity(opacity: 0.38, child: child);
+      child = Opacity(opacity: style.monthJumpDisabledOpacity!, child: child);
     }
 
     return child;

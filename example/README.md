@@ -3,7 +3,7 @@
 A small Flutter app that exercises every notable widget from
 [`unified_fields`](../README.md):
 
-- **App-wide `UnifiedInputThemeScope`** in `lib/main.dart` (required icon, validation, disabled chrome, picker suffix icons, sheet background)
+- **App-wide `UnifiedInputThemeScope`** in `lib/main.dart` (required icon, validation, disabled chrome, picker suffix icons, sheet background, picker header `helpWidget`, `datePickerStyle`)
 - **Nested theme scope** demo card on the home form (overrides required icon color inside one subtree)
 - Plain fields (`UnifiedTextField`, `UnifiedNumberField`, …)
 - Date pickers: calendar grid and scroll wheels, Gregorian / Shamsi
@@ -34,6 +34,18 @@ runApp(
       validationColor: Color(0xFFD32F2F),
       defaultSuffixIcons: UnifiedInputDefaultSuffixIcons(
         date: Icons.calendar_month_outlined,
+      ),
+      pickerHeaderStyle: UnifiedInputPickerHeaderStyle(
+        itemOrder: [
+          UnifiedPickerHeaderItem.title,
+          UnifiedPickerHeaderItem.help,
+          UnifiedPickerHeaderItem.clear,
+          UnifiedPickerHeaderItem.close,
+        ],
+        helpWidget: Text('Pick one option'),
+      ),
+      datePickerStyle: UnifiedInputDatePickerStyle(
+        daySelectedBackgroundColor: Color(0xFF1565C0),
       ),
     ),
     child: const MyApp(),
@@ -76,7 +88,28 @@ fieldDefaults: const UnifiedInputFieldDefaults(
 
 Check **Phone** (`usePersianDigits: true`) and **Date** fields — they use the same theme `textStyle` as **Full name**.
 
+## 0.2.6 highlights (in `main.dart`)
+
+- **`pickerHeaderStyle.helpWidget`** — header help slot is a `Widget` (not `helpText` string); `helpTextStyle` from theme still applies
+- **`datePickerStyle`** — optional app-wide date sheet chrome (see root README [Date picker styling](../README.md#date-picker-styling-unifiedinputdatepickerstyle))
+- **`CustomWheelPicker`** — multi-column configuration demo with `pickerSheetStyle.basePickerSheetStyle` (sheet/panel colors and radii) and horizontal wheel layout
+- **`UnifiedBasePickerSheetStyle`** / **`UnifiedPickerSheetModalSettings`** — theme or per-field sheet chrome and modal flags (`isDismissible`, `isScrollControlled`, …); see root README [Picker sheet chrome](../README.md#picker-sheet-chrome-026)
+- **Pickers** — pass `valueToString` on picker fields; list rows use package helpers when `itemToWidget` is omitted
+
 ## Package version
 
-This example tracks the parent package (**currently 0.2.5**). See the root
+This example tracks the parent package (**currently 0.2.6**). See the root
 [`CHANGELOG.md`](../CHANGELOG.md) for release notes.
+
+## Publish checklist (package maintainers)
+
+From the repository root:
+
+```bash
+flutter pub get
+dart analyze lib
+dart pub publish --dry-run
+dart pub publish   # when ready
+```
+
+Ensure `CHANGELOG.md` and `pubspec.yaml` version match (**0.2.6**).

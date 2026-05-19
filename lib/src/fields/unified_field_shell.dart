@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../unified_colors.dart';
 import 'unified_field_label_mode.dart';
 import 'unified_input_decoration.dart';
-import 'unified_input_label_mode_style.dart';
 import 'unified_input_theme.dart';
 
 /// Shared chrome: optional label (column or row), bordered body, optional inline validation panel.

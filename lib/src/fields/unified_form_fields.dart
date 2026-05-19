@@ -13,7 +13,7 @@ import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_picker_fields.dart';
 import 'unified_picker_item_builders.dart';
-import 'unified_picker_sheet_style.dart';
+import 'unified_input_theme.dart';
 
 /// Optional callback used by unified form fields for [FormState.reset].
 ///
@@ -704,6 +704,7 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
     this.pickerSheetStyle,
     this.pickerSheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.pickerSheetModalSettings,
   });
 
   /// Choices shown in the picker sheet.
@@ -726,6 +727,9 @@ class UnifiedFormSinglePickerField<T> extends StatefulWidget {
 
   /// Header override (wins over [pickerSheetStyle] and theme).
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
+
+  /// Modal flags override (`isScrollControlled`, `isDismissible`, …).
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
 
   /// Visual chrome overrides.
   final UnifiedInputDecoration? decoration;
@@ -1010,6 +1014,7 @@ class _UnifiedFormSinglePickerFieldState<T>
           pickerSheetStyle: widget.pickerSheetStyle,
           pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
           pickerHeaderStyle: widget.pickerHeaderStyle,
+          pickerSheetModalSettings: widget.pickerSheetModalSettings,
         );
       },
     );

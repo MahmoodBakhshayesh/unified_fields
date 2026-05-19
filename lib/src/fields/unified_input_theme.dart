@@ -5,7 +5,9 @@ import 'unified_input_brightness.dart';
 import 'unified_input_field_defaults.dart';
 import 'unified_input_palette.dart';
 import '../phone/unified_input_phone_style.dart';
+import '../unified_input_date_picker_style.dart';
 import 'unified_input_theme_data.dart';
+import 'unified_base_picker_sheet_style.dart';
 import 'unified_picker_sheet_style.dart';
 import 'unified_suffix_icon.dart';
 import '../unified_date_picker_types.dart';
@@ -18,6 +20,9 @@ export 'unified_picker_sheet_chrome.dart';
 export 'unified_picker_sheet_style.dart';
 export 'unified_suffix_icon.dart';
 export '../phone/unified_input_phone_style.dart';
+export '../unified_input_date_picker_style.dart';
+export 'unified_base_picker_sheet_style.dart';
+export 'unified_picker_sheet_modal_settings.dart';
 
 /// Optional inherited scope for brightness, palette, disabled/placeholder chrome, picker sheets, and default suffix icons.
 class UnifiedInputThemeScope extends InheritedWidget {
@@ -99,22 +104,19 @@ class UnifiedInputThemeResolver {
     }
   }
 
-  /// Picker / wheel sheet surface color.
+  /// Picker / wheel sheet surface color (theme [basePickerSheetStyle] included).
   static Color resolvePickerSheetBackground(
     BuildContext context, {
     UnifiedInputPalette? palette,
     Color? pickerSheetBackgroundColor,
+    UnifiedPickerSheetStyle? pickerSheetStyle,
   }) {
-    if (pickerSheetBackgroundColor != null) {
-      return pickerSheetBackgroundColor;
-    }
-    final theme = UnifiedInputThemeScope.themeDataOf(context);
-    if (theme.pickerSheetBackgroundColor != null) {
-      return theme.pickerSheetBackgroundColor!;
-    }
-    final p = palette ?? resolvePalette(context);
-    return Theme.of(context).bottomSheetTheme.backgroundColor ??
-        p.sheetBackground;
+    return UnifiedBasePickerSheetStyle.resolve(
+      context,
+      palette: palette,
+      pickerSheetBackgroundColor: pickerSheetBackgroundColor,
+      pickerSheetStyle: pickerSheetStyle,
+    ).sheetBackgroundColor!;
   }
 
   /// Default [IconData] for a field suffix when the widget does not supply one.
@@ -150,6 +152,28 @@ class UnifiedInputThemeResolver {
     final theme = _theme(context).phoneStyle ?? const UnifiedInputPhoneStyle();
     final p = palette ?? resolvePalette(context);
     return theme.merge(overrides).applyDefaults(p);
+  }
+
+  /// Resolved [UnifiedInputDatePickerStyle] for date picker sheets.
+  static UnifiedInputDatePickerStyle resolveDatePickerStyle(
+    BuildContext context, {
+    UnifiedInputDatePickerStyle? overrides,
+    UnifiedInputPalette? palette,
+  }) {
+    final p = palette ?? resolvePalette(context);
+    final materialTheme = Theme.of(context);
+    final sheetBg = resolvePickerSheetBackground(
+      context,
+      palette: p,
+      pickerSheetBackgroundColor: overrides?.sheetBackgroundColor ??
+          _theme(context).datePickerStyle?.sheetBackgroundColor ??
+          _theme(context).pickerSheetBackgroundColor,
+    );
+    final themed = _theme(context).datePickerStyle;
+    return const UnifiedInputDatePickerStyle()
+        .applyDefaults(p, materialTheme, sheetBackground: sheetBg)
+        .merge(themed)
+        .merge(overrides);
   }
 
   /// Builds a default suffix icon in the standard 32×32 slot.

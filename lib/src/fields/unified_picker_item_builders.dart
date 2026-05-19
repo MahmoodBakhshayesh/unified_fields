@@ -43,3 +43,43 @@ SliverGridDelegate unifiedPickerDefaultGridDelegate({
 /// Resolves the grid delegate used when [gridItemBuilder] is set.
 SliverGridDelegate unifiedPickerResolveGridDelegate(SliverGridDelegate? gridDelegate) =>
     gridDelegate ?? unifiedPickerDefaultGridDelegate();
+
+/// Display label for a picker item (field text + default list rows).
+String unifiedPickerItemLabel<T>(
+  T value, {
+  String Function(T value)? valueToString,
+}) =>
+    valueToString?.call(value) ?? value.toString();
+
+/// Default list-row widget when [itemToWidget] is omitted on picker fields/sheets.
+Widget unifiedPickerDefaultItemWidget<T>(
+  T value, {
+  String Function(T)? valueToString,
+  TextStyle? style,
+  TextAlign textAlign = TextAlign.start,
+  int? maxLines,
+  TextOverflow? overflow,
+}) =>
+    Text(
+      unifiedPickerItemLabel(value, valueToString: valueToString),
+      style: style,
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
+    );
+
+/// [itemToWidget] when provided, otherwise [unifiedPickerDefaultItemWidget].
+Widget unifiedPickerResolveListItem<T>(
+  T value, {
+  Widget Function(T value)? itemToWidget,
+  String Function(T value)? valueToString,
+  TextStyle? textStyle,
+  TextAlign textAlign = TextAlign.start,
+}) =>
+    itemToWidget?.call(value) ??
+    unifiedPickerDefaultItemWidget(
+      value,
+      valueToString: valueToString,
+      style: textStyle,
+      textAlign: textAlign,
+    );

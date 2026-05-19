@@ -10,7 +10,6 @@ import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_sheet.dart';
-import 'unified_picker_sheet_style.dart';
 
 /// Single-select field backed by [PickerSheetWidget] (search + scroll-to-item list).
 ///
@@ -45,6 +44,7 @@ class UnifiedCustomizablePickerField<T> extends StatefulWidget {
     this.pickerSheetStyle,
     this.pickerSheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.pickerSheetModalSettings,
   });
 
   /// Choices shown in the picker sheet.
@@ -125,6 +125,9 @@ class UnifiedCustomizablePickerField<T> extends StatefulWidget {
 
   /// Header override (wins over [pickerSheetStyle] and theme).
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
+
+  /// Modal flags override (`isScrollControlled`, `isDismissible`, …).
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
 
   @override
   State<UnifiedCustomizablePickerField<T>> createState() =>
@@ -254,9 +257,10 @@ class _UnifiedCustomizablePickerFieldState<T>
       pickerHeaderStyle: widget.pickerHeaderStyle,
     );
     FocusScope.of(context).requestFocus(FocusNode());
-    final dynamic result = await showModalBottomSheet<dynamic>(
+    final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
-      isScrollControlled: true,
+      pickerSheetStyle: widget.pickerSheetStyle,
+      modalSettings: widget.pickerSheetModalSettings,
       builder: (c) => Padding(
         padding: EdgeInsets.zero,
         child: PickerSheetWidget<T>(
@@ -271,6 +275,7 @@ class _UnifiedCustomizablePickerFieldState<T>
               dec.placeholder ??
               dec.label ??
               widget.label,
+          valueToString: widget.valueToString,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,
@@ -398,6 +403,7 @@ class UnifiedCustomizableMultiPickerField<T> extends StatefulWidget {
     this.pickerSheetStyle,
     this.pickerSheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.pickerSheetModalSettings,
   });
 
   /// Choices shown in the picker sheet.
@@ -477,6 +483,9 @@ class UnifiedCustomizableMultiPickerField<T> extends StatefulWidget {
 
   /// Header override (wins over [pickerSheetStyle] and theme).
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
+
+  /// Modal flags override (`isScrollControlled`, `isDismissible`, …).
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
 
   @override
   State<UnifiedCustomizableMultiPickerField<T>> createState() =>
@@ -607,9 +616,10 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
       pickerHeaderStyle: widget.pickerHeaderStyle,
     );
     FocusScope.of(context).requestFocus(FocusNode());
-    final dynamic result = await showModalBottomSheet<dynamic>(
+    final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
-      isScrollControlled: true,
+      pickerSheetStyle: widget.pickerSheetStyle,
+      modalSettings: widget.pickerSheetModalSettings,
       builder: (c) => Padding(
         padding: EdgeInsets.zero,
         child: MultiPickerSheetWidget<T>(
@@ -624,6 +634,7 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
               dec.placeholder ??
               dec.label ??
               widget.label,
+          valueToString: widget.valueToString,
           itemToWidget: widget.itemToWidget,
           hasSearch: widget.hasSearch,
           gridItemBuilder: widget.gridItemBuilder,

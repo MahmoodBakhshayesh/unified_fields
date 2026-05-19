@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../fields/unified_multi_picker_sheet.dart';
 import '../fields/unified_picker_item_builders.dart';
+import '../fields/unified_input_theme.dart';
 import '../fields/unified_picker_sheet.dart';
 import 'base_unified_field_controller.dart';
 
@@ -21,7 +22,15 @@ class UnifiedPickerFieldController<T> extends BaseUnifiedFieldController<T> {
     this.showClearButton = true,
     this.gridItemBuilder,
     this.gridDelegate,
+    this.pickerSheetStyle,
+    this.pickerSheetModalSettings,
   });
+
+  /// Sheet chrome bundle for [openPicker].
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Modal flags for [openPicker].
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
 
   /// Renders a value as display text.
   String Function(T value)? valueToString;
@@ -63,8 +72,7 @@ class UnifiedPickerFieldController<T> extends BaseUnifiedFieldController<T> {
   String displayText([T? v]) {
     final item = v ?? value;
     if (item == null) return '';
-    final fn = valueToString;
-    return fn != null ? fn(item as T) : item.toString();
+    return unifiedPickerItemLabel(item as T, valueToString: valueToString);
   }
 
   /// Opens the picker sheet. When a field is bound in the widget tree, uses the
@@ -100,9 +108,10 @@ class UnifiedPickerFieldController<T> extends BaseUnifiedFieldController<T> {
     required String label,
   }) async {
     FocusScope.of(context).requestFocus(FocusNode());
-    final dynamic result = await showModalBottomSheet<dynamic>(
+    final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
-      isScrollControlled: true,
+      pickerSheetStyle: pickerSheetStyle,
+      modalSettings: pickerSheetModalSettings,
       builder: (c) => Padding(
         padding: EdgeInsets.zero,
         child: PickerSheetWidget<T>(
@@ -111,6 +120,7 @@ class UnifiedPickerFieldController<T> extends BaseUnifiedFieldController<T> {
           searchAutoFocus: searchAutoFocus,
           hasClear: showClearButton,
           searchBuilder: searchBuilder,
+          valueToString: valueToString,
           items: items,
           label: label,
           itemToWidget: itemToWidget,
@@ -152,7 +162,15 @@ class UnifiedMultiPickerFieldController<T>
     this.showClearButton = true,
     this.gridItemBuilder,
     this.gridDelegate,
+    this.pickerSheetStyle,
+    this.pickerSheetModalSettings,
   }) : super(initialValue: List<T>.from(initialValue));
+
+  /// Sheet chrome bundle for [openPicker].
+  final UnifiedPickerSheetStyle? pickerSheetStyle;
+
+  /// Modal flags for [openPicker].
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
 
   /// Renders a value as display text.
   String Function(T value)? valueToString;
@@ -205,8 +223,9 @@ class UnifiedMultiPickerFieldController<T>
   String displayText() {
     final vs = value;
     if (vs == null || vs.isEmpty) return '';
-    final fn = valueToString;
-    return vs.map((e) => fn != null ? fn(e) : e.toString()).join(', ');
+    return vs
+        .map((e) => unifiedPickerItemLabel(e, valueToString: valueToString))
+        .join(', ');
   }
 
   /// Opens the multi picker. Uses the attached field opener when present.
@@ -240,9 +259,10 @@ class UnifiedMultiPickerFieldController<T>
     required String label,
   }) async {
     FocusScope.of(context).requestFocus(FocusNode());
-    final dynamic result = await showModalBottomSheet<dynamic>(
+    final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
-      isScrollControlled: true,
+      pickerSheetStyle: pickerSheetStyle,
+      modalSettings: pickerSheetModalSettings,
       builder: (c) => Padding(
         padding: EdgeInsets.zero,
         child: MultiPickerSheetWidget<T>(
@@ -251,6 +271,7 @@ class UnifiedMultiPickerFieldController<T>
           searchAutoFocus: searchAutoFocus,
           hasClear: showClearButton,
           searchBuilder: searchBuilder,
+          valueToString: valueToString,
           items: items,
           label: label,
           itemToWidget: itemToWidget,

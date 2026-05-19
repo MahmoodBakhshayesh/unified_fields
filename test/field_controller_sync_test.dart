@@ -8,7 +8,7 @@ void main() {
     final fc = UnifiedTextFieldController();
     syncWidgetStringValidatorToFieldController(
       fc,
-      (v) => v == null || v.isEmpty ? 'Required' : null,
+      (v) => v.isEmpty ? 'Required' : null,
     );
 
     expect(UnifiedFieldValidation.validateFields([fc]), isFalse);
@@ -23,7 +23,7 @@ void main() {
     final fc = UnifiedTextFieldController();
     syncWidgetStringValidatorToFieldController(
       fc,
-      (v) => v == null || v.isEmpty ? 'Required' : null,
+      (v) => v.isEmpty ? 'Required' : null,
     );
     fc.validate();
     expect(fc.hasError, isTrue);

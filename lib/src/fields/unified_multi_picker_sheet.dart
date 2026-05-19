@@ -7,7 +7,6 @@ import '../unified_fields_strings.dart';
 import '../unified_sheet_button.dart';
 import 'unified_input_theme.dart';
 import 'unified_picker_item_builders.dart';
-import 'unified_picker_sheet_style.dart';
 
 /// Bottom-sheet content used by [UnifiedMultiPickerField] for multi-selection.
 class MultiPickerSheetWidget<T> extends StatefulWidget {
@@ -35,10 +34,13 @@ class MultiPickerSheetWidget<T> extends StatefulWidget {
   /// Optional widget rendered above the list, below the title.
   final Widget? headerWidget;
 
-  /// Custom row builder; defaults to a [Text] of [searchBuilder] or `toString`.
+  /// Custom row builder; defaults to [unifiedPickerDefaultItemWidget] using [valueToString].
   final Widget Function(T)? itemToWidget;
 
-  /// Custom searchable text per item.
+  /// Display/search label per item; defaults to [Object.toString].
+  final String Function(T)? valueToString;
+
+  /// Custom searchable text per item (defaults to [valueToString]).
   final String Function(T)? searchBuilder;
 
   /// When set, items render in a [GridView] via this builder instead of a list.
@@ -62,6 +64,7 @@ class MultiPickerSheetWidget<T> extends StatefulWidget {
     required this.label,
     required this.hasClear,
     this.itemToWidget,
+    this.valueToString,
     required this.values,
     required this.searchAutoFocus,
     this.searchBuilder,
@@ -103,6 +106,10 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
     super.dispose();
   }
 
+  String _searchLabel(T item) =>
+      widget.searchBuilder?.call(item) ??
+      unifiedPickerItemLabel(item, valueToString: widget.valueToString);
+
   List<T> _filteredSorted() {
     final query = searchC.text.toLowerCase();
 
@@ -110,7 +117,7 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
         .where(
           (a) =>
               query.isEmpty ||
-              (widget.searchBuilder?.call(a) ?? a.toString())
+              _searchLabel(a)
                   .toLowerCase()
                   .split(' ')
                   .any((sp) => sp.startsWith(query)),
@@ -119,18 +126,12 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
 
     if (query.isNotEmpty) {
       filtered.sort((a, b) {
-        var comp = (widget.searchBuilder?.call(a) ?? a.toString())
+        var comp = _searchLabel(a)
             .toLowerCase()
             .indexOf(query)
-            .compareTo(
-              (widget.searchBuilder?.call(b) ?? b.toString())
-                  .toLowerCase()
-                  .indexOf(query),
-            );
+            .compareTo(_searchLabel(b).toLowerCase().indexOf(query));
         if (comp == 0) {
-          return (widget.searchBuilder?.call(a) ?? a.toString()).compareTo(
-            (widget.searchBuilder?.call(b) ?? b.toString()),
-          );
+          return _searchLabel(a).compareTo(_searchLabel(b));
         }
         return comp;
       });
@@ -156,14 +157,16 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
     //     Navigator.of(context).pop(widget.suggestion.first);
     //   });
     // }
-    final sheetBg = UnifiedInputThemeResolver.resolvePickerSheetBackground(
+    final baseSheet = UnifiedBasePickerSheetStyle.resolve(
       context,
       pickerSheetBackgroundColor: widget.sheetBackgroundColor,
     );
     return SafeArea(
       child: BottomSheet(
-        backgroundColor: sheetBg,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: baseSheet.sheetBackgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: baseSheet.sheetBorderRadius!,
+        ),
         constraints: BoxConstraints(
           maxHeight: context.unifiedFieldsScreenHeight * 0.9,
         ),
@@ -219,8 +222,11 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                         children: [
                           Expanded(
                             child:
-                                widget.itemToWidget?.call(s) ??
-                                Text(s.toString()),
+                                unifiedPickerResolveListItem(
+                                  s,
+                                  itemToWidget: widget.itemToWidget,
+                                  valueToString: widget.valueToString,
+                                ),
                           ),
                           Text(
                             UnifiedFieldsStrings.instance.suggestion,
@@ -335,8 +341,11 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                 const SizedBox(width: 8),
                 Expanded(
                   child:
-                      widget.itemToWidget?.call(item) ??
-                      Text(item.toString()),
+                      unifiedPickerResolveListItem(
+                        item,
+                        itemToWidget: widget.itemToWidget,
+                        valueToString: widget.valueToString,
+                      ),
                 ),
               ],
             ),
@@ -358,6 +367,7 @@ Future<List<T>?> showUnifiedMultiPickerSheet<T>({
   bool hasClear = true,
   bool searchAutoFocus = false,
   String Function(T)? searchBuilder,
+  String Function(T)? valueToString,
   Widget Function(T)? itemToWidget,
   UnifiedPickerMultiGridItemBuilder<T>? gridItemBuilder,
   SliverGridDelegate? gridDelegate,
@@ -365,14 +375,17 @@ Future<List<T>?> showUnifiedMultiPickerSheet<T>({
   Color? sheetBackgroundColor,
   UnifiedInputPickerHeaderStyle? pickerHeaderStyle,
   UnifiedPickerSheetStyle? pickerSheetStyle,
+  UnifiedPickerSheetModalSettings? pickerSheetModalSettings,
 }) async {
   FocusScope.of(context).requestFocus(FocusNode());
   final bg = sheetBackgroundColor ?? pickerSheetStyle?.pickerSheetBackgroundColor;
   final header =
       pickerHeaderStyle ?? pickerSheetStyle?.pickerHeaderStyle;
-  final dynamic result = await showModalBottomSheet<dynamic>(
+  final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
     context: context,
-    isScrollControlled: true,
+    pickerSheetStyle: pickerSheetStyle,
+    modalSettings:
+        pickerSheetModalSettings ?? pickerSheetStyle?.modalSettings,
     builder: (c) => Padding(
       padding: EdgeInsets.zero,
       child: MultiPickerSheetWidget<T>(
@@ -382,6 +395,7 @@ Future<List<T>?> showUnifiedMultiPickerSheet<T>({
         searchAutoFocus: searchAutoFocus,
         hasClear: hasClear,
         searchBuilder: searchBuilder,
+        valueToString: valueToString,
         label: label,
         itemToWidget: itemToWidget,
         hasSearch: hasSearch,

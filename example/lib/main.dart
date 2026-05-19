@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:unified_fields/unified_fields.dart';
 
@@ -42,7 +44,7 @@ void main() {
             UnifiedPickerHeaderItem.clear,
             UnifiedPickerHeaderItem.close,
           ],
-          helpText: 'Pick one option',
+          helpWidget: const Text('Pick one option'),
           // closeButton: IconButton(...),
         ),
         placeholderOpacityWhenDisabled: 0.38,
@@ -234,6 +236,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     gridItemBuilder: (c,i,item,onselect){
                       return TextButton(onPressed: (){
                         onselect();
+
                       }, child: Text("${i} -${item}"));
                     },
                     pickerController: testFC,
@@ -322,7 +325,38 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     validator: (v) => v == null ? 'Pick a country' : null,
                   ),
                   const SizedBox(height: 12),
+                  CustomWheelPicker(
 
+                  pickerSheetStyle: UnifiedPickerSheetStyle(
+                    basePickerSheetStyle: UnifiedBasePickerSheetStyle(
+                      panelBorderRadius: BorderRadius.circular(0),
+                      sheetBackgroundColor: Colors.blue,
+                      sheetBorderRadius: BorderRadius.circular(0),
+                      panelBackgroundColor: Colors.green,
+
+                      contentPadding: EdgeInsets.all(0)
+                    )
+                  ),
+                    label: 'Configuration',
+                    columns: {
+                      0: CustomWheelPickerColumn.typed<int>(
+                        options: List.generate(20, (i)=>i),
+                        label: 'Qty',
+                        valueToString: (v) => '$v',
+                      ),
+                      1: CustomWheelPickerColumn.typed<String>(
+                        options: List.generate(20, (i)=>"item ${i}"),
+                        label: 'Size',
+                      ),
+
+                    },
+                    value: {0: 2, 1: 'Large'},  // same keys as columns
+                    onChanged: (map) {
+                      log(map.toString());
+                    },
+                    wheelLayout: CustomWheelPickerWheelLayout.horizontal, // or .horizontal
+                    wheelStyle: UnifiedFieldsDateWheelStyle(magnification: 1.12),
+                  ),
                   UnifiedFormMultiPickerField<String>(
                       isDisabled: true,
                       label: 'Flavors', placeholder: 'Add some', items: _flavorChoices, values: _flavors.value ?? const [], binding: _flavors, resetValue: () => const <String>[]),
@@ -390,9 +424,9 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     placeholder: '0',
                     controller: _quantity,
                     // selectTextOnFocus: true is also set via fieldDefaults in main()
-                    decoration: const UnifiedInputDecoration(
-                      suffixIcon: Text('kg'),
-                    ),
+                    // decoration: const UnifiedInputDecoration(
+                    //   suffixIcon: Text('kg'),
+                    // ),
                     textAlign: TextAlign.start,
 
                   ),

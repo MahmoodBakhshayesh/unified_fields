@@ -47,6 +47,7 @@ export 'unified_picker_item_builders.dart';
 export 'unified_picker_sheet.dart';
 export 'unified_picker_fields.dart';
 export 'unified_text_field.dart';
+export 'custom_wheel_picker_field.dart';
 export 'unified_date_field.dart';
 export '../unified_date_picker_sheet.dart'
     show

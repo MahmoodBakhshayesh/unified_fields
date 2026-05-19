@@ -26,6 +26,7 @@
 18. [Localization](#localization)  
 19. [Try the built-in demo](#try-the-built-in-demo)  
 20. [Dependencies](#dependencies)  
+21. [Version](#version)  
 
 ---
 
@@ -35,7 +36,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.2.5
+  unified_fields: ^0.2.6
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -74,16 +75,16 @@ dependencies:
 |------|------------------|---------|
 | **Plain fields** | `UnifiedTextField`, `UnifiedNumberField`, `UnifiedNumericStepField`, `UnifiedPhoneField`, `UnifiedDurationField`, `UnifiedDateField`, `UnifiedDateRangeField`, `UnifiedTimeOfDayField` | Same visual system as form fields, without `FormField` |
 | **Phone** | `UnifiedPhoneField`, `UnifiedPhoneFieldController`, `UnifiedCountry`, `UnifiedCountries`, `UnifiedCountryWidget`, `UnifiedFlag`, `showUnifiedPhoneCountryPicker`, `UnifiedPhoneNumber` | Country flag, dial code, masked national number, ~250-country enum, Persian digits |
-| **Pickers** | `UnifiedSinglePickerField`, `UnifiedMultiPickerField`, `UnifiedAsyncPickerField`, `UnifiedAsyncMultiPickerField` | Bottom-sheet list or grid (`gridItemBuilder`, `gridDelegate`); async variants load items on demand |
+| **Pickers** | `UnifiedSinglePickerField`, `UnifiedMultiPickerField`, `UnifiedAsyncPickerField`, `UnifiedAsyncMultiPickerField`, `CustomWheelPicker` | Bottom-sheet list or grid; multi-column scroll wheels; async variants load items on demand |
 | **Customizable pickers** | `UnifiedCustomizablePickerField`, `UnifiedCustomizableMultiPickerField`, `UnifiedCustomizableAsyncPickerField`, `UnifiedCustomizableAsyncMultiPickerField`, `CustomizableSinglePickerController`, `CustomizableMultiPickerController` | Controller-driven single or multi selection that also accepts free typed text |
 | **Form wrappers** | `UnifiedFormField`, `UnifiedFormTextField`, `UnifiedFormSinglePickerField`, `UnifiedFormMultiPickerField`, `UnifiedFormAsyncPickerField`, `UnifiedFormAsyncMultiPickerField`, `UnifiedFormDateField`, `UnifiedFormDateRangeField`, `UnifiedFormTimeOfDayField`, `UnifiedFormDurationField`, `UnifiedFormNumberField`, `UnifiedFormCustomizablePickerField`, `UnifiedFormCustomizableMultiPickerField`, `UnifiedFormCustomizableAsyncPickerField`, `UnifiedFormCustomizableAsyncMultiPickerField` | `Form` integration: `validate`, `save`, `reset`, validators |
 | **Form scope** | `UnifiedFormFieldScope` | Shared `AutovalidateMode` for all unified form descendants |
-| **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind`, `UnifiedFieldsDatePickerStyle` | Single date or range; calendar grid or scroll wheels; Gregorian vs Jalali |
+| **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind`, `UnifiedFieldsDatePickerStyle`, `UnifiedInputDatePickerStyle` | Single date or range; calendar grid or scroll wheels; Gregorian vs Jalali; themed sheet chrome (0.2.6) |
 | **Time** | `UnifiedTimeOfDayField`, `showUnifiedFieldsTimePicker`, `UnifiedFieldsTimePickerStyle`, `UnifiedFieldsTimeGranularity`, `TimePickerUtils.show` | Material dial (default) or H:M:S wheels with Shamsi digit toggle |
 | **Duration** | `UnifiedDurationField`, `showUnifiedFieldsDurationPicker`, `UnifiedFieldsDurationColumn`, `UnifiedFieldsDurationColumnPresets`, `UnifiedDurationGranularity`, `UnifiedFieldsDurationPickerStyle` | Wheel picker with fixed granularity or custom column order (year · week · day · hour, …) |
-| **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedFieldLabelMode`, `UnifiedInputDecoration`, `UnifiedInputDecorationSet`, `UnifiedInputFieldDefaults`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPhoneStyle`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, per-state borders/fills, theme field defaults, phone/dial chrome, global theme scope, picker headers, aligned suffix icons |
+| **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedFieldLabelMode`, `UnifiedInputDecoration`, `UnifiedInputDecorationSet`, `UnifiedInputFieldDefaults`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPhoneStyle`, `UnifiedPickerSheetStyle`, `UnifiedBasePickerSheetStyle`, `UnifiedPickerSheetModalSettings`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, per-state borders/fills, theme field defaults, phone/dial chrome, picker sheet chrome + modal flags, global theme scope, picker headers, aligned suffix icons |
 | **Controllers** | `UnifiedPickerFieldController`, `UnifiedMultiPickerFieldController`, `UnifiedAsyncPickerFieldController`, `UnifiedDateFieldController`, `UnifiedTimeOfDayFieldController`, `UnifiedDurationFieldController`, `UnifiedNumberFieldController`, `UnifiedPhoneFieldController`, `UnifiedFormController` | Listenable value + validation + imperative `openPicker` / `requestFocus` |
-| **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsTypography`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedPickerDefaultGridDelegate`, `showUnifiedSinglePickerSheet`, `showUnifiedMultiPickerSheet`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, Persian digits, picker grid helpers, layout helpers, default colors, sheet actions |
+| **Utilities** | `UnifiedInputPicker`, `UnifiedFieldsStrings`, `UnifiedFieldsTypography`, `UnifiedFieldsContextX`, `UnifiedColors`, `UnifiedSheetButton`, `unifiedPickerDefaultGridDelegate`, `unifiedPickerItemLabel`, `unifiedPickerDefaultItemWidget`, `unifiedPickerResolveListItem`, `showUnifiedSinglePickerSheet`, `showUnifiedMultiPickerSheet`, `showCustomWheelPicker`, `showUnifiedFieldsPickerBottomSheet`, `unifiedFormErrorText`, `unifiedFormPickerOverride`, `attachUnifiedFieldHandles` | State binding, global UI copy, Persian digits, picker grid/list/wheel helpers, layout helpers, default colors, sheet actions |
 | **Demo** | `UnifiedInputsShowcasePage` | Scrollable gallery of widgets + palette toggle |
 
 ---
@@ -320,6 +321,41 @@ Date **ranges** still use the calendar sheet (`showUnifiedFieldsDatePickerRange`
 
 Wheel chrome is themed automatically (`UnifiedFieldsDateWheelStyle.resolve`). Pass optional `wheelStyle:` only when you need custom colors or zoom.
 
+### Date picker styling (`UnifiedInputDatePickerStyle`)
+
+Set calendar / sheet chrome on **`UnifiedInputThemeData.datePickerStyle`** or per field via **`datePickerStyle:`** on **`UnifiedDateField`**, **`UnifiedDateRangeField`**, **`UnifiedFormDateField`**, and **`showUnifiedFieldsDatePicker`**.
+
+Controls sheet background, title / weekday / day colors and font sizes, range highlight, month-year jump grid, year list, Gregorian/Shamsi toggle, confirm/cancel buttons, optional **`shamsiTextStyle`** (merged when the picker is in Jalali mode — use for Persian font family / size), nested **`wheelStyle`** for wheel pickers, and **`yearStripStyle`** for the horizontal year strip (mouse wheel/drag scroll, optional center zoom + edge fade — falls back to `wheelStyle` fade/magnification when unset).
+
+```dart
+UnifiedInputThemeScope(
+  data: UnifiedInputThemeData(
+    datePickerStyle: UnifiedInputDatePickerStyle(
+      sheetBackgroundColor: Color(0xFFF5F5F5),
+      dayTextColor: Colors.black87,
+      daySelectedBackgroundColor: Colors.indigo,
+      daySelectedTextColor: Colors.white,
+      dayFontSize: 15,
+      weekdayTextStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+      titleStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      shamsiTextStyle: TextStyle(fontFamily: 'KookFaNum', fontSize: 16),
+      yearStripStyle: UnifiedFieldsDateYearStripStyle(
+        magnification: 1.15,
+        showFade: true,
+      ),
+    ),
+  ),
+  child: myForm,
+)
+
+UnifiedDateField(
+  label: 'Due date',
+  datePickerStyle: UnifiedInputDatePickerStyle(
+    daySelectedBackgroundColor: Colors.teal,
+  ), // merges on top of theme
+)
+```
+
 **Jalali field text:** when `initialCalendarKind` / active kind is **`jalali`**, the field shows Shamsi-formatted text (e.g. `۱۳,مرداد ۱۴۰۳`) after pick, not a Gregorian `DateFormat`. `initialCalendarKind: jalali` applies to **both** calendar grid and wheel pickers (0.1.4).
 
 ```dart
@@ -361,6 +397,37 @@ UnifiedTimeOfDayField(
   initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
 )
 ```
+
+---
+
+## Custom wheel picker (`CustomWheelPicker`)
+
+Multi-column scroll wheels with the same sheet chrome as date/duration pickers. Columns and values are **maps keyed by index** (not variadic generics):
+
+```dart
+CustomWheelPicker(
+  label: 'Line item',
+  wheelLayout: CustomWheelPickerWheelLayout.vertical, // or .horizontal
+  columns: {
+    0: CustomWheelPickerColumn.typed<int>(
+      options: [1, 2, 3, 5],
+      label: 'Qty',
+      valueToString: (v) => '$v',
+    ),
+    1: CustomWheelPickerColumn.typed<String>(
+      options: ['S', 'M', 'L'],
+      label: 'Size',
+    ),
+  },
+  value: {0: 2, 1: 'L'},
+  onChanged: (map) => setState(() => _selection = map),
+  wheelStyle: UnifiedFieldsDateWheelStyle(magnification: 1.15),
+)
+```
+
+Standalone sheet: `showCustomWheelPicker(context: context, columns: …, value: …)`.
+
+Sheet chrome and modal behavior use the same APIs as list pickers (see [Picker sheet chrome](#picker-sheet-chrome-026) below): `pickerSheetStyle`, `pickerSheetModalSettings`, and nested `basePickerSheetStyle` / `modalSettings`.
 
 ---
 
@@ -428,10 +495,106 @@ Helpers: **`unifiedFormatDuration`**, **`unifiedTryParseDuration`**, **`composeU
 
 | Parameter | Purpose |
 |-----------|---------|
-| **`itemToWidget`** | Custom list row (default: text from `valueToString`) |
-| **`searchBuilder`** | Custom searchable text per item |
+| **`valueToString`** | Display label for field text, search, and default list rows |
+| **`itemToWidget`** | Custom list row; default uses **`unifiedPickerResolveListItem`** → **`unifiedPickerDefaultItemWidget`** |
+| **`searchBuilder`** | Custom searchable text per item (defaults to **`valueToString`** / **`unifiedPickerItemLabel`**) |
 | **`gridItemBuilder`** | Custom grid tile; sheet uses **`GridView`** instead of a list |
 | **`gridDelegate`** | Full **`SliverGridDelegate`** (max extent, fixed count, spacing, aspect ratio, …). Omit to use **`unifiedPickerDefaultGridDelegate()`** |
+| **`pickerHeaderStyle`** / **`pickerSheetStyle`** | Per-field sheet chrome (`helpWidget`, `itemOrder`, background, …) |
+| **`pickerSheetModalSettings`** | Per-field `showModalBottomSheet` flags (wins over `pickerSheetStyle.modalSettings` and theme) |
+
+### Picker sheet chrome (0.2.6)
+
+Shared bottom-sheet styling for list pickers, **`CustomWheelPicker`**, and related sheets.
+
+**`UnifiedBasePickerSheetStyle`** — padding, colors, and radii:
+
+| Property | Effect |
+|----------|--------|
+| `sheetBackgroundColor` | Sheet surface (header gaps + footer) |
+| `sheetBorderRadius` | Modal shape and clip (all corners, including footer) |
+| `contentPadding` | Padding around wheel / list body |
+| `footerPadding` | Cancel / confirm row |
+| `panelPadding` | Inside the wheel panel |
+| `panelBackgroundColor` | Wheel panel fill (e.g. green content area) |
+| `panelBorderRadius` / `panelBorderColor` / `panelBorderWidth` | Wheel panel border |
+
+Set on **`UnifiedInputThemeData.basePickerSheetStyle`** or **`UnifiedPickerSheetStyle.basePickerSheetStyle`**.
+
+**`UnifiedPickerSheetModalSettings`** — modal presentation:
+
+| Property | Maps to |
+|----------|---------|
+| `isScrollControlled` | Full-height sheet |
+| `isDismissible` | Tap outside / back |
+| `enableDrag` | Drag-to-dismiss (defaults to `isDismissible`) |
+| `useSafeArea` | System bottom inset |
+| `showDragHandle` | Material drag handle |
+
+Set on **`UnifiedInputThemeData.pickerSheetModalSettings`**, **`UnifiedPickerSheetStyle.modalSettings`**, or **`pickerSheetModalSettings`** on any picker field.
+
+```dart
+CustomWheelPicker(
+  label: 'Configuration',
+  pickerSheetStyle: UnifiedPickerSheetStyle(
+    basePickerSheetStyle: UnifiedBasePickerSheetStyle(
+      sheetBackgroundColor: Colors.blue,
+      sheetBorderRadius: BorderRadius.circular(16),
+      panelBackgroundColor: Colors.green,
+      panelBorderRadius: BorderRadius.circular(12),
+      contentPadding: EdgeInsets.zero,
+    ),
+    modalSettings: UnifiedPickerSheetModalSettings(
+      isDismissible: false,
+      isScrollControlled: true,
+    ),
+  ),
+  columns: { /* … */ },
+  value: {0: 2, 1: 'Large'},
+)
+```
+
+**Precedence:** field `pickerSheetModalSettings` → `pickerSheetStyle.modalSettings` → theme → package defaults (`isScrollControlled` / `isDismissible` / `enableDrag` / `useSafeArea`: `true`; `showDragHandle`: `false`).
+
+Imperative API: **`showUnifiedFieldsPickerBottomSheet`** (used internally by list/multi pickers).
+
+### List row helpers (0.2.6)
+
+```dart
+import 'package:unified_fields/unified_fields.dart';
+
+// Label for field text and search
+final label = unifiedPickerItemLabel(country, valueToString: (c) => c.name);
+
+// Default list row when itemToWidget is omitted
+itemToWidget: (c) => unifiedPickerDefaultItemWidget(
+  c,
+  valueToString: (x) => x.name,
+),
+
+// Or let the sheet resolve for you (itemToWidget ?? default widget)
+unifiedPickerResolveListItem(
+  item,
+  itemToWidget: customBuilder,
+  valueToString: (x) => x.name,
+);
+```
+
+### Picker sheet header (0.2.3+ layout, 0.2.6 `helpWidget`)
+
+Reorder title, help, close, and clear with **`itemOrder`**. Help is a **`Widget`** (`helpWidget`); **`helpTextStyle`** from theme merges via **`DefaultTextStyle`**:
+
+```dart
+pickerHeaderStyle: UnifiedInputPickerHeaderStyle(
+  itemOrder: const [
+    UnifiedPickerHeaderItem.title,
+    UnifiedPickerHeaderItem.help,
+    UnifiedPickerHeaderItem.clear,
+    UnifiedPickerHeaderItem.close,
+  ],
+  helpWidget: Text('Pick one option'),
+),
+```
 
 **Grid (single-select):** builder receives `(context, index, item, onSelect)` — call **`onSelect`** to choose and close.
 
@@ -646,6 +809,11 @@ void main() {
         pickerHeaderStyle: UnifiedInputPickerHeaderStyle(
           padding: EdgeInsets.fromLTRB(16, 14, 8, 14),
           backgroundColor: Colors.white,
+          helpWidget: Text('Optional hint'),
+        ),
+        datePickerStyle: UnifiedInputDatePickerStyle(
+          daySelectedBackgroundColor: Color(0xFF1565C0),
+          shamsiTextStyle: TextStyle(fontFamily: 'KookFaNum'),
         ),
         multiPickerCheckboxStyle: UnifiedInputMultiPickerCheckboxStyle(
           borderRadius: 6,
@@ -707,10 +875,13 @@ UnifiedInputThemeScope(
 | `suffixIconColor` / `suffixIconOpacity` | Lock, password, default picker suffixes |
 | `loadingIndicatorColor` | Loading spinner on fields |
 | `pickerSheetBackgroundColor` | Date/time/duration sheets (else `bottomSheetTheme` → palette) |
-| `pickerHeaderStyle` | `UnifiedInputPickerHeaderStyle`: header `padding`, `backgroundColor`, `titleStyle`, `clearButtonColor` |
+| `basePickerSheetStyle` | `UnifiedBasePickerSheetStyle`: sheet/panel padding, radii, colors (list + wheel pickers) |
+| `pickerSheetModalSettings` | `UnifiedPickerSheetModalSettings`: `isScrollControlled`, `isDismissible`, `enableDrag`, `useSafeArea`, `showDragHandle` |
+| `pickerHeaderStyle` | `UnifiedInputPickerHeaderStyle`: `padding`, `backgroundColor`, `titleStyle`, `helpWidget`, `helpTextStyle`, `itemOrder`, `closeButton`, `clearButton` |
 | `multiPickerCheckboxStyle` | `UnifiedInputMultiPickerCheckboxStyle`: `size`, `borderRadius`, `fillColor`, `checkColor`, `borderColor` |
 | `fieldDecorationSet` | Default per-state layers (`focused`, `error`, `disabled`, …) for all fields in the scope |
 | `fieldDefaults` | Default [UnifiedBaseTextField] layout/behavior: `labelMode`, `height`, `borderRadius`, `textStyle` / `textStylePersian`, `placeholderStyle`, per-mode `labelInRowStyle` / `labelInColumnStyle` / `floatingLabelStyle`, `selectTextOnFocus`, `showClearButton`, `autovalidateMode`, … |
+| `datePickerStyle` | [UnifiedInputDatePickerStyle]: sheet background, day/month/year colors, font sizes, toggles, buttons, optional `shamsiTextStyle`; includes optional `wheelStyle` |
 | `defaultSuffixIcons` | Default suffix per field type (`date`, `time`, `duration`, `picker`, …) |
 
 Field-level **`UnifiedInputDecoration`** / **`decorationSet`** / **`fieldDefaults`** and per-widget params still win for one-off overrides.
@@ -825,7 +996,22 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.2.5`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.2.6`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+
+### Upgrading to 0.2.6
+
+From **0.2.5** or earlier:
+
+* **`UnifiedInputDatePickerStyle`** — set `UnifiedInputThemeData.datePickerStyle` or per-field `datePickerStyle` on `UnifiedDateField`, `UnifiedDateRangeField`, `UnifiedFormDateField`, `UnifiedDateFieldController`, and `showUnifiedFieldsDatePicker` / `showUnifiedFieldsDatePickerRange`. Customize sheet background, day/month/year colors, font sizes, toggles, buttons, `cellHeight`, `dayCircleSize`, nested **`wheelStyle`**, and **`yearStripStyle`** for the horizontal year strip.
+* **`shamsiTextStyle`** — optional on `UnifiedInputDatePickerStyle`; merged when the picker is in Jalali mode (Persian month names / numerals). Use for `fontFamily` (e.g. KookFaNum) like `textStylePersian` on fields.
+* **`CustomWheelPicker`** — multi-column wheel field (`columns` / `value` maps, vertical or horizontal layout). Use `CustomWheelPickerColumn.typed` per column; sheet via `showCustomWheelPicker`.
+* **`UnifiedBasePickerSheetStyle`** — theme or `pickerSheetStyle.basePickerSheetStyle` for sheet background, `sheetBorderRadius`, content/footer/panel padding, and wheel panel colors.
+* **`UnifiedPickerSheetModalSettings`** — theme, `pickerSheetStyle.modalSettings`, or `pickerSheetModalSettings` on picker fields for `isScrollControlled`, `isDismissible`, `enableDrag`, `useSafeArea`, `showDragHandle`.
+* **Picker list helpers** — `unifiedPickerItemLabel`, `unifiedPickerDefaultItemWidget`, `unifiedPickerResolveListItem`. Sheets respect `valueToString` for default rows; pass `valueToString` on fields and `showUnifiedSinglePickerSheet` / `showUnifiedMultiPickerSheet`.
+* **Breaking: picker `helpText` → `helpWidget`** — on `UnifiedInputPickerHeaderStyle` and `UnifiedPickerSheetHeader`, replace `helpText: '…'` with `helpWidget: Text('…')`. `helpTextStyle` still applies.
+* **`UnifiedNumberField` / `UnifiedNumericStepField`** — theme `fieldDefaults.textStyle` now applies (no hardcoded dark text color). Optional per-field `style` on `UnifiedNumberField`.
+
+If you are on **0.2.4** or below, also read [Upgrading to 0.2.5](#upgrading-to-025) (`textStyle` on phone/date fields).
 
 ### Upgrading to 0.2.5
 
@@ -840,7 +1026,7 @@ Current release: **`0.2.5`** (see **`pubspec.yaml`** and [pub.dev](https://pub.d
 
 ### Upgrading to 0.2.3
 
-* **Picker sheets** — override sheet background and header per field with `pickerSheetBackgroundColor`, `pickerHeaderStyle` (e.g. `itemOrder`, `helpText`), or bundled `pickerSheetStyle`. Works on standalone pickers and `UnifiedForm*Picker*` wrappers without changing global theme.
+* **Picker sheets** — override sheet background and header per field with `pickerSheetBackgroundColor`, `pickerHeaderStyle` (e.g. `itemOrder`, `helpWidget`), or bundled `pickerSheetStyle`. Works on standalone pickers and `UnifiedForm*Picker*` wrappers without changing global theme.
 
 ### Upgrading to 0.2.2
 

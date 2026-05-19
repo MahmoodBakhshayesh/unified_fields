@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../fields/unified_input_theme.dart';
 import '../fields/unified_picker_sheet.dart';
 import '../unified_date_picker_types.dart';
 import 'unified_country.dart';
@@ -12,11 +13,13 @@ Future<UnifiedCountry?> showUnifiedPhoneCountryPicker({
   String title = 'Country',
   bool? usePersianDigits,
   UnifiedFieldsCalendarKind? digitCalendarKind,
+  UnifiedPickerSheetStyle? pickerSheetStyle,
+  UnifiedPickerSheetModalSettings? pickerSheetModalSettings,
 }) {
-  return showModalBottomSheet<UnifiedCountry>(
+  return showUnifiedFieldsPickerBottomSheet<UnifiedCountry>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
+    pickerSheetStyle: pickerSheetStyle,
+    modalSettings: pickerSheetModalSettings,
     builder: (ctx) {
       final h = MediaQuery.sizeOf(ctx).height * 0.72;
       return SizedBox(

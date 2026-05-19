@@ -5,6 +5,9 @@ import 'unified_input_decoration.dart';
 import 'unified_input_field_defaults.dart';
 import 'unified_input_palette.dart';
 import '../phone/unified_input_phone_style.dart';
+import '../unified_input_date_picker_style.dart';
+import 'unified_base_picker_sheet_style.dart';
+import 'unified_picker_sheet_modal_settings.dart';
 import 'unified_picker_sheet_style.dart';
 
 /// Default suffix icons for unified field types when the field does not set its own.
@@ -68,10 +71,13 @@ class UnifiedInputThemeData {
     this.suffixIconOpacity,
     this.loadingIndicatorColor,
     this.pickerSheetBackgroundColor,
+    this.basePickerSheetStyle,
+    this.pickerSheetModalSettings,
     this.pickerHeaderStyle,
     this.multiPickerCheckboxStyle,
     this.defaultSuffixIcons,
     this.phoneStyle,
+    this.datePickerStyle,
     this.fieldDecorationSet,
     this.fieldDefaults,
   });
@@ -154,6 +160,12 @@ class UnifiedInputThemeData {
   /// Package-default suffix icons per field type.
   final UnifiedInputDefaultSuffixIcons? defaultSuffixIcons;
 
+  /// Shared picker sheet padding, radius, and panel colors (list + wheel pickers).
+  final UnifiedBasePickerSheetStyle? basePickerSheetStyle;
+
+  /// Default [showModalBottomSheet] flags for picker fields.
+  final UnifiedPickerSheetModalSettings? pickerSheetModalSettings;
+
   /// Picker sheet title bar padding, colors, and title style.
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
@@ -162,6 +174,9 @@ class UnifiedInputThemeData {
 
   /// Dial-code box, flag size, and invalid dial-code display for [UnifiedPhoneField].
   final UnifiedInputPhoneStyle? phoneStyle;
+
+  /// Calendar / wheel date picker chrome for [UnifiedDateField] and [showUnifiedFieldsDatePicker].
+  final UnifiedInputDatePickerStyle? datePickerStyle;
 
   /// Default per-state field decorations for the whole subtree (merged under each field).
   final UnifiedInputDecorationSet? fieldDecorationSet;
@@ -201,11 +216,19 @@ class UnifiedInputThemeData {
       loadingIndicatorColor: other.loadingIndicatorColor ?? loadingIndicatorColor,
       pickerSheetBackgroundColor:
           other.pickerSheetBackgroundColor ?? pickerSheetBackgroundColor,
+      basePickerSheetStyle: basePickerSheetStyle?.merge(other.basePickerSheetStyle) ??
+          other.basePickerSheetStyle,
+      pickerSheetModalSettings:
+          pickerSheetModalSettings?.merge(other.pickerSheetModalSettings) ??
+              other.pickerSheetModalSettings,
       pickerHeaderStyle: other.pickerHeaderStyle ?? pickerHeaderStyle,
       multiPickerCheckboxStyle:
           other.multiPickerCheckboxStyle ?? multiPickerCheckboxStyle,
       defaultSuffixIcons: other.defaultSuffixIcons ?? defaultSuffixIcons,
       phoneStyle: other.phoneStyle ?? phoneStyle,
+      datePickerStyle: other.datePickerStyle?.merge(datePickerStyle) ??
+          datePickerStyle ??
+          other.datePickerStyle,
       fieldDecorationSet: other.fieldDecorationSet ?? fieldDecorationSet,
       fieldDefaults: other.fieldDefaults ?? fieldDefaults,
     );

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'unified_base_picker_sheet_style.dart';
+import 'unified_picker_sheet_modal_settings.dart';
+
 /// A slot in a picker sheet header row ([UnifiedPickerSheetHeader]).
 enum UnifiedPickerHeaderItem {
   /// Title (always shown; uses [Expanded] in the row).
@@ -25,14 +28,17 @@ const List<UnifiedPickerHeaderItem> kDefaultUnifiedPickerHeaderItemOrder = [
 
 /// Local overrides for list-picker bottom sheets on picker fields.
 ///
-/// When null on a field, [UnifiedInputThemeData.pickerSheetBackgroundColor] and
-/// [pickerHeaderStyle] from [UnifiedInputThemeScope] apply.
+/// When null on a field, [UnifiedInputThemeData.pickerSheetBackgroundColor],
+/// [basePickerSheetStyle], [pickerSheetModalSettings], and [pickerHeaderStyle]
+/// from [UnifiedInputThemeScope] apply.
 @immutable
 class UnifiedPickerSheetStyle {
   /// Creates per-field picker sheet chrome overrides.
   const UnifiedPickerSheetStyle({
     this.pickerSheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.basePickerSheetStyle,
+    this.modalSettings,
   });
 
   /// Sheet surface color; overrides theme [UnifiedInputThemeData.pickerSheetBackgroundColor].
@@ -40,6 +46,12 @@ class UnifiedPickerSheetStyle {
 
   /// Header row chrome; merged on top of theme [UnifiedInputThemeData.pickerHeaderStyle].
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
+
+  /// Radius, padding, panel background, and borders for picker sheet body.
+  final UnifiedBasePickerSheetStyle? basePickerSheetStyle;
+
+  /// [showModalBottomSheet] flags (`isScrollControlled`, `isDismissible`, …).
+  final UnifiedPickerSheetModalSettings? modalSettings;
 }
 
 /// Resolves field-level picker sheet overrides (direct params win over [pickerSheetStyle]).
@@ -71,7 +83,7 @@ class UnifiedInputPickerHeaderStyle {
     this.itemOrder,
     this.closeButton,
     this.clearButton,
-    this.helpText,
+    this.helpWidget,
   });
 
   /// Padding around the title row ([EdgeInsetsDirectional] recommended).
@@ -83,7 +95,7 @@ class UnifiedInputPickerHeaderStyle {
   /// Title text style.
   final TextStyle? titleStyle;
 
-  /// Style for [helpText] (and per-sheet [UnifiedPickerSheetHeader.helpText]).
+  /// Default [TextStyle] for [helpWidget] (merged via [DefaultTextStyle] in the header).
   final TextStyle? helpTextStyle;
 
   /// Clear action color on [UnifiedSheetButton].
@@ -102,8 +114,8 @@ class UnifiedInputPickerHeaderStyle {
   /// Replaces the default clear [UnifiedSheetButton] when set.
   final Widget? clearButton;
 
-  /// Default help copy when the sheet does not pass [UnifiedPickerSheetHeader.helpText].
-  final String? helpText;
+  /// Default help widget when the sheet does not pass [UnifiedPickerSheetHeader.helpWidget].
+  final Widget? helpWidget;
 
   /// Merges [override] on top of this; non-null fields from [override] win.
   UnifiedInputPickerHeaderStyle merge(UnifiedInputPickerHeaderStyle? override) {
@@ -117,7 +129,7 @@ class UnifiedInputPickerHeaderStyle {
       itemOrder: override.itemOrder ?? itemOrder,
       closeButton: override.closeButton ?? closeButton,
       clearButton: override.clearButton ?? clearButton,
-      helpText: override.helpText ?? helpText,
+      helpWidget: override.helpWidget ?? helpWidget,
     );
   }
 }

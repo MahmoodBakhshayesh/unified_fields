@@ -1,3 +1,30 @@
+## 0.2.6
+
+### Features
+
+* **`UnifiedInputDatePickerStyle`** — theme and per-field styling for date picker sheets: sheet background, title/header, weekday row, day grid (normal, selected, today, disabled, in-range), month jump grid, year list, Gregorian/Shamsi toggle, confirm/cancel buttons, `cellHeight`, `dayCircleSize`, and nested **`wheelStyle`**. Set on [UnifiedInputThemeData.datePickerStyle] or `datePickerStyle` on [UnifiedDateField], [UnifiedDateRangeField], [UnifiedFormDateField], [UnifiedDateFieldController], and [showUnifiedFieldsDatePicker] / [showUnifiedFieldsDatePickerRange].
+* **`UnifiedInputDatePickerStyle.shamsiTextStyle`** — optional [TextStyle] merged into picker labels when the active calendar is Shamsi (Jalali), via `calendarTextStyle` (same role as `textStylePersian` for field text).
+* **`UnifiedInputDatePickerStyle.yearStripStyle`** — [UnifiedFieldsDateYearStripStyle]: horizontal year strip `fadeColor`, `showFade`, `fadeExtent`, `magnification`, chip sizing (defaults align with `wheelStyle` when omitted).
+* **`CustomWheelPicker`** — multi-column wheel field with `columns` / `value` maps keyed by index (`{0: List<…>, 1: List<…>}` → `{0: v0, 1: v1}`). [CustomWheelPickerColumn.typed] per column type, [CustomWheelPickerWheelLayout.vertical] (side-by-side vertical wheels) or `.horizontal`, [UnifiedFieldsDateWheelStyle] chrome, `showCustomWheelPicker` sheet API.
+* **`UnifiedPickerSheetModalSettings`** — theme and per-field `showModalBottomSheet` flags: `isScrollControlled`, `isDismissible`, `enableDrag`, `useSafeArea`, `showDragHandle`. Set on [UnifiedInputThemeData.pickerSheetModalSettings], [UnifiedPickerSheetStyle.modalSettings], or `pickerSheetModalSettings` on picker fields. [showUnifiedFieldsPickerBottomSheet] applies resolved flags.
+* **`UnifiedBasePickerSheetStyle`** — shared sheet chrome: `sheetBackgroundColor`, `sheetBorderRadius`, `contentPadding`, `footerPadding`, `panelPadding`, `panelBackgroundColor`, `panelBorderRadius`, and panel border. Set on [UnifiedInputThemeData.basePickerSheetStyle] or [UnifiedPickerSheetStyle.basePickerSheetStyle]; list pickers, [CustomWheelPicker], and wheel sheets resolve it before field overrides.
+* **Picker list helpers** — `unifiedPickerItemLabel`, `unifiedPickerDefaultItemWidget`, and `unifiedPickerResolveListItem` in `unified_picker_item_builders.dart`. Picker sheets default list rows use `valueToString` (not raw `toString()`). Field display text and controllers use the same helpers. Exported from the package barrel.
+
+### Breaking
+
+* **Picker header `helpText` → `helpWidget`** — [UnifiedInputPickerHeaderStyle] and [UnifiedPickerSheetHeader] use `helpWidget` ([Widget]) instead of `helpText` ([String]). [helpTextStyle] still applies via [DefaultTextStyle.merge].
+
+### Fixes
+
+* **Month / year picker year control** — jump panel and month-granularity views use a horizontally scrollable year strip (mouse drag + wheel, optional center magnification and edge fade via `yearStripStyle` / `wheelStyle` fallbacks) instead of a numeric step field or dropdown.
+* **`textStyle` on [UnifiedNumberField] / [UnifiedNumericStepField]** — removed hardcoded `UnifiedColors.textColorDark` fallback so [UnifiedInputFieldDefaults.textStyle] applies (e.g. Quantity in the example). Optional per-field `style` on [UnifiedNumberField].
+* **[CustomWheelPicker]** — horizontal layout with few options no longer shows empty phantom cells (centered row when content fits; selection overlay removed for horizontal). Vertical wheels respond to mouse wheel. Sheet uses [UnifiedPickerSheetHeader] and [UnifiedBasePickerSheetStyle] (including `pickerSheetStyle` on the field).
+* **`sheetBorderRadius`** — [CustomWheelPicker] sheet content is clipped to the resolved radius; safe-area inset is applied inside the clip so `sheetBackgroundColor` no longer paints square corners under the home indicator. [UnifiedPickerSheetHeader] uses the same top corners from `sheetBorderRadius`.
+
+### Docs
+
+* README: date picker styling, `UnifiedBasePickerSheetStyle`, `UnifiedPickerSheetModalSettings`, `CustomWheelPicker`, picker list helpers, `helpWidget`, and **Upgrading to 0.2.6**. Example README updated for 0.2.6 demos.
+
 ## 0.2.5
 
 ### Fixes
@@ -31,7 +58,7 @@
 * **[UnifiedNumberField] / [UnifiedFormNumberField] / [UnifiedNumericStepField]** — configurable step buttons: [UnifiedNumericStepButtons] (`both`, `incrementOnly`, `decrementOnly`, `none`), [UnifiedNumericStepButtonPlacement] (`split`, `leading`, `trailing`), and custom `decrementIcon` / `incrementIcon`. Decoration `prefix`, `prefixIcon`, and `suffixIcon` compose with buttons (prefix at natural width, then buttons; trailing buttons before suffix).
 * **`textAlign`** on number fields (default `TextAlign.center`).
 * **[UnifiedInputDecoration]** — optional `suffixWidth` / `suffixHeight` to force a suffix slot size.
-* **Picker sheet header** — [UnifiedPickerHeaderItem] + `itemOrder` list on [UnifiedInputPickerHeaderStyle] / [UnifiedPickerSheetHeader]: lay out title (expanded), help, close, and clear in any order; unavailable slots are skipped. Defaults to title → help → close → clear. Also `helpText`, custom `closeButton` / `clearButton`, `titleWidget`, `helpWidget`.
+* **Picker sheet header** — [UnifiedPickerHeaderItem] + `itemOrder` list on [UnifiedInputPickerHeaderStyle] / [UnifiedPickerSheetHeader]: lay out title (expanded), help, close, and clear in any order; unavailable slots are skipped. Defaults to title → help → close → clear. Also `helpWidget`, custom `closeButton` / `clearButton`, and `titleWidget`. (**Breaking:** picker header/theme `helpText` removed — use `helpWidget` instead.)
 
 ### Fixes
 
