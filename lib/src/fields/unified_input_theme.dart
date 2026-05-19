@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'unified_field_label_mode.dart';
 import 'unified_input_brightness.dart';
+import '../unified_fields_date_format_style.dart';
+import '../unified_fields_duration_format_style.dart';
 import 'unified_input_field_defaults.dart';
 import 'unified_input_palette.dart';
 import '../phone/unified_input_phone_style.dart';
@@ -449,6 +451,26 @@ class UnifiedInputThemeResolver {
   /// Effective select-all-on-focus when [UnifiedBaseTextField.selectTextOnFocus] is null.
   static bool fieldSelectTextOnFocus(BuildContext context, {bool? field}) =>
       field ?? _fieldDefaults(context)?.selectTextOnFocus ?? false;
+
+  /// Effective date display style: [field] → theme → [UnifiedFieldsDateFormatStyle.standard].
+  static UnifiedFieldsDateFormatStyle dateFormatStyle(
+    BuildContext context, {
+    UnifiedFieldsDateFormatStyle? field,
+  }) =>
+      resolveUnifiedDateFormatStyle(
+        field: field,
+        theme: _theme(context).dateFormatStyle,
+      );
+
+  /// Effective duration display style: [field] → theme → [UnifiedFieldsDurationFormatStyle.standard].
+  static UnifiedFieldsDurationFormatStyle durationFormatStyle(
+    BuildContext context, {
+    UnifiedFieldsDurationFormatStyle? field,
+  }) =>
+      resolveUnifiedDurationFormatStyle(
+        field: field,
+        theme: _theme(context).durationFormatStyle,
+      );
 
   /// Resolves the field value [TextStyle]: decoration → widget → theme
   /// ([UnifiedInputFieldDefaults.textStyle] or [textStylePersian] when Persian digits apply).

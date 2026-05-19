@@ -88,6 +88,11 @@ fieldDefaults: const UnifiedInputFieldDefaults(
 
 Check **Phone** (`usePersianDigits: true`) and **Date** fields — they use the same theme `textStyle` as **Full name**.
 
+## 0.2.7 highlights
+
+- **`dateFormatStyle` / `durationFormatStyle`** — theme-level Gregorian and Shamsi display patterns; see root README [Field display format](../README.md#field-display-format-027)
+- **Form validators** — `FormFieldValidator<List<T>>` on multi-pickers and typed pickers align with `fieldController` + `UnifiedFieldValidation.validateFields`
+
 ## 0.2.6 highlights (in `main.dart`)
 
 - **`pickerHeaderStyle.helpWidget`** — header help slot is a `Widget` (not `helpText` string); `helpTextStyle` from theme still applies
@@ -98,7 +103,7 @@ Check **Phone** (`usePersianDigits: true`) and **Date** fields — they use the 
 
 ## Package version
 
-This example tracks the parent package (**currently 0.2.6**). See the root
+This example tracks the parent package (**currently 0.2.7**). See the root
 [`CHANGELOG.md`](../CHANGELOG.md) for release notes.
 
 ## Publish checklist (package maintainers)
@@ -112,4 +117,4 @@ dart pub publish --dry-run
 dart pub publish   # when ready
 ```
 
-Ensure `CHANGELOG.md` and `pubspec.yaml` version match (**0.2.6**).
+Ensure `CHANGELOG.md` and `pubspec.yaml` version match (**0.2.7**).

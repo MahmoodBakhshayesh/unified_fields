@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../fields/unified_duration_field.dart';
+import '../unified_fields_duration_format_style.dart';
 import '../fields/unified_input_brightness.dart';
 import '../unified_date_picker_types.dart';
 import '../unified_date_wheel_style.dart';
@@ -25,6 +26,7 @@ class UnifiedDurationFieldController
     this.brightness,
     this.wheelStyle,
     this.showCalendarKindToggle = true,
+    this.durationFormatStyle,
   }) : _calendarKind = calendarKind;
 
   /// Step granularity when [pickerColumns] is null.
@@ -50,6 +52,9 @@ class UnifiedDurationFieldController
 
   /// Whether the picker shows Gregorian / Shamsi digit toggle.
   final bool showCalendarKindToggle;
+
+  /// Colon-separated display style for the field text.
+  final UnifiedFieldsDurationFormatStyle? durationFormatStyle;
 
   UnifiedFieldsCalendarKind _calendarKind;
 
@@ -81,6 +86,7 @@ class UnifiedDurationFieldController
     granularity: granularity,
     pickerColumns: _columns,
     calendarKind: calendarKind,
+    formatStyle: durationFormatStyle,
   );
 
   /// Opens the duration picker sheet and updates [value] when confirmed.

@@ -5,6 +5,8 @@ import 'unified_input_decoration.dart';
 import 'unified_input_field_defaults.dart';
 import 'unified_input_palette.dart';
 import '../phone/unified_input_phone_style.dart';
+import '../unified_fields_date_format_style.dart';
+import '../unified_fields_duration_format_style.dart';
 import '../unified_input_date_picker_style.dart';
 import 'unified_base_picker_sheet_style.dart';
 import 'unified_picker_sheet_modal_settings.dart';
@@ -78,6 +80,8 @@ class UnifiedInputThemeData {
     this.defaultSuffixIcons,
     this.phoneStyle,
     this.datePickerStyle,
+    this.dateFormatStyle,
+    this.durationFormatStyle,
     this.fieldDecorationSet,
     this.fieldDefaults,
   });
@@ -178,6 +182,12 @@ class UnifiedInputThemeData {
   /// Calendar / wheel date picker chrome for [UnifiedDateField] and [showUnifiedFieldsDatePicker].
   final UnifiedInputDatePickerStyle? datePickerStyle;
 
+  /// Default Gregorian / Shamsi display patterns for date and date-range fields.
+  final UnifiedFieldsDateFormatStyle? dateFormatStyle;
+
+  /// Default colon-separated display for [UnifiedDurationField].
+  final UnifiedFieldsDurationFormatStyle? durationFormatStyle;
+
   /// Default per-state field decorations for the whole subtree (merged under each field).
   final UnifiedInputDecorationSet? fieldDecorationSet;
 
@@ -229,6 +239,8 @@ class UnifiedInputThemeData {
       datePickerStyle: other.datePickerStyle?.merge(datePickerStyle) ??
           datePickerStyle ??
           other.datePickerStyle,
+      dateFormatStyle: other.dateFormatStyle ?? dateFormatStyle,
+      durationFormatStyle: other.durationFormatStyle ?? durationFormatStyle,
       fieldDecorationSet: other.fieldDecorationSet ?? fieldDecorationSet,
       fieldDefaults: other.fieldDefaults ?? fieldDefaults,
     );

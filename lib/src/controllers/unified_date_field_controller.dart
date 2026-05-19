@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../unified_date_picker_sheet.dart';
+import '../unified_fields_date_format_style.dart';
 import '../fields/unified_date_field.dart' show formatUnifiedDateFieldText;
 import 'base_unified_field_controller.dart';
 
@@ -12,6 +13,7 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
     super.validator,
     super.focusNode,
     this.valueFormat,
+    this.dateFormatStyle,
     this.pickerGranularity = UnifiedFieldsDatePickerGranularity.day,
     UnifiedFieldsCalendarKind calendarKind =
         UnifiedFieldsCalendarKind.gregorian,
@@ -28,6 +30,9 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
 
   /// Format passed to [formatUnifiedDateFieldText].
   final Object? valueFormat;
+
+  /// Gregorian / Shamsi display patterns when [valueFormat] is null.
+  final UnifiedFieldsDateFormatStyle? dateFormatStyle;
 
   /// Picker granularity (day / month / year).
   final UnifiedFieldsDatePickerGranularity pickerGranularity;
@@ -77,6 +82,7 @@ class UnifiedDateFieldController extends BaseUnifiedFieldController<DateTime> {
       valueFormat,
       granularity: pickerGranularity,
       calendarKind: calendarKind,
+      formatStyle: dateFormatStyle,
     );
   }
 

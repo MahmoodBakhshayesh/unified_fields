@@ -334,6 +334,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
                       sheetBorderRadius: BorderRadius.circular(0),
                       panelBackgroundColor: Colors.green,
 
+
                       contentPadding: EdgeInsets.all(0)
                     )
                   ),

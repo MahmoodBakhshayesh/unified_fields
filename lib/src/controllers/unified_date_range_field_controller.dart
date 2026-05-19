@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../unified_date_picker_sheet.dart';
+import '../unified_fields_date_format_style.dart';
 import '../fields/unified_date_field.dart' show formatUnifiedDateRangeFieldText;
 import 'base_unified_field_controller.dart';
 
@@ -15,6 +16,8 @@ class UnifiedDateRangeFieldController
     this.min,
     this.max,
     this.showCalendarKindToggle = true,
+    this.dateFormatStyle,
+    this.calendarKind = UnifiedFieldsCalendarKind.gregorian,
   }) : super(initialValue: initialValue);
 
   /// Earliest allowed date.
@@ -26,6 +29,12 @@ class UnifiedDateRangeFieldController
   /// Whether the picker sheet shows Gregorian / Shamsi toggle.
   final bool showCalendarKindToggle;
 
+  /// Gregorian / Shamsi display patterns for the field text.
+  final UnifiedFieldsDateFormatStyle? dateFormatStyle;
+
+  /// Calendar kind for formatting and digit localization.
+  final UnifiedFieldsCalendarKind calendarKind;
+
   String _boundTitle = '';
 
   /// Sheet title from the bound field ([bindPickerTitle]).
@@ -34,8 +43,11 @@ class UnifiedDateRangeFieldController
   }
 
   /// Formats [value] (or [range]) for display.
-  String format([DateTimeRange? range]) =>
-      formatUnifiedDateRangeFieldText(range ?? value);
+  String format([DateTimeRange? range]) => formatUnifiedDateRangeFieldText(
+        range ?? value,
+        calendarKind: calendarKind,
+        formatStyle: dateFormatStyle,
+      );
 
   /// Opens the unified date-range picker and updates [value] when confirmed.
   Future<DateTimeRange?> openPicker(

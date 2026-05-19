@@ -9,6 +9,8 @@ import '../controllers/unified_number_field_controller.dart';
 import '../controllers/unified_picker_field_controller.dart';
 import '../controllers/unified_time_field_controller.dart';
 import '../unified_date_picker_sheet.dart';
+import '../unified_fields_date_format_style.dart';
+import '../unified_fields_duration_format_style.dart';
 import 'unified_input_picker.dart';
 import 'unified_async_picker_field.dart';
 import 'unified_date_field.dart';
@@ -209,7 +211,7 @@ class _UnifiedFormMultiPickerFieldState<T>
     } else {
       _frozenResetList = [];
     }
-    syncWidgetValidatorToFieldController<List<T>>(
+    syncWidgetFormValidatorToFieldController<List<T>>(
       widget.fieldController,
       widget.validator,
     );
@@ -296,7 +298,7 @@ class _UnifiedFormMultiPickerFieldState<T>
   }
 
   void _applyExternalList(List<T> display) {
-    syncFormFieldFromExternalList(
+    syncFormFieldFromExternalList<T>(
       formState: _formFieldKey.currentState,
       value: display,
       fieldController: widget.fieldController,
@@ -318,7 +320,7 @@ class _UnifiedFormMultiPickerFieldState<T>
 
   void _syncBindingFromForm() {
     final v = _formFieldKey.currentState?.value ?? <T>[];
-    syncUnifiedFieldListValue(
+    syncUnifiedFieldListValue<T>(
       value: List<T>.from(v),
       binding: widget.binding,
       fieldController: widget.fieldController,
@@ -327,7 +329,7 @@ class _UnifiedFormMultiPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
-    syncWidgetValidatorToFieldController<List<T>>(
+    syncWidgetFormValidatorToFieldController<List<T>>(
       widget.fieldController,
       widget.validator,
     );
@@ -359,7 +361,7 @@ class _UnifiedFormMultiPickerFieldState<T>
             if (widget.resetValue == null) {
               setState(() => _echoWhenNoReset = List<T>.from(next));
             }
-            syncUnifiedFieldListValue(
+            syncUnifiedFieldListValue<T>(
               value: next,
               onChanged: widget.onChanged,
               binding: widget.binding,
@@ -432,6 +434,7 @@ class UnifiedFormDateField extends StatefulWidget {
     this.isRequired = false,
     this.isDisabled = false,
     this.locked = false,
+    this.dateFormatStyle,
   });
 
   /// Visual chrome overrides.
@@ -481,6 +484,9 @@ class UnifiedFormDateField extends StatefulWidget {
 
   /// Either a [DateFormat] or custom format object used to render the field.
   final Object? valueFormat;
+
+  /// Gregorian / Shamsi display patterns; overrides theme [dateFormatStyle].
+  final UnifiedFieldsDateFormatStyle? dateFormatStyle;
 
   /// Forwarded to the picker (calendar vs input).
   final DatePickerEntryMode mode;
@@ -585,7 +591,7 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
       _cachedResetTarget = widget.resetValue!();
       _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget();
     }
-    syncWidgetValidatorToFieldController<DateTime?>(
+    syncWidgetFormValidatorToFieldController<DateTime?>(
       widget.fieldController,
       widget.validator,
     );
@@ -606,7 +612,7 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
     }
     if (oldWidget.validator != widget.validator ||
         oldWidget.fieldController != widget.fieldController) {
-      syncWidgetValidatorToFieldController<DateTime?>(
+      syncWidgetFormValidatorToFieldController<DateTime?>(
         widget.fieldController,
         widget.validator,
       );
@@ -670,7 +676,7 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
   }
 
   void _applyExternalValue(DateTime? display) {
-    syncFormFieldFromExternalValue(
+    syncFormFieldFromExternalValue<DateTime?>(
       formState: _formFieldKey.currentState,
       value: display,
       fieldController: widget.fieldController,
@@ -691,7 +697,7 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
 
   void _syncControllerAndBindingFromForm() {
     final dt = _formFieldKey.currentState?.value;
-    syncUnifiedFieldValue(
+    syncUnifiedFieldValue<DateTime?>(
       value: dt,
       binding: widget.binding,
       fieldController: widget.fieldController,
@@ -704,6 +710,11 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
         granularity: widget.pickerGranularity,
         calendarKind:
             widget.fieldController?.calendarKind ?? widget.initialCalendarKind,
+        formatStyle: UnifiedInputThemeResolver.dateFormatStyle(
+          context,
+          field:
+              widget.dateFormatStyle ?? widget.fieldController?.dateFormatStyle,
+        ),
       );
       if (c.text != text) {
         c.text = text;
@@ -713,7 +724,7 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
 
   @override
   Widget build(BuildContext context) {
-    syncWidgetValidatorToFieldController<DateTime?>(
+    syncWidgetFormValidatorToFieldController<DateTime?>(
       widget.fieldController,
       widget.validator,
     );
@@ -746,7 +757,7 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
             if (widget.resetValue == null) {
               setState(() => _echoWhenNoReset = dt);
             }
-            syncUnifiedFieldValue(
+            syncUnifiedFieldValue<DateTime?>(
               value: dt,
               onChanged: widget.onChanged,
               binding: widget.binding,
@@ -759,6 +770,8 @@ class _UnifiedFormDateFieldState extends State<UnifiedFormDateField> {
           max: widget.max ?? widget.fieldController?.max,
           valueFormat:
               widget.valueFormat ?? widget.fieldController?.valueFormat,
+          dateFormatStyle:
+              widget.dateFormatStyle ?? widget.fieldController?.dateFormatStyle,
           mode: widget.fieldController?.mode ?? widget.mode,
           suffixIcon: widget.suffixIcon,
           prefix: widget.prefix,
@@ -817,6 +830,8 @@ class UnifiedFormDateRangeField extends StatefulWidget {
     this.isRequired = false,
     this.isDisabled = false,
     this.locked = false,
+    this.dateFormatStyle,
+    this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
   });
 
   /// Visual chrome overrides.
@@ -879,6 +894,12 @@ class UnifiedFormDateRangeField extends StatefulWidget {
   /// When true, greys out the field and shows a lock suffix icon.
   final bool locked;
 
+  /// Gregorian / Shamsi display patterns; overrides theme [dateFormatStyle].
+  final UnifiedFieldsDateFormatStyle? dateFormatStyle;
+
+  /// Calendar kind for formatting and digit localization.
+  final UnifiedFieldsCalendarKind initialCalendarKind;
+
   /// When true, shakes once when validation error appears on this field.
   final bool shakeOnError;
 
@@ -927,6 +948,10 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
       _cachedResetTarget = widget.resetValue!();
       _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget();
     }
+    syncWidgetFormValidatorToFieldController<DateTimeRange?>(
+      widget.fieldController,
+      widget.validator,
+    );
     widget.binding?.addListener(_onBindingChanged);
     widget.fieldController?.addListener(_onFieldControllerChanged);
   }
@@ -934,6 +959,13 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
   @override
   void didUpdateWidget(covariant UnifiedFormDateRangeField oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.fieldController != widget.fieldController) {
+      syncWidgetFormValidatorToFieldController<DateTimeRange?>(
+        widget.fieldController,
+        widget.validator,
+      );
+    }
     if (oldWidget.binding != widget.binding) {
       oldWidget.binding?.removeListener(_onBindingChanged);
       widget.binding?.addListener(_onBindingChanged);
@@ -997,7 +1029,7 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
   }
 
   void _applyExternalValue(DateTimeRange? display) {
-    syncFormFieldFromExternalValue(
+    syncFormFieldFromExternalValue<DateTimeRange?>(
       formState: _formFieldKey.currentState,
       value: display,
       fieldController: widget.fieldController,
@@ -1018,14 +1050,23 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
 
   void _syncControllerAndBindingFromForm() {
     final r = _formFieldKey.currentState?.value;
-    syncUnifiedFieldValue(
+    syncUnifiedFieldValue<DateTimeRange?>(
       value: r,
       binding: widget.binding,
       fieldController: widget.fieldController,
     );
     final c = widget.controller;
     if (c != null) {
-      final text = formatUnifiedDateRangeFieldText(r);
+      final text = formatUnifiedDateRangeFieldText(
+        r,
+        calendarKind:
+            widget.fieldController?.calendarKind ?? widget.initialCalendarKind,
+        formatStyle: UnifiedInputThemeResolver.dateFormatStyle(
+          context,
+          field:
+              widget.dateFormatStyle ?? widget.fieldController?.dateFormatStyle,
+        ),
+      );
       if (c.text != text) {
         c.text = text;
       }
@@ -1034,6 +1075,10 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
 
   @override
   Widget build(BuildContext context) {
+    syncWidgetFormValidatorToFieldController<DateTimeRange?>(
+      widget.fieldController,
+      widget.validator,
+    );
     return UnifiedFormField<DateTimeRange?>(
       formFieldKey: _formFieldKey,
       initialValue: widget.resetValue != null
@@ -1062,7 +1107,7 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
             if (widget.resetValue == null) {
               setState(() => _echoWhenNoReset = r);
             }
-            syncUnifiedFieldValue(
+            syncUnifiedFieldValue<DateTimeRange?>(
               value: r,
               onChanged: widget.onRangeChanged,
               binding: widget.binding,
@@ -1074,6 +1119,10 @@ class _UnifiedFormDateRangeFieldState extends State<UnifiedFormDateRangeField> {
           max: widget.max,
           showCalendarKindToggle: widget.showCalendarKindToggle,
           textAlign: widget.textAlign,
+          dateFormatStyle:
+              widget.dateFormatStyle ?? widget.fieldController?.dateFormatStyle,
+          initialCalendarKind:
+              widget.fieldController?.calendarKind ?? widget.initialCalendarKind,
         );
       },
     );
@@ -1204,6 +1253,10 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
       _cachedResetTarget = widget.resetValue!();
       _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget();
     }
+    syncWidgetFormValidatorToFieldController<TimeOfDay?>(
+      widget.fieldController,
+      widget.validator,
+    );
     widget.binding?.addListener(_onBindingChanged);
     widget.fieldController?.addListener(_onFieldControllerChanged);
   }
@@ -1211,6 +1264,13 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
   @override
   void didUpdateWidget(covariant UnifiedFormTimeOfDayField oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.fieldController != widget.fieldController) {
+      syncWidgetFormValidatorToFieldController<TimeOfDay?>(
+        widget.fieldController,
+        widget.validator,
+      );
+    }
     if (oldWidget.binding != widget.binding) {
       oldWidget.binding?.removeListener(_onBindingChanged);
       widget.binding?.addListener(_onBindingChanged);
@@ -1274,7 +1334,7 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
   }
 
   void _applyExternalValue(TimeOfDay? display) {
-    syncFormFieldFromExternalValue(
+    syncFormFieldFromExternalValue<TimeOfDay?>(
       formState: _formFieldKey.currentState,
       value: display,
       fieldController: widget.fieldController,
@@ -1294,7 +1354,7 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
   }
 
   void _syncBindingFromForm() {
-    syncUnifiedFieldValue(
+    syncUnifiedFieldValue<TimeOfDay?>(
       value: _formFieldKey.currentState?.value,
       binding: widget.binding,
       fieldController: widget.fieldController,
@@ -1303,6 +1363,10 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
 
   @override
   Widget build(BuildContext context) {
+    syncWidgetFormValidatorToFieldController<TimeOfDay?>(
+      widget.fieldController,
+      widget.validator,
+    );
     return UnifiedFormField<TimeOfDay?>(
       formFieldKey: _formFieldKey,
       initialValue: widget.resetValue != null
@@ -1329,7 +1393,7 @@ class _UnifiedFormTimeOfDayFieldState extends State<UnifiedFormTimeOfDayField> {
             if (widget.resetValue == null) {
               setState(() => _echoWhenNoReset = t);
             }
-            syncUnifiedFieldValue(
+            syncUnifiedFieldValue<TimeOfDay?>(
               value: t,
               onChanged: widget.onChanged,
               binding: widget.binding,
@@ -1377,6 +1441,7 @@ class UnifiedFormDurationField extends StatefulWidget {
     this.label,
     this.placeholder,
     this.isRequired = false,
+    this.durationFormatStyle,
   });
 
   /// Field label.
@@ -1442,6 +1507,9 @@ class UnifiedFormDurationField extends StatefulWidget {
   /// Maximum allowed duration.
   final Duration? max;
 
+  /// Colon-separated display style; overrides theme [durationFormatStyle].
+  final UnifiedFieldsDurationFormatStyle? durationFormatStyle;
+
   /// When true, the field is non-interactive.
   final bool locked;
 
@@ -1499,6 +1567,10 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
       _cachedResetTarget = widget.resetValue!();
       _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget();
     }
+    syncWidgetFormValidatorToFieldController<Duration?>(
+      widget.fieldController,
+      widget.validator,
+    );
     widget.binding?.addListener(_onBindingChanged);
     widget.fieldController?.addListener(_onFieldControllerChanged);
   }
@@ -1506,6 +1578,13 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
   @override
   void didUpdateWidget(covariant UnifiedFormDurationField oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.fieldController != widget.fieldController) {
+      syncWidgetFormValidatorToFieldController<Duration?>(
+        widget.fieldController,
+        widget.validator,
+      );
+    }
     if (oldWidget.binding != widget.binding) {
       oldWidget.binding?.removeListener(_onBindingChanged);
       widget.binding?.addListener(_onBindingChanged);
@@ -1569,7 +1648,7 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
   }
 
   void _applyExternalValue(Duration? display) {
-    syncFormFieldFromExternalValue(
+    syncFormFieldFromExternalValue<Duration?>(
       formState: _formFieldKey.currentState,
       value: display,
       fieldController: widget.fieldController,
@@ -1589,7 +1668,7 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
   }
 
   void _syncBindingFromForm() {
-    syncUnifiedFieldValue(
+    syncUnifiedFieldValue<Duration?>(
       value: _formFieldKey.currentState?.value,
       binding: widget.binding,
       fieldController: widget.fieldController,
@@ -1598,6 +1677,10 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
 
   @override
   Widget build(BuildContext context) {
+    syncWidgetFormValidatorToFieldController<Duration?>(
+      widget.fieldController,
+      widget.validator,
+    );
     return UnifiedFormField<Duration?>(
       formFieldKey: _formFieldKey,
       initialValue: widget.resetValue != null
@@ -1623,7 +1706,7 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
             if (widget.resetValue == null) {
               setState(() => _echoWhenNoReset = d);
             }
-            syncUnifiedFieldValue(
+            syncUnifiedFieldValue<Duration?>(
               value: d,
               onChanged: widget.onChanged,
               binding: widget.binding,
@@ -1642,6 +1725,8 @@ class _UnifiedFormDurationFieldState extends State<UnifiedFormDurationField> {
           locked: widget.locked,
           isDisabled: widget.isDisabled,
           focusNode: widget.focusNode,
+          durationFormatStyle: widget.durationFormatStyle ??
+              widget.fieldController?.durationFormatStyle,
         );
       },
     );
@@ -1821,7 +1906,7 @@ class _UnifiedFormAsyncPickerFieldState<T>
       _cachedResetTarget = widget.resetValue!();
       _scheduleSyncDisplayWhenCurrentDiffersFromResetTarget();
     }
-    syncWidgetValidatorToFieldController<T>(
+    syncWidgetFormValidatorToFieldController<T?>(
       widget.fieldController,
       widget.validator,
     );
@@ -1842,7 +1927,7 @@ class _UnifiedFormAsyncPickerFieldState<T>
     }
     if (oldWidget.validator != widget.validator ||
         oldWidget.fieldController != widget.fieldController) {
-      syncWidgetValidatorToFieldController<T>(
+      syncWidgetFormValidatorToFieldController<T?>(
         widget.fieldController,
         widget.validator,
       );
@@ -1902,7 +1987,7 @@ class _UnifiedFormAsyncPickerFieldState<T>
   }
 
   void _applyExternalValue(T? display) {
-    syncFormFieldFromExternalValue(
+    syncFormFieldFromExternalValue<T?>(
       formState: _formFieldKey.currentState,
       value: display,
       fieldController: widget.fieldController,
@@ -1922,7 +2007,7 @@ class _UnifiedFormAsyncPickerFieldState<T>
   }
 
   void _syncBindingFromForm() {
-    syncUnifiedFieldValue(
+    syncUnifiedFieldValue<T?>(
       value: _formFieldKey.currentState?.value,
       binding: widget.binding,
       fieldController: widget.fieldController,
@@ -1931,7 +2016,7 @@ class _UnifiedFormAsyncPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
-    syncWidgetValidatorToFieldController<T>(
+    syncWidgetFormValidatorToFieldController<T?>(
       widget.fieldController,
       widget.validator,
     );
@@ -1961,7 +2046,7 @@ class _UnifiedFormAsyncPickerFieldState<T>
             if (widget.resetValue == null) {
               setState(() => _echoInitialWhenNoReset = v);
             }
-            syncUnifiedFieldValue(
+            syncUnifiedFieldValue<T?>(
               value: v,
               onChanged: widget.onChanged,
               binding: widget.binding,
@@ -2169,7 +2254,7 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
     } else {
       _frozenResetList = [];
     }
-    syncWidgetValidatorToFieldController<List<T>>(
+    syncWidgetFormValidatorToFieldController<List<T>>(
       widget.fieldController,
       widget.validator,
     );
@@ -2192,7 +2277,7 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
     }
     if (oldWidget.validator != widget.validator ||
         oldWidget.fieldController != widget.fieldController) {
-      syncWidgetValidatorToFieldController<List<T>>(
+      syncWidgetFormValidatorToFieldController<List<T>>(
         widget.fieldController,
         widget.validator,
       );
@@ -2265,7 +2350,7 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
   }
 
   void _applyExternalList(List<T> display) {
-    syncFormFieldFromExternalList(
+    syncFormFieldFromExternalList<T>(
       formState: _formFieldKey.currentState,
       value: display,
       fieldController: widget.fieldController,
@@ -2287,7 +2372,7 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
 
   void _syncBindingFromForm() {
     final v = _formFieldKey.currentState?.value ?? <T>[];
-    syncUnifiedFieldListValue(
+    syncUnifiedFieldListValue<T>(
       value: List<T>.from(v),
       binding: widget.binding,
       fieldController: widget.fieldController,
@@ -2296,7 +2381,7 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
 
   @override
   Widget build(BuildContext context) {
-    syncWidgetValidatorToFieldController<List<T>>(
+    syncWidgetFormValidatorToFieldController<List<T>>(
       widget.fieldController,
       widget.validator,
     );
@@ -2328,7 +2413,7 @@ class _UnifiedFormAsyncMultiPickerFieldState<T>
             if (widget.resetValue == null) {
               setState(() => _echoWhenNoReset = List<T>.from(next));
             }
-            syncUnifiedFieldListValue(
+            syncUnifiedFieldListValue<T>(
               value: next,
               onChanged: widget.onChanged,
               binding: widget.binding,
@@ -2550,6 +2635,10 @@ class _UnifiedFormNumberFieldState extends State<UnifiedFormNumberField> {
     super.initState();
     _initEffectiveController();
     _recomputeResetBaseline();
+    syncNumberFormStringValidatorToFieldController(
+      widget.fieldController,
+      widget.validator,
+    );
     widget.binding?.addListener(_onBindingChanged);
     widget.fieldController?.addListener(_onFieldControllerChanged);
   }
@@ -2557,6 +2646,13 @@ class _UnifiedFormNumberFieldState extends State<UnifiedFormNumberField> {
   @override
   void didUpdateWidget(covariant UnifiedFormNumberField oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.fieldController != widget.fieldController) {
+      syncNumberFormStringValidatorToFieldController(
+        widget.fieldController,
+        widget.validator,
+      );
+    }
     if (oldWidget.controller != widget.controller ||
         oldWidget.fieldController != widget.fieldController) {
       if (_ownsController) _effectiveController.dispose();
@@ -2630,6 +2726,10 @@ class _UnifiedFormNumberFieldState extends State<UnifiedFormNumberField> {
 
   @override
   Widget build(BuildContext context) {
+    syncNumberFormStringValidatorToFieldController(
+      widget.fieldController,
+      widget.validator,
+    );
     return UnifiedFormField<String>(
       formFieldKey: _formFieldKey,
       initialValue: _formResetBaseline,

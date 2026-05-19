@@ -1,4 +1,5 @@
 import 'unified_date_picker_types.dart';
+import 'unified_fields_duration_format_style.dart';
 import 'unified_fields_typography.dart';
 
 /// How [UnifiedDurationField] formats and edits values when [pickerColumns] is null.
@@ -238,18 +239,11 @@ String formatUnifiedDurationColumns(
   Duration duration,
   List<UnifiedFieldsDurationColumn> columns, {
   UnifiedFieldsCalendarKind? calendarKind,
+  UnifiedFieldsDurationFormatStyle? formatStyle,
 }) {
-  final parts = decomposeUnifiedDuration(duration, columns);
-  final buffer = <String>[];
-  for (var i = 0; i < columns.length; i++) {
-    final col = columns[i];
-    final v = parts[i];
-    final minWidth = col == UnifiedFieldsDurationColumn.year ? 1 : 2;
-    buffer.add(v.toString().padLeft(minWidth, '0'));
-  }
-  final joined = buffer.join(':');
-  return UnifiedFieldsTypography.instance.localizeDigits(
-    joined,
+  return (formatStyle ?? UnifiedFieldsDurationFormatStyle.standard).format(
+    duration,
+    columns,
     calendarKind: calendarKind,
   );
 }

@@ -15,6 +15,7 @@ import '../unified_fields_strings.dart';
 import '../unified_fields_typography.dart';
 import '../unified_duration_column_wheel_picker_sheet.dart';
 import '../unified_duration_columns.dart';
+import '../unified_fields_duration_format_style.dart';
 import '../unified_time_picker_types.dart';
 import 'unified_input_palette.dart';
 import 'unified_input_theme.dart';
@@ -29,12 +30,18 @@ String unifiedFormatDuration(
   UnifiedDurationGranularity? granularity,
   List<UnifiedFieldsDurationColumn>? pickerColumns,
   UnifiedFieldsCalendarKind? calendarKind,
+  UnifiedFieldsDurationFormatStyle? formatStyle,
 }) {
   final columns = resolveUnifiedDurationColumns(
     pickerColumns: pickerColumns,
     granularity: granularity,
   );
-  return formatUnifiedDurationColumns(d, columns, calendarKind: calendarKind);
+  return formatUnifiedDurationColumns(
+    d,
+    columns,
+    calendarKind: calendarKind,
+    formatStyle: formatStyle,
+  );
 }
 
 /// Parses display text using [pickerColumns] or [granularity].
@@ -185,6 +192,7 @@ class UnifiedDurationField extends StatefulWidget {
     this.label,
     this.placeholder,
     this.isRequired = false,
+    this.durationFormatStyle,
   });
 
   /// Visual chrome.
@@ -259,6 +267,9 @@ class UnifiedDurationField extends StatefulWidget {
   /// Whether the field is required. Overrides [UnifiedInputDecoration.requiredField] when set.
   final bool isRequired;
 
+  /// Colon-separated display style; overrides [UnifiedInputThemeData.durationFormatStyle].
+  final UnifiedFieldsDurationFormatStyle? durationFormatStyle;
+
   @override
   State<UnifiedDurationField> createState() => _UnifiedDurationFieldState();
 }
@@ -278,6 +289,15 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
             widget.pickerColumns ?? widget.fieldController?.pickerColumns,
         granularity: widget.granularity,
       );
+
+  UnifiedFieldsDurationFormatStyle get _effectiveDurationFormatStyle {
+    final field =
+        widget.durationFormatStyle ?? widget.fieldController?.durationFormatStyle;
+    if (!mounted) {
+      return resolveUnifiedDurationFormatStyle(field: field);
+    }
+    return UnifiedInputThemeResolver.durationFormatStyle(context, field: field);
+  }
 
   Duration get _effective => unifiedClampDuration(
     unifiedEffectiveValue(
@@ -299,6 +319,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
     _ownsFn = widget.focusNode == null;
     _fn.addListener(_onFocus);
     _syncText();
+    _syncFieldControllerValidator();
     widget.binding?.addListener(_onBinding);
     widget.fieldController?.addListener(_onBinding);
   }
@@ -325,6 +346,19 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
         oldWidget.fieldController?.value != widget.fieldController?.value) {
       _syncText();
     }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.granularity != widget.granularity ||
+        oldWidget.pickerColumns != widget.pickerColumns ||
+        oldWidget.durationFormatStyle != widget.durationFormatStyle ||
+        oldWidget.fieldController != widget.fieldController) {
+      _syncFieldControllerValidator();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncFieldControllerValidator();
   }
 
   void _onBinding() {
@@ -332,20 +366,32 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
     setState(() {});
   }
 
-  void _syncText() {
-    final d = unifiedEffectiveValue(
+  String _formatDuration(Duration? d) => d == null
+      ? ''
+      : unifiedFormatDuration(
+          d,
+          granularity: widget.granularity,
+          pickerColumns: _effectiveColumns,
+          calendarKind: _effectiveCalendarKind,
+          formatStyle: _effectiveDurationFormatStyle,
+        );
+
+  void _syncFieldControllerValidator() {
+    syncDisplayStringValidatorToFieldController<Duration>(
       fieldController: widget.fieldController,
-      binding: widget.binding,
-      direct: widget.value,
+      widgetValidator: widget.validator,
+      displayFor: _formatDuration,
     );
-    _txt.text = d == null
-        ? ''
-        : unifiedFormatDuration(
-            d,
-            granularity: widget.granularity,
-            pickerColumns: _effectiveColumns,
-            calendarKind: _effectiveCalendarKind,
-          );
+  }
+
+  void _syncText() {
+    _txt.text = _formatDuration(
+      unifiedEffectiveValue(
+        fieldController: widget.fieldController,
+        binding: widget.binding,
+        direct: widget.value,
+      ),
+    );
   }
 
   void _onPickerConfirmedCalendarKind(UnifiedFieldsCalendarKind kind) {
@@ -373,6 +419,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
       granularity: widget.granularity,
       pickerColumns: _effectiveColumns,
       calendarKind: _effectiveCalendarKind,
+      formatStyle: _effectiveDurationFormatStyle,
     );
     if (formatted != _txt.text) {
       _txt.value = TextEditingValue(
@@ -380,7 +427,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
         selection: TextSelection.collapsed(offset: formatted.length),
       );
     }
-    syncUnifiedFieldValue(
+    syncUnifiedFieldValue<Duration?>(
       value: clamped,
       onChanged: widget.onChanged,
       binding: widget.binding,
@@ -422,8 +469,9 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
         granularity: widget.granularity,
         pickerColumns: _effectiveColumns,
         calendarKind: _effectiveCalendarKind,
+        formatStyle: _effectiveDurationFormatStyle,
       );
-      syncUnifiedFieldValue(
+      syncUnifiedFieldValue<Duration?>(
         value: picked,
         onChanged: widget.onChanged,
         binding: widget.binding,
@@ -492,8 +540,9 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
       granularity: widget.granularity,
       pickerColumns: _effectiveColumns,
       calendarKind: _effectiveCalendarKind,
+      formatStyle: _effectiveDurationFormatStyle,
     );
-    syncUnifiedFieldValue(
+    syncUnifiedFieldValue<Duration?>(
       value: clamped,
       onChanged: widget.onChanged,
       binding: widget.binding,

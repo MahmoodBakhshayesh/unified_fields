@@ -1,3 +1,18 @@
+## 0.2.7
+
+### Features
+
+* **`UnifiedFieldsDateFormatStyle` / `UnifiedFieldsDurationFormatStyle`** — theme defaults on [UnifiedInputThemeData] (`dateFormatStyle`, `durationFormatStyle`) for Gregorian and Shamsi field display; override per [UnifiedDateField], [UnifiedDateRangeField], [UnifiedDurationField], form wrappers, and controllers. Presets: `UnifiedFieldsDateFormatStyle.standard`, `isoGregorianDay`. Legacy `valueFormat: DateFormat(…)` still wins for dates when set. Resolvers: [UnifiedInputThemeResolver.dateFormatStyle] / `durationFormatStyle`.
+
+### Fixes
+
+* **Typed form validators** — `unifiedFormClearErrorIfValid`, `syncUnifiedFieldValue`, `syncFormFieldFromExternalValue`, and `syncWidgetFormValidatorToFieldController` preserve `T` / `T?` / `List<T>` through form fields and controllers. `FormFieldValidator<List<T>>` (e.g. `notEmptyList<CoffeeFlavor>`) and nullable pickers no longer throw runtime subtype errors when the value changes. Public typedef: [UnifiedFieldValueValidator].
+* **Form vs controller validation** — [UnifiedFormDateRangeField], [UnifiedFormTimeOfDayField], [UnifiedFormDurationField], and [UnifiedFormNumberField] sync `validator:` onto `fieldController`. Non-form date/time/duration/number fields map display-string validators onto typed controllers (`syncDisplayStringValidatorToFieldController`, `syncNumberDisplayValidatorToFieldController`). Form pickers skip string-validator sync when `validationOverrideMessage` is set.
+
+### Docs
+
+* README: **Upgrading to 0.2.7** (format styles, validation). Example README updated.
+
 ## 0.2.6
 
 ### Features

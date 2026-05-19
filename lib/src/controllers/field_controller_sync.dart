@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../fields/unified_input_picker.dart';
 import 'base_unified_field_controller.dart';
+import 'unified_number_field_controller.dart';
 import 'unified_picker_field_controller.dart';
 
 /// Focus node: [fieldController] → [binding] → [direct].
@@ -13,6 +14,10 @@ FocusNode? unifiedEffectiveFocusNode<T>({
 
 /// Opens a picker sheet the same way as tapping the bound field.
 typedef UnifiedFieldOpener = Future<void> Function(BuildContext context);
+
+/// Validator signature shared by [FormField], [FormFieldValidator], and
+/// [BaseUnifiedFieldController.validator].
+typedef UnifiedFieldValueValidator<T> = String? Function(T? value);
 
 void _attachHandles(
   Object? handle,
@@ -54,8 +59,10 @@ bool unifiedListsEqual<T>(List<T>? a, List<T>? b) {
 }
 
 /// Pushes an external [binding] update into [formState] and [fieldController].
+///
+/// [T] is the [FormField] value type (`DateTime?`, `CoffeeFlavor?`, …).
 void syncFormFieldFromExternalValue<T>({
-  FormFieldState<T?>? formState,
+  FormFieldState<T>? formState,
   required T? value,
   BaseUnifiedFieldController<T>? fieldController,
 }) {
@@ -85,12 +92,16 @@ void syncFormFieldFromExternalList<T>({
 }
 
 /// Syncs a new field value to optional [onChanged], [binding], and [fieldController].
-void syncUnifiedFieldValue<T>({
-  required T? value,
-  ValueChanged<T?>? onChanged,
-  UnifiedInputPicker<T>? binding,
-  BaseUnifiedFieldController<T>? fieldController,
-  FormFieldState<dynamic>? formFieldState,
+///
+/// [V] is the stored value type (`CoffeeFlavor?`, `DateTime?`, …).
+/// [formFieldState] must match the [FormField] value type (e.g. [FormFieldState] of
+/// `CoffeeFlavor?` when [V] is `CoffeeFlavor`).
+void syncUnifiedFieldValue<V>({
+  required V? value,
+  ValueChanged<V?>? onChanged,
+  UnifiedInputPicker<V>? binding,
+  BaseUnifiedFieldController<V>? fieldController,
+  FormFieldState<V>? formFieldState,
 }) {
   onChanged?.call(value);
   if (binding != null && binding.value != value) {
@@ -110,7 +121,7 @@ void syncUnifiedFieldListValue<T>({
   ValueChanged<List<T>>? onChanged,
   UnifiedInputPicker<List<T>>? binding,
   BaseUnifiedFieldController<List<T>>? fieldController,
-  FormFieldState<dynamic>? formFieldState,
+  FormFieldState<List<T>>? formFieldState,
 }) {
   onChanged?.call(value);
   if (binding != null) {
@@ -124,21 +135,34 @@ void syncUnifiedFieldListValue<T>({
   }
 }
 
-/// Copies [widgetValidator] onto [fieldController] when the widget supplies one.
+/// Copies a [FormField] / widget validator onto [fieldController].
 ///
-/// Keeps [BaseUnifiedFieldController.validate] and
-/// [UnifiedFieldValidation.validateFields] aligned with a field / [FormField] validator.
-/// Does nothing when [widgetValidator] is null (controller keeps its own validator).
-void syncWidgetValidatorToFieldController<T>(
+/// Accepts [FormFieldValidator], [UnifiedFieldValueValidator], or any
+/// `String? Function(T? value)` (including `(T value) => …` when [T] is nullable).
+void syncWidgetFormValidatorToFieldController<T>(
   BaseUnifiedFieldController<T>? fieldController,
-  String? Function(T? value)? widgetValidator,
+  UnifiedFieldValueValidator<T>? widgetValidator,
 ) {
   if (fieldController == null || widgetValidator == null) return;
   fieldController.validator = widgetValidator;
 }
 
-/// Like [syncWidgetValidatorToFieldController] for [String] fields whose widget
-/// validator uses a non-nullable [String] argument.
+/// Copies [widgetValidator] onto [fieldController] (alias of
+/// [syncWidgetFormValidatorToFieldController]).
+void syncWidgetValidatorToFieldController<T>(
+  BaseUnifiedFieldController<T>? fieldController,
+  UnifiedFieldValueValidator<T>? widgetValidator,
+) => syncWidgetFormValidatorToFieldController(fieldController, widgetValidator);
+
+/// [FormFieldValidator] for [String] fields (nullable argument).
+void syncWidgetFormStringValidatorToFieldController(
+  BaseUnifiedFieldController<String>? fieldController,
+  FormFieldValidator<String>? widgetValidator,
+) {
+  syncWidgetFormValidatorToFieldController(fieldController, widgetValidator);
+}
+
+/// Non-form [String] fields whose validator uses a non-nullable [String] argument.
 void syncWidgetStringValidatorToFieldController(
   BaseUnifiedFieldController<String>? fieldController,
   String? Function(String value)? widgetValidator,
@@ -148,7 +172,7 @@ void syncWidgetStringValidatorToFieldController(
 }
 
 /// Picker fields validate display [String] while [UnifiedPickerFieldController]
-/// stores [String? Function(T? value)?]; maps between them via [displayFor].
+/// stores [T?]; maps between them via [displayFor].
 void syncPickerStringValidatorToFieldController<T>(
   UnifiedPickerFieldController<T>? fieldController,
   String? Function(String value)? widgetValidator,
@@ -168,10 +192,45 @@ void syncMultiPickerStringValidatorToFieldController<T>(
   fieldController.validator = (value) => widgetValidator(displayFor(value));
 }
 
+/// Maps a display-[String] [widgetValidator] (non-form fields) onto a typed
+/// [BaseUnifiedFieldController] using [displayFor].
+void syncDisplayStringValidatorToFieldController<T>({
+  BaseUnifiedFieldController<T>? fieldController,
+  String? Function(String value)? widgetValidator,
+  required String Function(T? value) displayFor,
+}) {
+  if (fieldController == null || widgetValidator == null) return;
+  fieldController.validator = (value) => widgetValidator(displayFor(value));
+}
+
+/// [UnifiedNumberFieldController]: widget validates edited text; controller stores [num?].
+void syncNumberDisplayValidatorToFieldController(
+  UnifiedNumberFieldController? fieldController,
+  String? Function(String value)? widgetValidator,
+) {
+  if (fieldController == null || widgetValidator == null) return;
+  fieldController.validator =
+      (_) => widgetValidator(fieldController.text.textController.text);
+}
+
+/// Copies a [FormFieldValidator] for numeric text onto [UnifiedNumberFieldController].
+void syncNumberFormStringValidatorToFieldController(
+  UnifiedNumberFieldController? fieldController,
+  FormFieldValidator<String>? widgetValidator,
+) {
+  if (fieldController == null || widgetValidator == null) return;
+  fieldController.validator =
+      (_) => widgetValidator(fieldController.text.textController.text);
+}
+
 /// Clears [FormFieldState] error when the current value passes [validator].
 ///
 /// Does not set new errors while the user edits (invalid → valid only).
-void unifiedFormClearErrorIfValid(FormFieldState<dynamic> fieldState) {
+///
+/// Must stay generic: reading [FormField.validator] through an untyped
+/// [FormFieldState] causes a runtime cast error for typed validators
+/// such as `String? Function(List<T>?)`.
+void unifiedFormClearErrorIfValid<T>(FormFieldState<T> fieldState) {
   if (!fieldState.hasError) return;
   final validator = fieldState.widget.validator;
   if (validator == null) return;

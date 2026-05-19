@@ -168,11 +168,13 @@ class _UnifiedAsyncPickerFieldState<T>
     widget.fieldController?.bindPickerLabel(
       dec.placeholder ?? dec.label ?? widget.label,
     );
-    syncPickerStringValidatorToFieldController(
-      widget.fieldController,
-      widget.validator,
-      _display,
-    );
+    if (widget.validationOverrideMessage == null) {
+      syncPickerStringValidatorToFieldController(
+        widget.fieldController,
+        widget.validator,
+        _display,
+      );
+    }
     attachUnifiedFieldHandles(
       opener: _presentPicker,
       focusNode: unifiedEffectiveFocusNode(
@@ -321,7 +323,7 @@ class _UnifiedAsyncPickerFieldState<T>
   }
 
   void _commit(T? v) {
-    syncUnifiedFieldValue(
+    syncUnifiedFieldValue<T>(
       value: v,
       onChanged: widget.onChanged,
       binding: widget.binding,
@@ -555,11 +557,13 @@ class _UnifiedAsyncMultiPickerFieldState<T>
     widget.fieldController?.bindPickerLabel(
       dec.placeholder ?? dec.label ?? widget.label,
     );
-    syncMultiPickerStringValidatorToFieldController(
-      widget.fieldController,
-      widget.validator,
-      (values) => _display(values ?? const []),
-    );
+    if (widget.validationOverrideMessage == null) {
+      syncMultiPickerStringValidatorToFieldController(
+        widget.fieldController,
+        widget.validator,
+        (values) => _display(values ?? const []),
+      );
+    }
     attachUnifiedFieldHandles(
       opener: (context) => _presentPicker(context, dec),
       focusNode: unifiedEffectiveFocusNode(
@@ -716,7 +720,7 @@ class _UnifiedAsyncMultiPickerFieldState<T>
   }
 
   void _commit(List<T> v) {
-    syncUnifiedFieldListValue(
+    syncUnifiedFieldListValue<T>(
       value: v,
       onChanged: widget.onChanged,
       binding: widget.binding,

@@ -14,6 +14,8 @@ export 'src/unified_time_picker_types.dart';
 export 'src/unified_time_format.dart';
 export 'src/unified_hms_wheel_picker_sheet.dart';
 export 'src/unified_duration_columns.dart';
+export 'src/unified_fields_date_format_style.dart';
+export 'src/unified_fields_duration_format_style.dart';
 export 'src/unified_duration_column_wheel_picker_sheet.dart';
 export 'src/controllers/unified_field_controllers.dart';
 export 'src/unified_fields_context.dart';

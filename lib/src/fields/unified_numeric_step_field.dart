@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_number_field_controller.dart';
 import '../unified_colors.dart';
 import '../unified_date_picker_types.dart';
@@ -268,6 +269,10 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
         widget.fieldController?.focusNode ?? widget.focusNode ?? FocusNode();
     _ownsFocusNode = widget.fieldController == null && widget.focusNode == null;
     _focusNode.addListener(_onFocusChanged);
+    syncNumberDisplayValidatorToFieldController(
+      widget.fieldController,
+      widget.validator,
+    );
   }
 
   void _onFieldController() => setState(() {});
@@ -291,6 +296,13 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       _focusNode = widget.focusNode ?? FocusNode();
       _ownsFocusNode = widget.focusNode == null;
       _focusNode.addListener(_onFocusChanged);
+    }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.fieldController != widget.fieldController) {
+      syncNumberDisplayValidatorToFieldController(
+        widget.fieldController,
+        widget.validator,
+      );
     }
   }
 

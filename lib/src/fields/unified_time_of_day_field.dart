@@ -118,6 +118,13 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
 
   int get _effectiveSecond => widget.fieldController?.second ?? _second;
 
+  String _formatTime(TimeOfDay? t) => formatUnifiedTimeOfDayText(
+        t,
+        granularity: _granularity,
+        calendarKind: _effectiveCalendarKind,
+        second: _effectiveSecond,
+      );
+
   void _syncFieldController(BuildContext context) {
     final d = resolveUnifiedDecoration(
       context,
@@ -125,6 +132,11 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
       brightness: widget.brightness,
     );
     widget.fieldController?.bindPickerTitle(widget.label ?? d.label ?? '');
+    syncDisplayStringValidatorToFieldController<TimeOfDay>(
+      fieldController: widget.fieldController,
+      widgetValidator: widget.validator,
+      displayFor: _formatTime,
+    );
     attachUnifiedFieldHandles(
       opener: (context) => _pick(context),
       focusNode: unifiedEffectiveFocusNode(
@@ -179,6 +191,12 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
         oldWidget.fieldController?.value != widget.fieldController?.value) {
       _syncText();
     }
+    if (oldWidget.validator != widget.validator ||
+        oldWidget.pickerGranularity != widget.pickerGranularity ||
+        oldWidget.initialCalendarKind != widget.initialCalendarKind ||
+        oldWidget.fieldController != widget.fieldController) {
+      _syncFieldController(context);
+    }
   }
 
   void _onBinding() {
@@ -187,16 +205,12 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
   }
 
   void _syncText() {
-    final t = unifiedEffectiveValue(
-      fieldController: widget.fieldController,
-      binding: widget.binding,
-      direct: widget.value,
-    );
-    _txt.text = formatUnifiedTimeOfDayText(
-      t,
-      granularity: _granularity,
-      second: _effectiveSecond,
-      calendarKind: _effectiveCalendarKind,
+    _txt.text = _formatTime(
+      unifiedEffectiveValue(
+        fieldController: widget.fieldController,
+        binding: widget.binding,
+        direct: widget.value,
+      ),
     );
   }
 
@@ -255,7 +269,7 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
       granularity: _granularity,
       calendarKind: _effectiveCalendarKind,
     );
-    syncUnifiedFieldValue(
+    syncUnifiedFieldValue<TimeOfDay?>(
       value: picked.toTimeOfDay(),
       onChanged: widget.onChanged,
       binding: widget.binding,
