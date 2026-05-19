@@ -1,3 +1,13 @@
+## 0.2.8
+
+### Fixes
+
+* **`UnifiedDateField` / `UnifiedDateRangeField` / `UnifiedDurationField`** — complete fix for `dependOnInheritedWidgetOfExactType<UnifiedInputThemeScope>() was called before initState() completed` when theme `dateFormatStyle` / `durationFormatStyle` is set. Format styles are cached in `didChangeDependencies` on all three widgets; `initState` uses field-only resolution until dependencies are available.
+
+### Docs
+
+* README and example README version **0.2.8**. Publish checklist updated.
+
 ## 0.2.7
 
 ### Features
@@ -6,6 +16,7 @@
 
 ### Fixes
 
+* **`UnifiedDateField` / range / `UnifiedDurationField`** — resolve `dateFormatStyle` / `durationFormatStyle` from theme in `didChangeDependencies` only (not during `initState`), fixing `dependOnInheritedWidgetOfExactType` was called before initState completed.
 * **Typed form validators** — `unifiedFormClearErrorIfValid`, `syncUnifiedFieldValue`, `syncFormFieldFromExternalValue`, and `syncWidgetFormValidatorToFieldController` preserve `T` / `T?` / `List<T>` through form fields and controllers. `FormFieldValidator<List<T>>` (e.g. `notEmptyList<CoffeeFlavor>`) and nullable pickers no longer throw runtime subtype errors when the value changes. Public typedef: [UnifiedFieldValueValidator].
 * **Form vs controller validation** — [UnifiedFormDateRangeField], [UnifiedFormTimeOfDayField], [UnifiedFormDurationField], and [UnifiedFormNumberField] sync `validator:` onto `fieldController`. Non-form date/time/duration/number fields map display-string validators onto typed controllers (`syncDisplayStringValidatorToFieldController`, `syncNumberDisplayValidatorToFieldController`). Form pickers skip string-validator sync when `validationOverrideMessage` is set.
 

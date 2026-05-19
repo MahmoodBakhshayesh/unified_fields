@@ -279,6 +279,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
   late FocusNode _fn;
   bool _ownsFn = false;
   late UnifiedFieldsCalendarKind _calendarKind;
+  UnifiedFieldsDurationFormatStyle? _cachedDurationFormatStyle;
 
   UnifiedFieldsCalendarKind get _effectiveCalendarKind =>
       widget.fieldController?.calendarKind ?? _calendarKind;
@@ -290,13 +291,18 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
         granularity: widget.granularity,
       );
 
-  UnifiedFieldsDurationFormatStyle get _effectiveDurationFormatStyle {
-    final field =
-        widget.durationFormatStyle ?? widget.fieldController?.durationFormatStyle;
-    if (!mounted) {
-      return resolveUnifiedDurationFormatStyle(field: field);
-    }
-    return UnifiedInputThemeResolver.durationFormatStyle(context, field: field);
+  UnifiedFieldsDurationFormatStyle? get _fieldDurationFormatStyle =>
+      widget.durationFormatStyle ?? widget.fieldController?.durationFormatStyle;
+
+  UnifiedFieldsDurationFormatStyle get _effectiveDurationFormatStyle =>
+      _cachedDurationFormatStyle ??
+      resolveUnifiedDurationFormatStyle(field: _fieldDurationFormatStyle);
+
+  void _updateCachedDurationFormatStyle() {
+    _cachedDurationFormatStyle = UnifiedInputThemeResolver.durationFormatStyle(
+      context,
+      field: _fieldDurationFormatStyle,
+    );
   }
 
   Duration get _effective => unifiedClampDuration(
@@ -350,15 +356,24 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
         oldWidget.granularity != widget.granularity ||
         oldWidget.pickerColumns != widget.pickerColumns ||
         oldWidget.durationFormatStyle != widget.durationFormatStyle ||
-        oldWidget.fieldController != widget.fieldController) {
+        oldWidget.fieldController != widget.fieldController ||
+        oldWidget.fieldController?.durationFormatStyle !=
+            widget.fieldController?.durationFormatStyle) {
+      _updateCachedDurationFormatStyle();
       _syncFieldControllerValidator();
+      _syncText();
     }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final previousStyle = _cachedDurationFormatStyle;
+    _updateCachedDurationFormatStyle();
     _syncFieldControllerValidator();
+    if (previousStyle != _cachedDurationFormatStyle) {
+      _syncText();
+    }
   }
 
   void _onBinding() {

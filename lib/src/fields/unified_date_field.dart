@@ -220,6 +220,7 @@ class UnifiedDateField extends StatefulWidget {
 class _UnifiedDateFieldState extends State<UnifiedDateField> {
   TextEditingController? _ownedController;
   late UnifiedFieldsCalendarKind _calendarKind;
+  UnifiedFieldsDateFormatStyle? _cachedDateFormatStyle;
 
   TextEditingController get _effectiveController =>
       widget.controller ?? _ownedController!;
@@ -227,12 +228,18 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
   UnifiedFieldsCalendarKind get _effectiveCalendarKind =>
       widget.fieldController?.calendarKind ?? _calendarKind;
 
-  UnifiedFieldsDateFormatStyle get _effectiveDateFormatStyle {
-    final field = widget.dateFormatStyle ?? widget.fieldController?.dateFormatStyle;
-    if (!mounted) {
-      return resolveUnifiedDateFormatStyle(field: field);
-    }
-    return UnifiedInputThemeResolver.dateFormatStyle(context, field: field);
+  UnifiedFieldsDateFormatStyle? get _fieldDateFormatStyle =>
+      widget.dateFormatStyle ?? widget.fieldController?.dateFormatStyle;
+
+  UnifiedFieldsDateFormatStyle get _effectiveDateFormatStyle =>
+      _cachedDateFormatStyle ??
+      resolveUnifiedDateFormatStyle(field: _fieldDateFormatStyle);
+
+  void _updateCachedDateFormatStyle() {
+    _cachedDateFormatStyle = UnifiedInputThemeResolver.dateFormatStyle(
+      context,
+      field: _fieldDateFormatStyle,
+    );
   }
 
   String _sheetTitle(UnifiedInputDecoration d) {
@@ -312,12 +319,17 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final previousStyle = _cachedDateFormatStyle;
+    _updateCachedDateFormatStyle();
     final d = resolveUnifiedDecoration(
       context,
       overrides: widget.decoration,
       brightness: widget.brightness,
     );
     _syncFieldController(d);
+    if (previousStyle != _cachedDateFormatStyle) {
+      _syncTextFromValue();
+    }
   }
 
   @override
@@ -359,13 +371,17 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
     if (oldWidget.validator != widget.validator ||
         oldWidget.valueFormat != widget.valueFormat ||
         oldWidget.dateFormatStyle != widget.dateFormatStyle ||
-        oldWidget.pickerGranularity != widget.pickerGranularity) {
+        oldWidget.pickerGranularity != widget.pickerGranularity ||
+        oldWidget.fieldController?.dateFormatStyle !=
+            widget.fieldController?.dateFormatStyle) {
+      _updateCachedDateFormatStyle();
       final d = resolveUnifiedDecoration(
         context,
         overrides: widget.decoration,
         brightness: widget.brightness,
       );
       _syncFieldController(d);
+      _syncTextFromValue();
     }
   }
 
@@ -626,16 +642,23 @@ class UnifiedDateRangeField extends StatefulWidget {
 
 class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
   TextEditingController? _ownedController;
+  UnifiedFieldsDateFormatStyle? _cachedDateFormatStyle;
 
   TextEditingController get _effectiveController =>
       widget.controller ?? _ownedController!;
 
-  UnifiedFieldsDateFormatStyle get _effectiveDateFormatStyle {
-    final field = widget.dateFormatStyle ?? widget.fieldController?.dateFormatStyle;
-    if (!mounted) {
-      return resolveUnifiedDateFormatStyle(field: field);
-    }
-    return UnifiedInputThemeResolver.dateFormatStyle(context, field: field);
+  UnifiedFieldsDateFormatStyle? get _fieldDateFormatStyle =>
+      widget.dateFormatStyle ?? widget.fieldController?.dateFormatStyle;
+
+  UnifiedFieldsDateFormatStyle get _effectiveDateFormatStyle =>
+      _cachedDateFormatStyle ??
+      resolveUnifiedDateFormatStyle(field: _fieldDateFormatStyle);
+
+  void _updateCachedDateFormatStyle() {
+    _cachedDateFormatStyle = UnifiedInputThemeResolver.dateFormatStyle(
+      context,
+      field: _fieldDateFormatStyle,
+    );
   }
 
   UnifiedFieldsCalendarKind get _effectiveCalendarKind =>
@@ -696,15 +719,24 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
     if (oldWidget.validator != widget.validator ||
         oldWidget.dateFormatStyle != widget.dateFormatStyle ||
         oldWidget.initialCalendarKind != widget.initialCalendarKind ||
-        oldWidget.fieldController != widget.fieldController) {
+        oldWidget.fieldController != widget.fieldController ||
+        oldWidget.fieldController?.dateFormatStyle !=
+            widget.fieldController?.dateFormatStyle) {
+      _updateCachedDateFormatStyle();
       _syncFieldControllerValidator();
+      _effectiveController.text = _formatRange(_effectiveValue);
     }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final previousStyle = _cachedDateFormatStyle;
+    _updateCachedDateFormatStyle();
     _syncFieldControllerValidator();
+    if (previousStyle != _cachedDateFormatStyle) {
+      _effectiveController.text = _formatRange(_effectiveValue);
+    }
   }
 
   DateTimeRange? get _effectiveValue => unifiedEffectiveValue(

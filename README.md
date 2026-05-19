@@ -36,7 +36,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^0.2.7
+  unified_fields: ^0.2.8
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -80,7 +80,7 @@ dependencies:
 | **Form wrappers** | `UnifiedFormField`, `UnifiedFormTextField`, `UnifiedFormSinglePickerField`, `UnifiedFormMultiPickerField`, `UnifiedFormAsyncPickerField`, `UnifiedFormAsyncMultiPickerField`, `UnifiedFormDateField`, `UnifiedFormDateRangeField`, `UnifiedFormTimeOfDayField`, `UnifiedFormDurationField`, `UnifiedFormNumberField`, `UnifiedFormCustomizablePickerField`, `UnifiedFormCustomizableMultiPickerField`, `UnifiedFormCustomizableAsyncPickerField`, `UnifiedFormCustomizableAsyncMultiPickerField` | `Form` integration: `validate`, `save`, `reset`, validators |
 | **Form scope** | `UnifiedFormFieldScope` | Shared `AutovalidateMode` for all unified form descendants |
 | **Calendar** | `showUnifiedFieldsDatePicker`, `showUnifiedFieldsDatePickerRange`, `UnifiedFieldsDatePickerSheet`, `UnifiedFieldsDatePickerGranularity`, `UnifiedFieldsCalendarKind`, `UnifiedFieldsDatePickerStyle`, `UnifiedInputDatePickerStyle` | Single date or range; calendar grid or scroll wheels; Gregorian vs Jalali; themed sheet chrome (0.2.6) |
-| **Display format** | `UnifiedFieldsDateFormatStyle`, `UnifiedFieldsDurationFormatStyle` | Theme + per-field Gregorian / Shamsi patterns for date, range, and duration text (0.2.7) |
+| **Display format** | `UnifiedFieldsDateFormatStyle`, `UnifiedFieldsDurationFormatStyle` | Theme + per-field Gregorian / Shamsi patterns for date, range, and duration text (0.2.7+) |
 | **Time** | `UnifiedTimeOfDayField`, `showUnifiedFieldsTimePicker`, `UnifiedFieldsTimePickerStyle`, `UnifiedFieldsTimeGranularity`, `TimePickerUtils.show` | Material dial (default) or H:M:S wheels with Shamsi digit toggle |
 | **Duration** | `UnifiedDurationField`, `showUnifiedFieldsDurationPicker`, `UnifiedFieldsDurationColumn`, `UnifiedFieldsDurationColumnPresets`, `UnifiedDurationGranularity`, `UnifiedFieldsDurationPickerStyle` | Wheel picker with fixed granularity or custom column order (year · week · day · hour, …) |
 | **Chrome helpers** | `UnifiedBaseTextField`, `UnifiedFieldShell`, `UnifiedFieldLabelMode`, `UnifiedInputDecoration`, `UnifiedInputDecorationSet`, `UnifiedInputFieldDefaults`, `UnifiedInputBrightness`, `UnifiedInputPalette`, `UnifiedInputThemeScope`, `UnifiedInputPhoneStyle`, `UnifiedPickerSheetStyle`, `UnifiedBasePickerSheetStyle`, `UnifiedPickerSheetModalSettings`, `UnifiedInputPickerHeaderStyle`, `UnifiedInputMultiPickerCheckboxStyle`, `UnifiedSuffixIconChrome` | Labels, errors, palettes, per-state borders/fills, theme field defaults, phone/dial chrome, picker sheet chrome + modal flags, global theme scope, picker headers, aligned suffix icons |
@@ -1025,7 +1025,13 @@ flowchart TB
 
 ## Version
 
-Current release: **`0.2.7`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`0.2.8`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+
+### Upgrading to 0.2.8
+
+From **0.2.7**:
+
+* **No API changes.** Patch release fixing `initState` + `UnifiedInputTheme` on date, date range, and duration fields when theme format styles are set. Upgrade if you saw `dependOnInheritedWidgetOfExactType` was called before `initState` completed.
 
 ### Upgrading to 0.2.7
 
