@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import '../fields/unified_async_query_picker_sheet.dart';
 import 'unified_picker_field_controller.dart';
 
-/// Controller for [UnifiedAsyncQueryPicker].
-class UnifiedAsyncQueryPickerFieldController<T>
-    extends UnifiedPickerFieldController<T> {
-  /// Creates an async query picker controller.
+/// Controller for [UnifiedAsyncQueryMultiPicker].
+class UnifiedAsyncQueryMultiPickerFieldController<T>
+    extends UnifiedMultiPickerFieldController<T> {
+  /// Creates an async query multi-picker controller.
   ///
-  /// [queryFetcher] is supplied by the bound [UnifiedAsyncQueryPicker] via
+  /// [queryFetcher] is supplied by the bound [UnifiedAsyncQueryMultiPicker] via
   /// [bindAsyncQueryPicker]; do not pass it here.
-  UnifiedAsyncQueryPickerFieldController({
+  UnifiedAsyncQueryMultiPickerFieldController({
     super.initialValue,
     super.validator,
     super.focusNode,
@@ -20,7 +20,7 @@ class UnifiedAsyncQueryPickerFieldController<T>
     super.valueToString,
     super.itemToWidget,
     super.searchAutoFocus = true,
-    super.showClearButton = false,
+    super.showClearButton = true,
   });
 
   UnifiedAsyncQueryFetcher<T>? _queryFetcher;
@@ -35,7 +35,7 @@ class UnifiedAsyncQueryPickerFieldController<T>
   /// Sheet hint when the query is too short.
   String? queryPromptMessage;
 
-  /// Called by [UnifiedAsyncQueryPicker] when label / query settings change.
+  /// Called by [UnifiedAsyncQueryMultiPicker] when label / query settings change.
   void bindAsyncQueryPicker({
     required String label,
     required UnifiedAsyncQueryFetcher<T> queryFetcher,
@@ -50,28 +50,30 @@ class UnifiedAsyncQueryPickerFieldController<T>
     this.queryPromptMessage = queryPromptMessage;
   }
 
-  /// Opens the query picker sheet (same as tapping the bound field).
-  Future<T?> openQueryPicker(BuildContext context, {String? label}) async {
+  /// Opens the async query multi-picker sheet (same as tapping the bound field).
+  Future<List<T>?> openQueryPicker(BuildContext context, {String? label}) async {
     final opener = attachedFieldOpener;
     if (opener != null) {
       await opener(context);
-      return value;
+      return value == null ? null : List<T>.from(value!);
     }
     final fetcher = _queryFetcher;
     assert(
       fetcher != null,
-      'UnifiedAsyncQueryPickerFieldController.openQueryPicker: mount the field first '
+      'UnifiedAsyncQueryMultiPickerFieldController.openQueryPicker: mount the field first '
       '(same as a tap), or call bindAsyncQueryPicker with queryFetcher from the widget.',
     );
-    if (!context.mounted || fetcher == null) return value;
-    return showUnifiedAsyncQueryPickerSheet<T>(
+    if (!context.mounted || fetcher == null) {
+      return value == null ? null : List<T>.from(value!);
+    }
+    return showUnifiedAsyncQueryMultiPickerSheet<T>(
       context: context,
       label: label ?? _boundLabel,
       queryFetcher: fetcher,
       queryThreshold: queryThreshold,
       queryDebounce: queryDebounce,
       queryPromptMessage: queryPromptMessage,
-      value: value,
+      values: List<T>.from(value ?? const []),
       valueToString: valueToString,
       itemToWidget: itemToWidget,
       searchAutoFocus: searchAutoFocus,
@@ -80,7 +82,7 @@ class UnifiedAsyncQueryPickerFieldController<T>
   }
 
   @override
-  Future<T?> openPicker(
+  Future<List<T>?> openPicker(
     BuildContext context, {
     List<T>? items,
     String? label,

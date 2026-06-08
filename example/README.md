@@ -90,7 +90,7 @@ Check **Phone** (`usePersianDigits: true`) and **Date** fields — they use the 
 
 ## 1.0.1 highlights
 
-- **Patch** — depend on `unified_fields: ^1.0.1` (pubspec `1.0.1+1`); no API changes from 1.0.0.
+- **Patch** — depend on `unified_fields: ^1.0.1` (pubspec `1.0.1+2`); async query multi-picker; `queryFetcher` on widget only.
 
 ## 1.0.0 highlights
 
@@ -131,4 +131,4 @@ dart pub publish --dry-run
 dart pub publish   # when ready
 ```
 
-Ensure `CHANGELOG.md` and `pubspec.yaml` version match (**1.0.1+1**).
+Ensure `CHANGELOG.md` and `pubspec.yaml` version match (**1.0.1+2**).

@@ -7,6 +7,7 @@ export 'unified_field_shell.dart';
 export 'unified_base_text_field.dart';
 export 'unified_async_picker_field.dart';
 export 'unified_async_query_picker_field.dart';
+export 'unified_async_query_multi_picker_field.dart';
 export 'unified_async_query_picker_sheet.dart';
 export 'unified_form_fields.dart';
 export 'unified_form_more_fields.dart';

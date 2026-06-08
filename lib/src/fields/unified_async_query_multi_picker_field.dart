@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../controllers/field_controller_sync.dart';
-import '../controllers/unified_async_query_picker_field_controller.dart';
+import '../controllers/unified_async_query_multi_picker_field_controller.dart';
 import 'unified_async_query_picker_sheet.dart';
 import 'unified_input_picker.dart';
 import 'unified_base_text_field.dart';
@@ -11,16 +11,17 @@ import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_picker_item_builders.dart';
 
-/// Read-only picker field: tap opens a sheet with bottom search and remote results.
+/// Read-only multi-picker: tap opens a sheet with bottom search, remote results,
+/// and a temp selection list (confirm to apply).
 ///
-/// [queryFetcher] receives the typed query (after [queryThreshold] characters) and
-/// returns options; in-flight requests are cancelled when the user keeps typing.
-class UnifiedAsyncQueryPicker<T> extends StatefulWidget {
-  /// Creates an async query picker field.
-  const UnifiedAsyncQueryPicker({
+/// Each search keeps prior picks in the in-sheet temp list; tap toggles add/remove.
+class UnifiedAsyncQueryMultiPicker<T> extends StatefulWidget {
+  /// Creates an async query multi-picker field.
+  const UnifiedAsyncQueryMultiPicker({
     super.key,
     required this.queryFetcher,
     required this.label,
+    required this.values,
     this.queryThreshold = 3,
     this.queryDebounce = const Duration(milliseconds: 300),
     this.queryPromptMessage,
@@ -29,7 +30,6 @@ class UnifiedAsyncQueryPicker<T> extends StatefulWidget {
     this.brightness,
     this.binding,
     this.fieldController,
-    this.value,
     this.onChanged,
     this.valueToString,
     this.itemToWidget,
@@ -44,11 +44,17 @@ class UnifiedAsyncQueryPicker<T> extends StatefulWidget {
     this.pickerHeaderStyle,
     this.pickerSheetModalSettings,
     this.searchAutoFocus = true,
-    this.showClearButton = false,
+    this.showClearButton = true,
   });
 
   /// Remote search: `query` → matching items.
   final UnifiedAsyncQueryFetcher<T> queryFetcher;
+
+  /// Label for the field and sheet title fallback.
+  final String label;
+
+  /// Current committed selection.
+  final List<T> values;
 
   /// Minimum characters before [queryFetcher] is called.
   final int queryThreshold;
@@ -58,9 +64,6 @@ class UnifiedAsyncQueryPicker<T> extends StatefulWidget {
 
   /// Sheet hint when the query is too short (defaults to [UnifiedFieldsStrings.asyncQueryTypeToFetch]).
   final String? queryPromptMessage;
-
-  /// Label for the field and sheet title fallback.
-  final String label;
 
   /// Hint text shown when empty.
   final String? placeholder;
@@ -75,16 +78,13 @@ class UnifiedAsyncQueryPicker<T> extends StatefulWidget {
   final UnifiedInputBrightness? brightness;
 
   /// Optional external state binding.
-  final UnifiedInputPicker<T>? binding;
+  final UnifiedInputPicker<List<T>>? binding;
 
   /// Preferred imperative handle; syncs with [binding] on change.
-  final UnifiedAsyncQueryPickerFieldController<T>? fieldController;
+  final UnifiedAsyncQueryMultiPickerFieldController<T>? fieldController;
 
-  /// Direct value when not using [binding].
-  final T? value;
-
-  /// Called when the user picks (or clears) a value.
-  final ValueChanged<T?>? onChanged;
+  /// Called when the user confirms (or clears) the selection.
+  final ValueChanged<List<T>>? onChanged;
 
   /// Renders an item to its display text.
   final String Function(T value)? valueToString;
@@ -122,27 +122,30 @@ class UnifiedAsyncQueryPicker<T> extends StatefulWidget {
   /// Whether the sheet search field auto-focuses on open.
   final bool searchAutoFocus;
 
-  /// Whether the sheet shows a clear-selection control.
+  /// Whether the sheet shows a clear-selection control in the header.
   final bool showClearButton;
 
   @override
-  State<UnifiedAsyncQueryPicker<T>> createState() =>
-      _UnifiedAsyncQueryPickerState<T>();
+  State<UnifiedAsyncQueryMultiPicker<T>> createState() =>
+      _UnifiedAsyncQueryMultiPickerState<T>();
 }
 
-class _UnifiedAsyncQueryPickerState<T> extends State<UnifiedAsyncQueryPicker<T>> {
+class _UnifiedAsyncQueryMultiPickerState<T>
+    extends State<UnifiedAsyncQueryMultiPicker<T>> {
   late final TextEditingController _txt = TextEditingController();
 
-  String _display(T? v) {
-    if (v == null) return '';
-    return unifiedPickerItemLabel(v, valueToString: widget.valueToString);
-  }
-
-  T? get _effective => unifiedEffectiveValue(
+  List<T> get _effective => unifiedEffectiveListValue(
     fieldController: widget.fieldController,
     binding: widget.binding,
-    direct: widget.value,
+    direct: widget.values,
   );
+
+  String _display(List<T> vs) =>
+      vs
+          .map(
+            (e) => unifiedPickerItemLabel(e, valueToString: widget.valueToString),
+          )
+          .join(', ');
 
   void _syncText() => _txt.text = _display(_effective);
 
@@ -160,10 +163,10 @@ class _UnifiedAsyncQueryPickerState<T> extends State<UnifiedAsyncQueryPicker<T>>
       queryPromptMessage: widget.queryPromptMessage,
     );
     if (widget.validationOverrideMessage == null) {
-      syncPickerStringValidatorToFieldController(
+      syncMultiPickerStringValidatorToFieldController(
         widget.fieldController,
         widget.validator,
-        _display,
+        (values) => _display(values ?? const []),
       );
     }
     attachUnifiedFieldHandles(
@@ -192,7 +195,7 @@ class _UnifiedAsyncQueryPickerState<T> extends State<UnifiedAsyncQueryPicker<T>>
   }
 
   @override
-  void didUpdateWidget(covariant UnifiedAsyncQueryPicker<T> oldWidget) {
+  void didUpdateWidget(covariant UnifiedAsyncQueryMultiPicker<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.fieldController != widget.fieldController ||
         oldWidget.binding != widget.binding) {
@@ -215,7 +218,7 @@ class _UnifiedAsyncQueryPickerState<T> extends State<UnifiedAsyncQueryPicker<T>>
         oldWidget.queryFetcher != widget.queryFetcher) {
       _syncFieldController();
     }
-    if (oldWidget.value != widget.value ||
+    if (oldWidget.values != widget.values ||
         oldWidget.binding?.value != widget.binding?.value ||
         oldWidget.fieldController?.value != widget.fieldController?.value) {
       _syncText();
@@ -229,8 +232,8 @@ class _UnifiedAsyncQueryPickerState<T> extends State<UnifiedAsyncQueryPicker<T>>
   void _onBinding() {
     final fc = widget.fieldController;
     if (fc != null) {
-      syncUnifiedFieldValue<T>(
-        value: fc.value,
+      syncUnifiedFieldListValue<T>(
+        value: List<T>.from(fc.value ?? const []),
         onChanged: widget.onChanged,
         binding: widget.binding,
       );
@@ -265,14 +268,14 @@ class _UnifiedAsyncQueryPickerState<T> extends State<UnifiedAsyncQueryPicker<T>>
       pickerHeaderStyle: widget.pickerHeaderStyle,
     );
 
-    final result = await showUnifiedAsyncQueryPickerSheet<T>(
+    final result = await showUnifiedAsyncQueryMultiPickerSheet<T>(
       context: context,
       label: dec.placeholder ?? dec.label ?? widget.label,
       queryFetcher: widget.queryFetcher,
       queryThreshold: widget.queryThreshold,
       queryDebounce: widget.queryDebounce,
       queryPromptMessage: widget.queryPromptMessage,
-      value: _effective,
+      values: List<T>.from(_effective),
       valueToString: widget.valueToString,
       itemToWidget: widget.itemToWidget,
       searchAutoFocus: widget.searchAutoFocus,
@@ -283,14 +286,13 @@ class _UnifiedAsyncQueryPickerState<T> extends State<UnifiedAsyncQueryPicker<T>>
       pickerSheetModalSettings: widget.pickerSheetModalSettings,
     );
 
-    if (!mounted) return;
-    if (result != null) {
-      _commit(result);
-    }
+    if (!mounted || result == null) return;
+
+    _commit(result);
   }
 
-  void _commit(T? v) {
-    syncUnifiedFieldValue<T>(
+  void _commit(List<T> v) {
+    syncUnifiedFieldListValue<T>(
       value: v,
       onChanged: widget.onChanged,
       binding: widget.binding,

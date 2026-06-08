@@ -1054,7 +1054,9 @@ Current release: **`1.0.1`** (see **`pubspec.yaml`** and [pub.dev](https://pub.d
 
 From **1.0.0**:
 
-* **No API changes.** Patch release: `unified_fields: ^1.0.1`.
+* Patch release: `unified_fields: ^1.0.1`.
+* **`UnifiedAsyncQueryMultiPicker`** — remote search multi-select (temp list in sheet, confirm to apply). See [Async query picker](#async-query-picker-unifiedasyncquerypicker).
+* **Async query `queryFetcher`** — pass on the **widget** only; controllers sync via `bindAsyncQueryPicker` (no `queryFetcher` in controller constructors).
 * **Contributors** — `flutter_test` is restored in package `dev_dependencies` so `flutter test` works out of the box.
 
 ### Upgrading to 1.0.0

@@ -1,6 +1,14 @@
 ## 1.0.1
 
-Patch release for publish readiness. Pubspec version is **`1.0.1+1`**.
+Patch release. Pubspec version is **`1.0.1+2`**.
+
+### Features
+
+* **`UnifiedAsyncQueryMultiPicker` / `UnifiedFormAsyncQueryMultiPicker`** — like [UnifiedAsyncQueryPicker] but multi-select: remote search at the bottom of the sheet, temp selection list (toggle rows across searches), **Cancel** / **Confirm**. [UnifiedAsyncQueryMultiPickerFieldController], [showUnifiedAsyncQueryMultiPickerSheet], [AsyncQueryMultiPickerSheetWidget].
+
+### API
+
+* **Async query controllers** — [queryFetcher] is required on the **widget** only ([UnifiedAsyncQueryPicker], [UnifiedAsyncQueryMultiPicker], form wrappers). Controllers receive it via [bindAsyncQueryPicker] when the field mounts; [UnifiedAsyncQueryPickerFieldController] and [UnifiedAsyncQueryMultiPickerFieldController] no longer take `queryFetcher` in the constructor.
 
 ### Fixes
 
@@ -9,7 +17,7 @@ Patch release for publish readiness. Pubspec version is **`1.0.1+1`**.
 
 ### Docs / lint
 
-* Dartdoc on [UnifiedAsyncQueryPicker], [UnifiedFormAsyncQueryPicker], and [UnifiedAsyncQueryPickerFieldController] public members; remove unnecessary imports in async query picker sources; exclude vendored `scrollable_list` from analyzer (Flutter `cacheExtent` deprecations).
+* Dartdoc on async query picker / multi-picker public members; remove unnecessary imports in async query picker sources; exclude vendored `scrollable_list` from analyzer (Flutter `cacheExtent` deprecations).
 
 ## 1.0.0
 

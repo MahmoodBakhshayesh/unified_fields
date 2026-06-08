@@ -5,6 +5,7 @@ export 'base_unified_field_controller.dart';
 export 'field_controller_sync.dart';
 export 'unified_async_picker_field_controller.dart';
 export 'unified_async_query_picker_field_controller.dart';
+export 'unified_async_query_multi_picker_field_controller.dart';
 export 'unified_date_field_controller.dart';
 export 'unified_date_range_field_controller.dart';
 export 'unified_duration_field_controller.dart';
