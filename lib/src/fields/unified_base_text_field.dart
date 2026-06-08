@@ -1106,9 +1106,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         dec.borderRadius ?? widget.borderRadius ?? palette.borderRadius;
     return OutlineInputBorder(
       borderRadius: radius,
-      borderSide: focused && !hasError
-          ? side.copyWith(width: (side.width + 0.5).clamp(0.5, 2.0))
-          : side,
+      borderSide: side,
     );
   }
 
@@ -1257,14 +1255,14 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
               ),
             ),
             clipBehavior: Clip.antiAlias,
-            child: IntrinsicHeight(
+            child: SizedBox(
+              height: h,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
                     flex: labelFlex,
                     child: Container(
-                      constraints: BoxConstraints(minHeight: h),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: headerBg,
@@ -1284,7 +1282,6 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                   Expanded(
                     flex: bodyFlex,
                     child: Container(
-                      constraints: BoxConstraints(minHeight: h),
                       color: _effectiveBackgroundColor(palette, dec),
                       child: _bodyRow(
                         context,
@@ -1335,7 +1332,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
           children: [
             _labelBlock(errorText, palette, dec),
             Container(
-              height: dec.height ?? widget.height,
+              height: dec.height ?? widget.height ?? 56,
               decoration: BoxDecoration(
                 color: _effectiveBackgroundColor(palette, dec),
                 borderRadius: radius,

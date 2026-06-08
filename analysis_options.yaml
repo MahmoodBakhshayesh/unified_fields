@@ -1,5 +1,9 @@
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  exclude:
+    - lib/src/scrollable_list/**
+
 linter:
   rules:
     use_super_parameters: false

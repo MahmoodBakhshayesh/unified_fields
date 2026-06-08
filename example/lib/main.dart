@@ -464,6 +464,12 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     allowFreeText: false,
                     resetValue: () => const CustomizableMultiPickerSnapshot<String>.empty(),
                   ),
+                  const SizedBox(height: 12),
+                  UnifiedAsyncQueryPicker<String>(queryFetcher: (String query) async {
+                    await Future.delayed(Duration(seconds: 2));
+                    return List.generate(query.length, (i)=>"Time $i");
+
+                  }, label: 'Async',),
                   const SizedBox(height: 20),
 
                   Row(

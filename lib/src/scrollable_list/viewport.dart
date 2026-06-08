@@ -30,7 +30,9 @@ class UnboundedViewport extends Viewport {
          crossAxisDirection: crossAxisDirection,
          offset: offset,
          center: center,
-         cacheExtent: cacheExtent,
+         scrollCacheExtent: cacheExtent == null
+             ? null
+             : ScrollCacheExtent.pixels(cacheExtent),
          slivers: slivers,
        );
 

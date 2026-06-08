@@ -88,10 +88,15 @@ fieldDefaults: const UnifiedInputFieldDefaults(
 
 Check **Phone** (`usePersianDigits: true`) and **Date** fields — they use the same theme `textStyle` as **Full name**.
 
+## 1.0.1 highlights
+
+- **Patch** — depend on `unified_fields: ^1.0.1` (pubspec `1.0.1+1`); no API changes from 1.0.0.
+
 ## 1.0.0 highlights
 
 - **Stable release** — depend on `unified_fields: ^1.0.0` (pubspec `1.0.0+1`)
-- **Bug fixes** — Persian digits on `UnifiedNumberField` with `usePersianDigitsGlobally`; date/range/duration `initState` + theme format styles; customizable form pickers clear errors when input becomes valid
+- **`UnifiedAsyncQueryPicker`** — remote search sheet (search at bottom, fetch after 3+ chars, debounced + cancellable)
+- **Bug fixes** — consistent field height on focus/blur; Persian digits on `UnifiedNumberField`; date `initState` + theme format styles; customizable form pickers clear errors when valid
 
 ## 0.2.8 highlights
 
@@ -112,7 +117,7 @@ Check **Phone** (`usePersianDigits: true`) and **Date** fields — they use the 
 
 ## Package version
 
-This example tracks the parent package (**currently 1.0.0**). See the root
+This example tracks the parent package (**currently 1.0.1**). See the root
 [`CHANGELOG.md`](../CHANGELOG.md) for release notes.
 
 ## Publish checklist (package maintainers)
@@ -126,4 +131,4 @@ dart pub publish --dry-run
 dart pub publish   # when ready
 ```
 
-Ensure `CHANGELOG.md` and `pubspec.yaml` version match (**1.0.0+1**).
+Ensure `CHANGELOG.md` and `pubspec.yaml` version match (**1.0.1+1**).

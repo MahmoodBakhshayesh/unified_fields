@@ -1,6 +1,23 @@
+## 1.0.1
+
+Patch release for publish readiness. Pubspec version is **`1.0.1+1`**.
+
+### Fixes
+
+* **Tests** — restore `flutter_test` in `dev_dependencies` (was commented out, breaking `flutter test` and `flutter pub get` for contributors).
+* **Vendored scrollable list** — [UnboundedViewport] passes `ScrollCacheExtent.pixels` to the [Viewport] super constructor on current Flutter; [UnboundedCustomScrollView] keeps `cacheExtent` (const constructor) with an analyzer ignore for the deprecation.
+
+### Docs / lint
+
+* Dartdoc on [UnifiedAsyncQueryPicker], [UnifiedFormAsyncQueryPicker], and [UnifiedAsyncQueryPickerFieldController] public members; remove unnecessary imports in async query picker sources; exclude vendored `scrollable_list` from analyzer (Flutter `cacheExtent` deprecations).
+
 ## 1.0.0
 
 First stable release. The public API from **0.2.x** is unchanged; this version marks production readiness and rolls up bug fixes from **0.2.7** and **0.2.8**. Pubspec version is **`1.0.0+1`** (build metadata `+1` for consumers that track build numbers).
+
+### Features
+
+* **`UnifiedAsyncQueryPicker` / `UnifiedFormAsyncQueryPicker`** — read-only field; tap opens a sheet with an auto-focused search field at the **bottom**. Shows *Start typing to fetch* until [queryThreshold] (default **3**) characters are entered, then calls [queryFetcher] with debounce and **cancels** stale requests when the user keeps typing. Results appear in a list; tap to select. [UnifiedAsyncQueryPickerFieldController], [showUnifiedAsyncQueryPickerSheet], [UnifiedAsyncQueryFetcher].
 
 ### Fixes (included from 0.2.7 / 0.2.8)
 
@@ -8,10 +25,11 @@ First stable release. The public API from **0.2.x** is unchanged; this version m
 * **`UnifiedNumberField` / `UnifiedNumericStepField`** — [UnifiedFieldsTypography.usePersianDigitsGlobally] localizes displayed digits on init, while typing, and from [UnifiedNumberFieldController]; input formatters accept Persian digits; theme `textStylePersian` applies via [UnifiedInputThemeResolver.fieldTextStyle]. Helpers: `formatUnifiedNumberFieldText`, `localizeUnifiedNumberDisplayText`.
 * **`UnifiedDateField` / `UnifiedDateRangeField` / `UnifiedDurationField`** — no longer read [UnifiedInputThemeScope] during `initState` when resolving `dateFormatStyle` / `durationFormatStyle` (fixes `dependOnInheritedWidgetOfExactType` was called before initState completed).
 * **Typed form validators** (0.2.7) — `FormFieldValidator<List<T>>`, nullable pickers, and `UnifiedFieldValidation.validateFields` stay aligned with `FormState.validate`.
+* **Field height on focus** — [UnifiedBaseTextField] label-in-row layout uses a fixed row height; Material outline borders no longer thicken on focus, so enabled vs focused states keep the same height by default. [UnifiedInputDecoration.height] is optional (unset layers no longer force `56` during merge).
 
 ### Docs
 
-* README: **Upgrading to 1.0.0**, Persian digits on number fields, customizable picker validation. Example README updated.
+* README: **Upgrading to 1.0.0**, async query picker, Persian digits on number fields, customizable picker validation, consistent field height. Example README updated.
 
 ## 0.2.8
 

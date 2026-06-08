@@ -40,6 +40,8 @@ class UnifiedFieldsStrings {
     this.weekLabel = 'Week',
     this.shamsiWeekLabel = 'هفته',
     this.defaultDurationTitle = 'Duration',
+    this.asyncQueryTypeToFetch = 'Start typing to fetch',
+    this.asyncQueryNoResults = 'No results',
   });
 
   /// Active strings used by unified_fields widgets.
@@ -177,6 +179,12 @@ class UnifiedFieldsStrings {
 
   /// Fallback duration picker title when none is passed.
   final String defaultDurationTitle;
+
+  /// [AsyncQueryPickerSheetWidget] hint when the query is shorter than the threshold.
+  final String asyncQueryTypeToFetch;
+
+  /// Shown when a query fetch returns an empty list.
+  final String asyncQueryNoResults;
 
   /// Multi-picker sheet header: `"$pickPrefix $label"` trimmed.
   String multiPickerTitle(String label) {

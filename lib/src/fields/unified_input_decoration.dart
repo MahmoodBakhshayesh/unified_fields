@@ -96,7 +96,7 @@ class UnifiedInputDecoration {
     this.headerBackgroundColor,
     this.borderRadius,
     this.borderSide,
-    this.height = 56,
+    this.height,
     this.rowLabelRatio = const [12, 33],
     this.labelInRow = false,
     this.labelMode,
