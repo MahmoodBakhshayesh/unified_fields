@@ -653,7 +653,7 @@ UnifiedMultiPickerField<String>(
 
 ### Async query picker (`UnifiedAsyncQueryPicker`)
 
-Read-only field (no typing on the field itself). Tap opens a sheet with search at the **bottom** (auto-focused). Until the query reaches **`queryThreshold`** characters (default **3**), the sheet shows *Start typing to fetch* (`UnifiedFieldsStrings.asyncQueryTypeToFetch`). Then **`queryFetcher(query)`** runs (debounced; in-flight requests are dropped if the user keeps typing). Results render in a list; tap a row to select.
+Read-only field (no typing on the field itself). Tap opens a sheet with search **below the title** (auto-focused), like other pickers. Until the query reaches **`queryThreshold`** characters (default **3**), the sheet shows *Start typing to fetch* (`UnifiedFieldsStrings.asyncQueryTypeToFetch`). Then **`queryFetcher(query)`** runs (debounced; in-flight requests are dropped if the user keeps typing). Results render in a list; tap a row to select.
 
 ```dart
 UnifiedFormAsyncQueryPicker<City>(
@@ -1064,7 +1064,7 @@ From **1.0.0**:
 From **0.2.8** or **0.2.7**:
 
 * **No intentional API breaks.** Semver major marks a stable API; depend with `unified_fields: ^1.0.0`.
-* **`UnifiedAsyncQueryPicker`** — remote search picker (sheet search at bottom, `queryFetcher`, threshold + debounce + cancel). See [Async query picker](#async-query-picker-unifiedasyncquerypicker).
+* **`UnifiedAsyncQueryPicker`** — remote search picker (sheet search below title, `queryFetcher`, threshold + debounce). See [Async query picker](#async-query-picker-unifiedasyncquerypicker).
 * **Bug fixes you may have hit on 0.2.x** — Persian digits on number fields with `usePersianDigitsGlobally`; `initState` crash when theme `dateFormatStyle` / `durationFormatStyle` is set; customizable form pickers not clearing errors when the value becomes valid; **field height** no longer jumps between focus and blur (fixed row height + stable border width).
 * **Customizable validators** — use `(c) => …` where `c` is `CustomizableSinglePickerController<T>` / `CustomizableMultiPickerController<T>`; see [Pickers](#pickers-unifiedpickerfield--sheets).
 * **`UnifiedInputDecoration.height`** — default is now unset (`null`); theme / field code resolves **56** when omitted. Per-state layers (e.g. `focused:`) no longer accidentally reset height unless you set `height:` on that layer.

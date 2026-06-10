@@ -13,7 +13,7 @@ import 'unified_picker_item_builders.dart';
 /// Loads options for [UnifiedAsyncQueryPicker] / [showUnifiedAsyncQueryPickerSheet].
 typedef UnifiedAsyncQueryFetcher<T> = Future<List<T>> Function(String query);
 
-/// Bottom sheet: search at the bottom, remote results above after [queryThreshold] chars.
+/// Bottom sheet: search below the header, remote results after [queryThreshold] chars.
 class AsyncQueryPickerSheetWidget<T> extends StatefulWidget {
   /// Creates an async query picker sheet.
   const AsyncQueryPickerSheetWidget({
@@ -227,15 +227,14 @@ class _AsyncQueryPickerSheetWidgetState<T>
                 showClear: widget.showClearButton,
                 pickerHeaderStyle: widget.pickerHeaderStyle,
               ),
-              Expanded(child: _buildBody()),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
                 child: CupertinoTextField(
                   controller: _searchC,
                   autofocus: widget.searchAutoFocus,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
-                    vertical: 10,
+                    vertical: 4,
                   ),
                   prefix: const Padding(
                     padding: EdgeInsets.all(8),
@@ -243,6 +242,7 @@ class _AsyncQueryPickerSheetWidgetState<T>
                   ),
                 ),
               ),
+              Expanded(child: _buildBody()),
             ],
           );
         },
@@ -296,7 +296,7 @@ Future<T?> showUnifiedAsyncQueryPickerSheet<T>({
   );
 }
 
-/// Bottom sheet: remote search at the bottom, multi-select with a temp selection list.
+/// Bottom sheet: search below the header, remote multi-select with a temp selection list.
 class AsyncQueryMultiPickerSheetWidget<T> extends StatefulWidget {
   /// Creates an async query multi-picker sheet.
   const AsyncQueryMultiPickerSheetWidget({
@@ -532,6 +532,21 @@ class _AsyncQueryMultiPickerSheetWidgetState<T>
                 showClear: widget.showClearButton,
                 onClear: () => setState(() => _selected = []),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                child: CupertinoTextField(
+                  controller: _searchC,
+                  autofocus: widget.searchAutoFocus,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                  prefix: const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Icon(Icons.search),
+                  ),
+                ),
+              ),
               Expanded(child: _buildBody()),
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
@@ -561,21 +576,6 @@ class _AsyncQueryMultiPickerSheetWidgetState<T>
                       ),
                     ),
                   ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                child: CupertinoTextField(
-                  controller: _searchC,
-                  autofocus: widget.searchAutoFocus,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  prefix: const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Icon(Icons.search),
-                  ),
                 ),
               ),
             ],

@@ -11,7 +11,7 @@ import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_picker_item_builders.dart';
 
-/// Read-only multi-picker: tap opens a sheet with bottom search, remote results,
+/// Read-only multi-picker: tap opens a sheet with header search, remote results,
 /// and a temp selection list (confirm to apply).
 ///
 /// Each search keeps prior picks in the in-sheet temp list; tap toggles add/remove.

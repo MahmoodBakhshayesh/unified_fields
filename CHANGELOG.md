@@ -1,6 +1,6 @@
 ## 1.0.1
 
-Patch release. Pubspec version is **`1.0.1+2`**.
+Patch release. Pubspec version is **`1.0.1+3`**.
 
 ### Features
 
@@ -9,6 +9,10 @@ Patch release. Pubspec version is **`1.0.1+2`**.
 ### API
 
 * **Async query controllers** — [queryFetcher] is required on the **widget** only ([UnifiedAsyncQueryPicker], [UnifiedAsyncQueryMultiPicker], form wrappers). Controllers receive it via [bindAsyncQueryPicker] when the field mounts; [UnifiedAsyncQueryPickerFieldController] and [UnifiedAsyncQueryMultiPickerFieldController] no longer take `queryFetcher` in the constructor.
+
+### Fixes
+
+* **Async query picker sheets** — search field moved **below the sheet title** (same as other pickers) so it is not hidden behind the keyboard; applies to single and multi async query sheets.
 
 ### Fixes
 

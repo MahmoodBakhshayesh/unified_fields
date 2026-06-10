@@ -11,7 +11,7 @@ import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_picker_item_builders.dart';
 
-/// Read-only picker field: tap opens a sheet with bottom search and remote results.
+/// Read-only picker field: tap opens a sheet with header search and remote results.
 ///
 /// [queryFetcher] receives the typed query (after [queryThreshold] characters) and
 /// returns options; in-flight requests are cancelled when the user keeps typing.
