@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
+import 'unified_input_adornment_style.dart';
 import 'unified_input_field_defaults.dart';
 import 'unified_input_palette.dart';
+import 'unified_numeric_step_button_style.dart';
 import '../phone/unified_input_phone_style.dart';
 import '../unified_fields_date_format_style.dart';
 import '../unified_fields_duration_format_style.dart';
@@ -84,6 +86,8 @@ class UnifiedInputThemeData {
     this.durationFormatStyle,
     this.fieldDecorationSet,
     this.fieldDefaults,
+    this.adornmentStyle,
+    this.numericStepButtonStyle,
   });
 
   /// When non-null, replaces inferred brightness from [Theme.of(context)].
@@ -194,6 +198,12 @@ class UnifiedInputThemeData {
   /// Default [UnifiedBaseTextField] layout and behavior (`labelMode`, `height`, borders, …).
   final UnifiedInputFieldDefaults? fieldDefaults;
 
+  /// Global prefix / suffix adornment chrome for the subtree.
+  final UnifiedInputAdornmentStyle? adornmentStyle;
+
+  /// Global +/- step button chrome for [UnifiedNumberField].
+  final UnifiedNumericStepButtonStyle? numericStepButtonStyle;
+
   /// Returns a copy with the given fields replaced.
   UnifiedInputThemeData merge(UnifiedInputThemeData? other) {
     if (other == null) return this;
@@ -243,6 +253,11 @@ class UnifiedInputThemeData {
       durationFormatStyle: other.durationFormatStyle ?? durationFormatStyle,
       fieldDecorationSet: other.fieldDecorationSet ?? fieldDecorationSet,
       fieldDefaults: other.fieldDefaults ?? fieldDefaults,
+      adornmentStyle: adornmentStyle?.merge(other.adornmentStyle) ??
+          other.adornmentStyle,
+      numericStepButtonStyle:
+          numericStepButtonStyle?.merge(other.numericStepButtonStyle) ??
+              other.numericStepButtonStyle,
     );
   }
 }

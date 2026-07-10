@@ -7,6 +7,10 @@ import 'unified_fields_strings.dart';
 import 'unified_hms_wheel_picker_sheet.dart';
 import 'unified_time_format.dart';
 import 'unified_time_picker_types.dart';
+import 'unified_fields_picker_theme.dart';
+import 'unified_fields_styled_picker_bridge.dart';
+import 'unified_fields_styled_time_picker.dart';
+import 'unified_input_date_picker_style.dart';
 
 /// Wraps platform and unified wheel time pickers.
 class TimePickerUtils {
@@ -28,7 +32,28 @@ class TimePickerUtils {
         UnifiedFieldsCalendarKind.gregorian,
     UnifiedFieldsDateWheelStyle? wheelStyle,
     ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind,
+    UnifiedFieldsPickerTheme? pickerTheme,
+    UnifiedInputDatePickerStyle? datePickerStyle,
+    List<TimeOfDay> presets = const [],
+    bool includeNowPreset = false,
   }) async {
+    if (pickerStyle.isStyledPicker) {
+      final picked = await showUnifiedFieldsStyledTimePickerSheet(
+        context: context,
+        style: styledTimeStyleFrom(pickerStyle),
+        initialTime: initialTime ?? TimeOfDay.now(),
+        title: title,
+        presets: presets,
+        includeNowPreset: includeNowPreset,
+        theme: UnifiedFieldsPickerTheme.resolve(
+          context,
+          overrides: pickerTheme,
+          datePickerStyle: datePickerStyle,
+        ),
+      );
+      if (picked == null) return null;
+      return UnifiedFieldsPickedTime.fromTimeOfDay(picked, second: initialSecond);
+    }
     if (pickerStyle == UnifiedFieldsTimePickerStyle.wheels) {
       return showUnifiedFieldsTimePicker(
         context: context,

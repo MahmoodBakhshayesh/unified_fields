@@ -1,9 +1,29 @@
 import 'package:flutter/material.dart';
 
 import 'unified_field_label_mode.dart';
+import 'unified_input_adornment_style.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_palette.dart';
 import 'unified_input_theme.dart';
+import 'unified_numeric_step_button_style.dart';
+
+UnifiedInputDecoration? _adornmentStyleToDecoration(
+  UnifiedInputAdornmentStyle? style,
+) {
+  if (style == null) return null;
+  return UnifiedInputDecoration(
+    prefixIconColor: style.prefixIconColor,
+    suffixIconColor: style.suffixIconColor,
+    prefixPadding: style.prefixPadding,
+    suffixPadding: style.suffixPadding,
+    prefixWidth: style.prefixWidth,
+    prefixHeight: style.prefixHeight,
+    suffixWidth: style.suffixWidth,
+    suffixHeight: style.suffixHeight,
+    adornmentIconSize: style.iconSize,
+    adornmentGap: style.gap,
+  );
+}
 
 /// Shared visual + validation metadata for unified inputs.
 ///
@@ -44,7 +64,16 @@ class UnifiedInputDecoration {
   final double? height;
 
   /// Flex ratio for the label vs body when [labelInRow] is true.
+  ///
+  /// Empty means unset; resolved via [effectiveRowLabelRatio] (default `[12, 33]`).
   final List<int> rowLabelRatio;
+
+  /// Default label/body flex when [rowLabelRatio] is unset.
+  static const List<int> defaultRowLabelRatio = [12, 33];
+
+  /// Resolved flex ratio; falls back to [defaultRowLabelRatio] when unset.
+  List<int> get effectiveRowLabelRatio =>
+      rowLabelRatio.length >= 2 ? rowLabelRatio : defaultRowLabelRatio;
 
   /// When true, the label is rendered on the left of the field (split row),
   /// otherwise on top. Prefer [labelMode].
@@ -80,6 +109,33 @@ class UnifiedInputDecoration {
   /// When set, fixes [suffixIcon] height; otherwise non-icon suffixes use intrinsic height.
   final double? suffixHeight;
 
+  /// When set, fixes [prefixIcon] width.
+  final double? prefixWidth;
+
+  /// When set, fixes [prefixIcon] height.
+  final double? prefixHeight;
+
+  /// Tint for leading [Icon] adornments without an explicit color.
+  final Color? prefixIconColor;
+
+  /// Tint for trailing [Icon] adornments without an explicit color.
+  final Color? suffixIconColor;
+
+  /// Padding around the composed leading adornment row.
+  final EdgeInsetsGeometry? prefixPadding;
+
+  /// Padding around the composed trailing adornment row.
+  final EdgeInsetsGeometry? suffixPadding;
+
+  /// Glyph size for normalized icon adornments.
+  final double? adornmentIconSize;
+
+  /// Horizontal gap between multiple adornments on the same side.
+  final double? adornmentGap;
+
+  /// +/- step button chrome for [UnifiedNumberField] / [UnifiedNumericStepField].
+  final UnifiedNumericStepButtonStyle? numericStepButtonStyle;
+
   /// Inner padding of the editing area.
   final EdgeInsetsGeometry? contentPadding;
 
@@ -97,7 +153,7 @@ class UnifiedInputDecoration {
     this.borderRadius,
     this.borderSide,
     this.height,
-    this.rowLabelRatio = const [12, 33],
+    this.rowLabelRatio = const [],
     this.labelInRow = false,
     this.labelMode,
     this.requiredField = false,
@@ -109,8 +165,31 @@ class UnifiedInputDecoration {
     this.suffixIcon,
     this.suffixWidth,
     this.suffixHeight,
+    this.prefixWidth,
+    this.prefixHeight,
+    this.prefixIconColor,
+    this.suffixIconColor,
+    this.prefixPadding,
+    this.suffixPadding,
+    this.adornmentIconSize,
+    this.adornmentGap,
+    this.numericStepButtonStyle,
     this.contentPadding,
   });
+
+  /// Adornment-related fields as a mergeable style object.
+  UnifiedInputAdornmentStyle get adornmentStyle => UnifiedInputAdornmentStyle(
+        prefixIconColor: prefixIconColor,
+        suffixIconColor: suffixIconColor,
+        prefixPadding: prefixPadding,
+        suffixPadding: suffixPadding,
+        prefixWidth: prefixWidth,
+        prefixHeight: prefixHeight,
+        suffixWidth: suffixWidth,
+        suffixHeight: suffixHeight,
+        iconSize: adornmentIconSize,
+        gap: adornmentGap,
+      );
 
   /// Merges [other] on top of this; non-null fields from [other] win.
   UnifiedInputDecoration merge(UnifiedInputDecoration? other) {
@@ -142,6 +221,16 @@ class UnifiedInputDecoration {
       suffixIcon: other.suffixIcon ?? suffixIcon,
       suffixWidth: other.suffixWidth ?? suffixWidth,
       suffixHeight: other.suffixHeight ?? suffixHeight,
+      prefixWidth: other.prefixWidth ?? prefixWidth,
+      prefixHeight: other.prefixHeight ?? prefixHeight,
+      prefixIconColor: other.prefixIconColor ?? prefixIconColor,
+      suffixIconColor: other.suffixIconColor ?? suffixIconColor,
+      prefixPadding: other.prefixPadding ?? prefixPadding,
+      suffixPadding: other.suffixPadding ?? suffixPadding,
+      adornmentIconSize: other.adornmentIconSize ?? adornmentIconSize,
+      adornmentGap: other.adornmentGap ?? adornmentGap,
+      numericStepButtonStyle:
+          other.numericStepButtonStyle ?? numericStepButtonStyle,
       contentPadding: other.contentPadding ?? contentPadding,
     );
   }
@@ -178,6 +267,15 @@ class UnifiedInputDecoration {
       suffixIcon: suffixIcon,
       suffixWidth: suffixWidth,
       suffixHeight: suffixHeight,
+      prefixWidth: prefixWidth,
+      prefixHeight: prefixHeight,
+      prefixIconColor: prefixIconColor,
+      suffixIconColor: suffixIconColor,
+      prefixPadding: prefixPadding,
+      suffixPadding: suffixPadding,
+      adornmentIconSize: adornmentIconSize,
+      adornmentGap: adornmentGap,
+      numericStepButtonStyle: numericStepButtonStyle,
       contentPadding: contentPadding,
     );
   }
@@ -192,10 +290,18 @@ UnifiedInputDecoration resolveUnifiedDecoration(
   final palette = brightness != null
       ? UnifiedInputThemeResolver.paletteFor(brightness)
       : UnifiedInputThemeResolver.resolvePalette(context);
-  final themeDefaults =
-      UnifiedInputThemeScope.themeDataOf(context).fieldDefaults;
+  final themeData = UnifiedInputThemeScope.themeDataOf(context);
+  final themeDefaults = themeData.fieldDefaults;
   return const UnifiedInputDecoration()
       .merge(themeDefaults?.toDecoration())
+      .merge(_adornmentStyleToDecoration(themeData.adornmentStyle))
+      .merge(
+        themeData.numericStepButtonStyle == null
+            ? null
+            : UnifiedInputDecoration(
+                numericStepButtonStyle: themeData.numericStepButtonStyle,
+              ),
+      )
       .merge(overrides)
       .applyPalette(palette);
 }
@@ -330,10 +436,18 @@ class UnifiedInputDecorationSet {
     final palette = brightness != null
         ? UnifiedInputThemeResolver.paletteFor(brightness)
         : UnifiedInputThemeResolver.resolvePalette(context);
-    final themeDefaults =
-        UnifiedInputThemeScope.themeDataOf(context).fieldDefaults;
+    final themeData = UnifiedInputThemeScope.themeDataOf(context);
+    final themeDefaults = themeData.fieldDefaults;
     var merged = const UnifiedInputDecoration()
         .merge(themeDefaults?.toDecoration())
+        .merge(_adornmentStyleToDecoration(themeData.adornmentStyle))
+        .merge(
+          themeData.numericStepButtonStyle == null
+              ? null
+              : UnifiedInputDecoration(
+                  numericStepButtonStyle: themeData.numericStepButtonStyle,
+                ),
+        )
         .merge(base)
         .merge(fieldDecoration);
     final overlay = layerFor(state);
@@ -370,12 +484,19 @@ UnifiedInputDecorationSet composeFieldDecorationSet(
   UnifiedInputDecoration? decoration,
   UnifiedInputDecorationSet? decorationSet,
 }) {
-  final themeSet =
-      UnifiedInputThemeScope.themeDataOf(context).fieldDecorationSet;
-  final themeDefaults =
-      UnifiedInputThemeScope.themeDataOf(context).fieldDefaults;
+  final themeData = UnifiedInputThemeScope.themeDataOf(context);
+  final themeSet = themeData.fieldDecorationSet;
+  final themeDefaults = themeData.fieldDefaults;
   final baseDecoration = const UnifiedInputDecoration()
       .merge(themeDefaults?.toDecoration())
+      .merge(_adornmentStyleToDecoration(themeData.adornmentStyle))
+      .merge(
+        themeData.numericStepButtonStyle == null
+            ? null
+            : UnifiedInputDecoration(
+                numericStepButtonStyle: themeData.numericStepButtonStyle,
+              ),
+      )
       .merge(decoration);
   return const UnifiedInputDecorationSet()
       .merge(themeSet)

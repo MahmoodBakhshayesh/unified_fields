@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../unified_date_picker_sheet.dart';
+import '../unified_date_picker_types.dart';
 import '../unified_fields_date_format_style.dart';
+import '../unified_fields_picker_theme.dart';
+import '../unified_fields_styled_calendar_picker.dart';
+import '../unified_input_date_picker_style.dart';
 import '../fields/unified_date_field.dart' show formatUnifiedDateRangeFieldText;
 import 'base_unified_field_controller.dart';
 
@@ -17,6 +21,10 @@ class UnifiedDateRangeFieldController
     this.max,
     this.showCalendarKindToggle = true,
     this.dateFormatStyle,
+    this.pickerStyle = UnifiedFieldsDatePickerStyle.verticalMonths,
+    this.datePickerStyle,
+    this.dayInfoBuilder,
+    this.pickerTheme,
     this.calendarKind = UnifiedFieldsCalendarKind.gregorian,
   }) : super(initialValue: initialValue);
 
@@ -31,6 +39,18 @@ class UnifiedDateRangeFieldController
 
   /// Gregorian / Shamsi display patterns for the field text.
   final UnifiedFieldsDateFormatStyle? dateFormatStyle;
+
+  /// Styled range picker layout.
+  final UnifiedFieldsDatePickerStyle pickerStyle;
+
+  /// Picker sheet chrome.
+  final UnifiedInputDatePickerStyle? datePickerStyle;
+
+  /// Per-day decorations for styled range pickers.
+  final UnifiedFieldsCalendarDayInfoBuilder? dayInfoBuilder;
+
+  /// Extra styling for styled range pickers.
+  final UnifiedFieldsPickerTheme? pickerTheme;
 
   /// Calendar kind for formatting and digit localization.
   final UnifiedFieldsCalendarKind calendarKind;
@@ -67,6 +87,10 @@ class UnifiedDateRangeFieldController
       lastDate: max ?? DateTime(3000),
       title: title ?? _boundTitle,
       showCalendarKindToggle: showCalendarKindToggle,
+      pickerStyle: pickerStyle,
+      datePickerStyle: datePickerStyle,
+      dayInfoBuilder: dayInfoBuilder,
+      pickerTheme: pickerTheme,
     );
     if (picked != null) {
       value = picked;

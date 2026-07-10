@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'unified_field_label_mode.dart';
+import 'unified_input_adornment_style.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_label_mode_style.dart';
+import 'unified_numeric_step_button_style.dart';
 
 /// Default layout and behavior for [UnifiedBaseTextField] via [UnifiedInputThemeData.fieldDefaults].
 ///
@@ -32,6 +34,17 @@ class UnifiedInputFieldDefaults {
     this.selectTextOnFocus,
     this.textStyle,
     this.textStylePersian,
+    this.prefixIconColor,
+    this.suffixIconColor,
+    this.prefixPadding,
+    this.suffixPadding,
+    this.prefixWidth,
+    this.prefixHeight,
+    this.suffixWidth,
+    this.suffixHeight,
+    this.adornmentIconSize,
+    this.adornmentGap,
+    this.numericStepButtonStyle,
   });
 
   /// Default label placement for fields that do not set [UnifiedBaseTextField.labelMode].
@@ -98,6 +111,53 @@ class UnifiedInputFieldDefaults {
   /// Value [TextStyle] when Persian digits are active; falls back to [textStyle].
   final TextStyle? textStylePersian;
 
+  /// Default tint for leading icon adornments.
+  final Color? prefixIconColor;
+
+  /// Default tint for trailing icon adornments.
+  final Color? suffixIconColor;
+
+  /// Default padding around the leading adornment row.
+  final EdgeInsetsGeometry? prefixPadding;
+
+  /// Default padding around the trailing adornment row.
+  final EdgeInsetsGeometry? suffixPadding;
+
+  /// Default slot width for leading icon adornments.
+  final double? prefixWidth;
+
+  /// Default slot height for leading icon adornments.
+  final double? prefixHeight;
+
+  /// Default slot width for trailing adornments.
+  final double? suffixWidth;
+
+  /// Default slot height for trailing adornments.
+  final double? suffixHeight;
+
+  /// Default glyph size for normalized icon adornments.
+  final double? adornmentIconSize;
+
+  /// Default horizontal gap between adornments on the same side.
+  final double? adornmentGap;
+
+  /// Default +/- step button chrome for number fields.
+  final UnifiedNumericStepButtonStyle? numericStepButtonStyle;
+
+  /// Adornment-related defaults as a mergeable style object.
+  UnifiedInputAdornmentStyle get adornmentStyle => UnifiedInputAdornmentStyle(
+        prefixIconColor: prefixIconColor,
+        suffixIconColor: suffixIconColor,
+        prefixPadding: prefixPadding,
+        suffixPadding: suffixPadding,
+        prefixWidth: prefixWidth,
+        prefixHeight: prefixHeight,
+        suffixWidth: suffixWidth,
+        suffixHeight: suffixHeight,
+        iconSize: adornmentIconSize,
+        gap: adornmentGap,
+      );
+
   /// Maps layout fields into [UnifiedInputDecoration] for palette merge.
   UnifiedInputDecoration toDecoration() {
     var merged = UnifiedInputDecoration(
@@ -111,6 +171,17 @@ class UnifiedInputFieldDefaults {
       showError: showError ?? true,
       contentPadding: contentPadding,
       placeholderStyle: placeholderStyle,
+      prefixIconColor: prefixIconColor,
+      suffixIconColor: suffixIconColor,
+      prefixPadding: prefixPadding,
+      suffixPadding: suffixPadding,
+      prefixWidth: prefixWidth,
+      prefixHeight: prefixHeight,
+      suffixWidth: suffixWidth,
+      suffixHeight: suffixHeight,
+      adornmentIconSize: adornmentIconSize,
+      adornmentGap: adornmentGap,
+      numericStepButtonStyle: numericStepButtonStyle,
     );
     if (labelInRow != null) {
       merged = merged.merge(UnifiedInputDecoration(labelInRow: labelInRow!));
@@ -145,6 +216,18 @@ class UnifiedInputFieldDefaults {
       selectTextOnFocus: other.selectTextOnFocus ?? selectTextOnFocus,
       textStyle: other.textStyle ?? textStyle,
       textStylePersian: other.textStylePersian ?? textStylePersian,
+      prefixIconColor: other.prefixIconColor ?? prefixIconColor,
+      suffixIconColor: other.suffixIconColor ?? suffixIconColor,
+      prefixPadding: other.prefixPadding ?? prefixPadding,
+      suffixPadding: other.suffixPadding ?? suffixPadding,
+      prefixWidth: other.prefixWidth ?? prefixWidth,
+      prefixHeight: other.prefixHeight ?? prefixHeight,
+      suffixWidth: other.suffixWidth ?? suffixWidth,
+      suffixHeight: other.suffixHeight ?? suffixHeight,
+      adornmentIconSize: other.adornmentIconSize ?? adornmentIconSize,
+      adornmentGap: other.adornmentGap ?? adornmentGap,
+      numericStepButtonStyle:
+          other.numericStepButtonStyle ?? numericStepButtonStyle,
     );
   }
 }

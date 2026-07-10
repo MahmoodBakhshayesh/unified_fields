@@ -230,7 +230,10 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   const SizedBox(height: 12),
                   Text(phoneC.dialCodeController.text),
                   UnifiedCustomizablePickerField<String>(
-                    label: "Test",
+                    label: "Test2222",
+                    decoration: UnifiedInputDecoration(
+                      labelInRow: true
+                    ),
                     valueToString: (v) => v.toString(),
                     gridDelegate: unifiedPickerDefaultGridDelegate(
                       crossAxisCount: 3,
@@ -295,10 +298,10 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   ),
                   UnifiedFormTextField(
                     label: 'Full name',
-
                     decoration: UnifiedInputDecoration(
-                      labelInRow: true,
 
+                      labelInRow: false,
+                      rowLabelRatio: [1,1],
                       height: 40,
 
                       // headerBackgroundColor: Colors.red,

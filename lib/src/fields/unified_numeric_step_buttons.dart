@@ -24,3 +24,21 @@ enum UnifiedNumericStepButtonPlacement {
   /// Both buttons on the trailing ([UnifiedBaseTextField.suffixIcon]) side.
   trailing,
 }
+
+/// Order of custom adornments vs step buttons on the leading edge.
+enum UnifiedNumericLeadingAdornmentOrder {
+  /// `prefixIcon` / `prefix`, then step buttons (default).
+  adornmentsThenSteps,
+
+  /// Step buttons, then `prefixIcon` / `prefix`.
+  stepsThenAdornments,
+}
+
+/// Order of custom adornments vs step buttons on the trailing edge.
+enum UnifiedNumericTrailingAdornmentOrder {
+  /// Step buttons, then `suffixIcon` (default).
+  stepsThenAdornments,
+
+  /// `suffixIcon`, then step buttons.
+  adornmentsThenSteps,
+}

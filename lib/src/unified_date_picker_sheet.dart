@@ -10,6 +10,9 @@ import 'unified_date_picker_types.dart';
 import 'unified_date_wheel_picker_sheet.dart';
 import 'unified_fields_strings.dart';
 import 'unified_fields_typography.dart';
+import 'unified_fields_styled_picker_bridge.dart';
+import 'unified_fields_styled_calendar_picker.dart';
+import 'unified_fields_picker_theme.dart';
 import 'unified_date_year_strip_style.dart';
 
 export 'unified_date_picker_types.dart';
@@ -48,10 +51,29 @@ Future<DateTime?> showUnifiedFieldsDatePicker({
   UnifiedInputDatePickerStyle? datePickerStyle,
   bool showWeekdayInWheel = true,
   ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind,
+  UnifiedFieldsCalendarDayInfoBuilder? dayInfoBuilder,
+  UnifiedFieldsPickerTheme? pickerTheme,
 }) {
   final first = DateUtils.dateOnly(firstDate);
   final last = DateUtils.dateOnly(lastDate);
   assert(!first.isAfter(last), 'firstDate must be on or before lastDate');
+
+  if (pickerStyle.isStyledPicker) {
+    return showUnifiedFieldsStyledDatePicker(
+      context: context,
+      style: pickerStyle,
+      initialDate: initialDate,
+      minDate: first,
+      maxDate: last,
+      dayInfoBuilder: dayInfoBuilder,
+      title: title,
+      pickerTheme: UnifiedFieldsPickerTheme.resolve(
+        context,
+        overrides: pickerTheme,
+        datePickerStyle: datePickerStyle,
+      ),
+    );
+  }
 
   final resolvedStyle = UnifiedInputThemeResolver.resolveDatePickerStyle(
     context,
@@ -122,12 +144,33 @@ Future<DateTimeRange?> showUnifiedFieldsDatePickerRange({
   bool showCalendarKindToggle = true,
   UnifiedFieldsCalendarKind initialCalendarKind =
       UnifiedFieldsCalendarKind.gregorian,
+  UnifiedFieldsDatePickerStyle pickerStyle =
+      UnifiedFieldsDatePickerStyle.verticalMonths,
   UnifiedInputDatePickerStyle? datePickerStyle,
+  UnifiedFieldsCalendarDayInfoBuilder? dayInfoBuilder,
+  UnifiedFieldsPickerTheme? pickerTheme,
   ValueChanged<UnifiedFieldsCalendarKind>? onConfirmedCalendarKind,
 }) {
   final first = DateUtils.dateOnly(firstDate);
   final last = DateUtils.dateOnly(lastDate);
   assert(!first.isAfter(last), 'firstDate must be on or before lastDate');
+
+  if (pickerStyle.isStyledPicker) {
+    return showUnifiedFieldsStyledDatePickerRange(
+      context: context,
+      style: pickerStyle,
+      initialRange: initialRange,
+      minDate: first,
+      maxDate: last,
+      dayInfoBuilder: dayInfoBuilder,
+      title: title,
+      pickerTheme: UnifiedFieldsPickerTheme.resolve(
+        context,
+        overrides: pickerTheme,
+        datePickerStyle: datePickerStyle,
+      ),
+    );
+  }
 
   final resolvedStyle = UnifiedInputThemeResolver.resolveDatePickerStyle(
     context,

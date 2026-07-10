@@ -21,9 +21,37 @@ enum UnifiedFieldsDatePickerGranularity {
 
 /// Visual style for single-date [showUnifiedFieldsDatePicker].
 enum UnifiedFieldsDatePickerStyle {
-  /// Month grid / list UI (default).
+  /// Legacy month grid with Jalali/Gregorian toggle (default).
   calendar,
 
-  /// Cupertino-style scroll wheels (columns depend on [UnifiedFieldsDatePickerGranularity]).
+  /// Legacy Cupertino-style scroll wheels with Jalali support.
   wheels,
+
+  /// Paged month grid with animated slide transitions, swipe + chevrons.
+  monthGrid,
+
+  /// Horizontal filmstrip of day cards (pricing / events per day).
+  dateStrip,
+
+  /// Continuous vertically-scrolling months (booking style).
+  verticalMonths,
+
+  /// Drill-down chips: year → month → day with breadcrumb.
+  cascadeChips,
+
+  /// Big animated day readout over a swipeable one-week strip.
+  heroCalendar,
+}
+
+/// Whether [style] uses the creative [UnifiedFieldsStyledCalendarPicker].
+extension UnifiedFieldsDatePickerStyleX on UnifiedFieldsDatePickerStyle {
+  bool get isStyledPicker => switch (this) {
+        UnifiedFieldsDatePickerStyle.monthGrid ||
+        UnifiedFieldsDatePickerStyle.dateStrip ||
+        UnifiedFieldsDatePickerStyle.verticalMonths ||
+        UnifiedFieldsDatePickerStyle.cascadeChips ||
+        UnifiedFieldsDatePickerStyle.heroCalendar =>
+          true,
+        _ => false,
+      };
 }

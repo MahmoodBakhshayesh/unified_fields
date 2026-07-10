@@ -16,6 +16,7 @@ class UnifiedFieldsStrings {
   const UnifiedFieldsStrings({
     this.cancel = 'Cancel',
     this.confirm = 'Confirm',
+    this.now = 'Now',
     this.clear = 'Clear',
     this.done = 'Done',
     this.suggestion = 'Suggestion',
@@ -52,6 +53,9 @@ class UnifiedFieldsStrings {
 
   /// Confirm / apply action.
   final String confirm;
+
+  /// Quick-pick "now" chip on styled time pickers.
+  final String now;
 
   /// Clear selection in picker sheet headers.
   final String clear;

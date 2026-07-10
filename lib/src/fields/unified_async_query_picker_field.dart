@@ -337,7 +337,6 @@ class _UnifiedAsyncQueryPickerState<T> extends State<UnifiedAsyncQueryPicker<T>>
           borderSide: dec.borderSide,
           height: dec.height,
           rowLabelRatio: dec.optionalRowLabelRatio,
-          labelInRow: dec.labelInRow,
           labelMode: dec.labelMode,
           requiredField: widget.isRequired || dec.requiredField,
           showError: dec.showError,

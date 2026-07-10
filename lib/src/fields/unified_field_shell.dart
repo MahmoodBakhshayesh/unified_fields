@@ -133,7 +133,7 @@ class UnifiedFieldShell extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
-          flex: dec.rowLabelRatio[0],
+          flex: dec.effectiveRowLabelRatio[0],
           child: SizedBox(
             height: h,
             child: Align(
@@ -142,7 +142,7 @@ class UnifiedFieldShell extends StatelessWidget {
             ),
           ),
         ),
-        Expanded(flex: dec.rowLabelRatio[1], child: boxed),
+        Expanded(flex: dec.effectiveRowLabelRatio[1], child: boxed),
       ],
     );
   }

@@ -766,10 +766,123 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         palette.bodyBackground;
   }
 
-  Widget _stateSuffixIcon(IconData icon, UnifiedInputPalette palette) {
+  Widget _normalizeLeadingAdornment(
+    Widget adornment,
+    UnifiedInputPalette palette,
+    UnifiedInputDecoration dec,
+  ) {
+    if (adornment is Row) return adornment;
+    final style = UnifiedInputThemeResolver.resolveAdornmentStyle(
+      context,
+      decoration: dec,
+    );
+    return UnifiedSuffixIconChrome.normalize(
+      adornment,
+      width: dec.prefixWidth ?? style.prefixWidth,
+      height: dec.prefixHeight ?? style.prefixHeight,
+      iconColor: UnifiedInputThemeResolver.prefixIconColor(
+        context,
+        palette,
+        decoration: dec,
+      ),
+      iconSize: UnifiedInputThemeResolver.adornmentIconSize(
+        context,
+        decoration: dec,
+      ),
+    );
+  }
+
+  Widget _normalizeTrailingAdornment(
+    Widget adornment,
+    UnifiedInputPalette palette,
+    UnifiedInputDecoration dec,
+  ) {
+    if (adornment is Row) return adornment;
+    final style = UnifiedInputThemeResolver.resolveAdornmentStyle(
+      context,
+      decoration: dec,
+    );
+    return UnifiedSuffixIconChrome.normalize(
+      adornment,
+      width: dec.suffixWidth ?? style.suffixWidth,
+      height: dec.suffixHeight ?? style.suffixHeight,
+      iconColor: UnifiedInputThemeResolver.resolvedSuffixIconColor(
+        context,
+        palette,
+        decoration: dec,
+      ),
+      iconSize: UnifiedInputThemeResolver.adornmentIconSize(
+        context,
+        decoration: dec,
+      ),
+    );
+  }
+
+  Widget? _joinAdornments(List<Widget> widgets, UnifiedInputDecoration dec) {
+    if (widgets.isEmpty) return null;
+    final gap = UnifiedInputThemeResolver.adornmentGap(
+      context,
+      decoration: dec,
+    );
+    if (widgets.length == 1 || gap <= 0) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: widgets,
+      );
+    }
+    final children = <Widget>[];
+    for (var i = 0; i < widgets.length; i++) {
+      if (i > 0) children.add(SizedBox(width: gap));
+      children.add(widgets[i]);
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: children,
+    );
+  }
+
+  Widget? _buildPrefixRow(
+    UnifiedInputPalette palette,
+    UnifiedInputDecoration dec,
+  ) {
+    final widgets = <Widget>[];
+    final prefixIcon = dec.prefixIcon ?? widget.prefixIcon;
+    final prefix = dec.prefix ?? widget.prefix;
+    if (prefixIcon != null) {
+      widgets.add(_normalizeLeadingAdornment(prefixIcon, palette, dec));
+    }
+    if (prefix != null) {
+      widgets.add(_normalizeLeadingAdornment(prefix, palette, dec));
+    }
+    final row = _joinAdornments(widgets, dec);
+    if (row == null) return null;
+    return Padding(
+      padding: UnifiedInputThemeResolver.prefixAdornmentPadding(
+        context,
+        decoration: dec,
+      ),
+      child: row,
+    );
+  }
+
+  Widget _stateSuffixIcon(
+    IconData icon,
+    UnifiedInputPalette palette,
+    UnifiedInputDecoration dec,
+  ) {
     return UnifiedSuffixIconChrome.build(
       icon: icon,
-      color: UnifiedInputThemeResolver.suffixIconColor(context, palette),
+      color: UnifiedInputThemeResolver.resolvedSuffixIconColor(
+        context,
+        palette,
+        decoration: dec,
+      ),
+      glyphSize: UnifiedInputThemeResolver.adornmentIconSize(
+        context,
+        decoration: dec,
+      ),
     );
   }
 
@@ -844,9 +957,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     final customSuffix = widget.suffixIcon ?? dec.suffixIcon;
 
     if (_visuallyDisabled) {
-      widgets.add(_stateSuffixIcon(Icons.not_interested_outlined, palette));
+      widgets.add(_stateSuffixIcon(Icons.not_interested_outlined, palette, dec));
     } else if (widget.locked) {
-      widgets.add(_stateSuffixIcon(Icons.lock_outline, palette));
+      widgets.add(_stateSuffixIcon(Icons.lock_outline, palette, dec));
     } else if (widget.loading) {
       widgets.add(_loadingSuffix());
     } else {
@@ -854,19 +967,21 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         widgets.add(
           UnifiedSuffixIconChrome.build(
             icon: _obscure ? Icons.visibility : Icons.visibility_off,
-            color: UnifiedInputThemeResolver.suffixIconColor(context, palette),
+            color: UnifiedInputThemeResolver.resolvedSuffixIconColor(
+              context,
+              palette,
+              decoration: dec,
+            ),
+            glyphSize: UnifiedInputThemeResolver.adornmentIconSize(
+              context,
+              decoration: dec,
+            ),
             onPressed: _blocksInteraction ? null : _toggleObscure,
             tooltip: _obscure ? 'Show password' : 'Hide password',
           ),
         );
       } else if (customSuffix != null) {
-        widgets.add(
-          UnifiedSuffixIconChrome.normalize(
-            customSuffix,
-            width: dec.suffixWidth,
-            height: dec.suffixHeight,
-          ),
-        );
+        widgets.add(_normalizeTrailingAdornment(customSuffix, palette, dec));
       }
 
       if (UnifiedInputThemeResolver.fieldShowClearButton(
@@ -886,6 +1001,10 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                 .withValues(
                   alpha: UnifiedInputThemeScope.themeDataOf(context).suffixIconOpacity ?? 0.7,
                 ),
+            glyphSize: UnifiedInputThemeResolver.adornmentIconSize(
+              context,
+              decoration: dec,
+            ),
             onPressed: _blocksInteraction ? null : () => _ctrl.clear(),
             tooltip: MaterialLocalizations.of(context).deleteButtonTooltip,
           ),
@@ -894,13 +1013,13 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     }
 
     if (widgets.isEmpty) return null;
+    final row = _joinAdornments(widgets, dec);
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: widgets,
+      padding: UnifiedInputThemeResolver.suffixAdornmentPadding(
+        context,
+        decoration: dec,
       ),
+      child: row,
     );
   }
 
@@ -990,6 +1109,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     }
 
     final suffix = _buildSuffixRow(context, hasText, palette, dec);
+    final prefix = _buildPrefixRow(palette, dec);
     return Container(
       alignment: Alignment.centerLeft,
       padding: padding,
@@ -999,10 +1119,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ?widget.prefixIcon,
-          ?widget.prefix,
+          if (prefix != null) prefix,
           Expanded(child: textPart),
-          ?suffix,
+          if (suffix != null) suffix,
         ],
       ),
     );
@@ -1054,7 +1173,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       style: _resolveFieldStyle(palette, dec),
       placeholder: widget.placeholder,
       placeholderStyle: _placeholderStyle(palette, dec),
-      prefix: dec.prefixIcon ?? widget.prefixIcon ?? widget.prefix,
+      prefix: _buildPrefixRow(palette, dec),
       suffix: _buildSuffixRow(context, hasText, palette, dec),
       onSubmitted: widget.onSubmit,
       decoration: const BoxDecoration(color: Colors.transparent),
@@ -1200,8 +1319,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
           color: _validationColor(palette, dec),
           fontSize: 12,
         ),
-        prefixIcon: dec.prefixIcon ?? widget.prefixIcon,
-        prefix: dec.prefix ?? widget.prefix,
+        prefix: _buildPrefixRow(palette, dec),
         suffixIcon: _buildSuffixRow(context, hasText, palette, dec),
       ),
     );
@@ -1219,13 +1337,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec,
     Widget Function(Widget child) wrapInteraction,
   ) {
-    final widgetRatio = widget.rowLabelRatio ?? const [12, 33];
-    final labelFlex = dec.rowLabelRatio.isNotEmpty
-        ? dec.rowLabelRatio[0]
-        : (widgetRatio.isNotEmpty ? widgetRatio[0] : 12);
-    final bodyFlex = dec.rowLabelRatio.length > 1
-        ? dec.rowLabelRatio[1]
-        : (widgetRatio.length > 1 ? widgetRatio[1] : 33);
+    final ratio = dec.effectiveRowLabelRatio;
+    final labelFlex = ratio[0];
+    final bodyFlex = ratio[1];
     final h = dec.height ?? widget.height ?? 56;
     final radius =
         dec.borderRadius ?? widget.borderRadius ?? palette.borderRadius;
@@ -1366,8 +1480,16 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec,
     Widget Function(Widget child) wrapInteraction,
   ) {
+    final field = _materialFloatingField(
+      context,
+      errorText,
+      hasError,
+      palette,
+      dec,
+    );
+    final h = dec.height ?? widget.height;
     return wrapInteraction(
-      _materialFloatingField(context, errorText, hasError, palette, dec),
+      h == null ? field : SizedBox(height: h, child: field),
     );
   }
 
@@ -1389,6 +1511,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
             widget.label!,
             style: defaultLabelStyle,
             textAlign: TextAlign.center,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         if (widget.requiredField)

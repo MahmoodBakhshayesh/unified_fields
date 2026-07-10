@@ -5,13 +5,14 @@ import 'package:flutter/services.dart';
 
 import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_number_field_controller.dart';
-import '../unified_colors.dart';
 import '../unified_date_picker_types.dart';
 import '../unified_fields_typography.dart';
 import '../unified_number_format.dart';
 import 'unified_base_text_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
+import 'unified_input_theme.dart';
+import 'unified_numeric_step_button_style.dart';
 import 'unified_numeric_step_buttons.dart';
 import 'unified_suffix_icon.dart';
 
@@ -90,6 +91,12 @@ class UnifiedNumericStepField extends StatefulWidget {
     this.decrementIcon = Icons.remove_rounded,
     this.incrementIcon = Icons.add_rounded,
     this.textAlign = TextAlign.center,
+    this.adornmentDecoration,
+    this.stepButtonStyle,
+    this.leadingAdornmentOrder =
+        UnifiedNumericLeadingAdornmentOrder.adornmentsThenSteps,
+    this.trailingAdornmentOrder =
+        UnifiedNumericTrailingAdornmentOrder.stepsThenAdornments,
   }) : assert(step != 0, 'step must be non-zero');
 
   /// External [TextEditingController]; if null one is created internally.
@@ -230,6 +237,18 @@ class UnifiedNumericStepField extends StatefulWidget {
 
   /// Horizontal alignment of the numeric value.
   final TextAlign textAlign;
+
+  /// Resolved adornment chrome (colors, padding, slot sizes) for prefix/suffix.
+  final UnifiedInputDecoration? adornmentDecoration;
+
+  /// Per-field +/- button style override.
+  final UnifiedNumericStepButtonStyle? stepButtonStyle;
+
+  /// Order of custom adornments vs step buttons on the leading edge.
+  final UnifiedNumericLeadingAdornmentOrder leadingAdornmentOrder;
+
+  /// Order of custom adornments vs step buttons on the trailing edge.
+  final UnifiedNumericTrailingAdornmentOrder trailingAdornmentOrder;
 
   @override
   State<UnifiedNumericStepField> createState() =>
@@ -555,113 +574,226 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       widget.stepButtons != UnifiedNumericStepButtons.none &&
       widget.stepButtons != UnifiedNumericStepButtons.decrementOnly;
 
-  List<Widget> _decrementStepWidgets() =>
+  List<Widget> _decrementStepWidgets(BuildContext context) =>
       _showDecrementButton
           ? [
               _stepButton(
+                context,
                 icon: widget.decrementIcon,
                 delta: -widget.step,
               ),
             ]
           : const [];
 
-  List<Widget> _incrementStepWidgets() =>
+  List<Widget> _incrementStepWidgets(BuildContext context) =>
       _showIncrementButton
-          ? [_stepButton(icon: widget.incrementIcon, delta: widget.step)]
+          ? [_stepButton(context, icon: widget.incrementIcon, delta: widget.step)]
           : const [];
 
-  List<Widget> _stepWidgetsForSide({required bool leading}) {
+  List<Widget> _stepWidgetsForSide({
+    required bool leading,
+    required BuildContext context,
+  }) {
     switch (widget.stepButtonPlacement) {
       case UnifiedNumericStepButtonPlacement.split:
-        return leading ? _decrementStepWidgets() : _incrementStepWidgets();
+        return leading
+            ? _decrementStepWidgets(context)
+            : _incrementStepWidgets(context);
       case UnifiedNumericStepButtonPlacement.leading:
         if (!leading) return const [];
-        return [..._decrementStepWidgets(), ..._incrementStepWidgets()];
+        return [
+          ..._decrementStepWidgets(context),
+          ..._incrementStepWidgets(context),
+        ];
       case UnifiedNumericStepButtonPlacement.trailing:
         if (leading) return const [];
-        return [..._decrementStepWidgets(), ..._incrementStepWidgets()];
+        return [
+          ..._decrementStepWidgets(context),
+          ..._incrementStepWidgets(context),
+        ];
     }
   }
 
-  List<Widget> _decorationLeadingWidgets() {
+  List<Widget> _decorationLeadingWidgets(BuildContext context) {
+    final dec = widget.adornmentDecoration ?? const UnifiedInputDecoration();
+    final palette = UnifiedInputThemeResolver.resolvePalette(context);
+    final style = UnifiedInputThemeResolver.resolveAdornmentStyle(
+      context,
+      decoration: dec,
+    );
     final widgets = <Widget>[];
-    if (widget.prefixIcon != null) {
-      widgets.add(UnifiedSuffixIconChrome.normalize(widget.prefixIcon!));
+    void add(Widget? child) {
+      if (child == null) return;
+      widgets.add(
+        UnifiedSuffixIconChrome.normalize(
+          child,
+          width: dec.prefixWidth ?? style.prefixWidth,
+          height: dec.prefixHeight ?? style.prefixHeight,
+          iconColor: UnifiedInputThemeResolver.prefixIconColor(
+            context,
+            palette,
+            decoration: dec,
+          ),
+          iconSize: UnifiedInputThemeResolver.adornmentIconSize(
+            context,
+            decoration: dec,
+          ),
+        ),
+      );
     }
-    if (widget.prefix != null) {
-      widgets.add(UnifiedSuffixIconChrome.normalize(widget.prefix!));
-    }
+
+    add(widget.prefixIcon);
+    add(widget.prefix);
     return widgets;
   }
 
-  Widget? _decorationTrailingWidget() {
+  Widget? _decorationTrailingWidget(BuildContext context) {
     final suffix = widget.suffixIcon;
     if (suffix == null) return null;
+    final dec = widget.adornmentDecoration ?? const UnifiedInputDecoration();
+    final palette = UnifiedInputThemeResolver.resolvePalette(context);
+    final style = UnifiedInputThemeResolver.resolveAdornmentStyle(
+      context,
+      decoration: dec,
+    );
     return UnifiedSuffixIconChrome.normalize(
       suffix,
-      width: widget.suffixWidth,
-      height: widget.suffixHeight,
+      width: dec.suffixWidth ?? style.suffixWidth,
+      height: dec.suffixHeight ?? style.suffixHeight,
+      iconColor: UnifiedInputThemeResolver.resolvedSuffixIconColor(
+        context,
+        palette,
+        decoration: dec,
+      ),
+      iconSize: UnifiedInputThemeResolver.adornmentIconSize(
+        context,
+        decoration: dec,
+      ),
     );
   }
 
-  Widget? _joinRow(List<Widget> children) {
+  Widget? _joinRow(
+    BuildContext context,
+    List<Widget> children,
+  ) {
     if (children.isEmpty) return null;
-    if (children.length == 1) return children.first;
+    final dec = widget.adornmentDecoration ?? const UnifiedInputDecoration();
+    final gap = UnifiedInputThemeResolver.adornmentGap(
+      context,
+      decoration: dec,
+    );
+    if (children.length == 1 || gap <= 0) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: children,
+      );
+    }
+    final spaced = <Widget>[];
+    for (var i = 0; i < children.length; i++) {
+      if (i > 0) spaced.add(SizedBox(width: gap));
+      spaced.add(children[i]);
+    }
     return Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
-      children: children,
+      children: spaced,
     );
   }
 
   /// Leading edge: decoration prefix at intrinsic size, then step buttons.
-  Widget? _composePrefix() {
-    return _joinRow([
-      ..._decorationLeadingWidgets(),
-      ..._stepWidgetsForSide(leading: true),
-    ]);
+  Widget? _composePrefix(BuildContext context) {
+    final adornments = _decorationLeadingWidgets(context);
+    final steps = _stepWidgetsForSide(leading: true, context: context);
+    final children = switch (widget.leadingAdornmentOrder) {
+      UnifiedNumericLeadingAdornmentOrder.adornmentsThenSteps => [
+          ...adornments,
+          ...steps,
+        ],
+      UnifiedNumericLeadingAdornmentOrder.stepsThenAdornments => [
+          ...steps,
+          ...adornments,
+        ],
+    };
+    final row = _joinRow(context, children);
+    return row;
   }
 
   /// Trailing edge: step buttons, then decoration suffix at intrinsic size.
-  Widget? _composeTrailingSuffixIcon() {
-    final trailing = _decorationTrailingWidget();
-    return _joinRow([
-      ..._stepWidgetsForSide(leading: false),
-      ?trailing,
-    ]);
+  Widget? _composeTrailingSuffixIcon(BuildContext context) {
+    final trailing = _decorationTrailingWidget(context);
+    final steps = _stepWidgetsForSide(leading: false, context: context);
+    final children = switch (widget.trailingAdornmentOrder) {
+      UnifiedNumericTrailingAdornmentOrder.stepsThenAdornments => [
+          ...steps,
+          if (trailing != null) trailing,
+        ],
+      UnifiedNumericTrailingAdornmentOrder.adornmentsThenSteps => [
+          if (trailing != null) trailing,
+          ...steps,
+        ],
+    };
+    return _joinRow(context, children);
   }
 
-  Widget _stepButton({required IconData icon, required num delta}) {
+  Widget _stepButton(
+    BuildContext context, {
+    required IconData icon,
+    required num delta,
+  }) {
     final enabled =
         !widget.disabled &&
         !widget.isDisabled &&
         !widget.locked &&
         !widget.readOnly;
-    final h = widget.height != null
-        ? (widget.height! - 8).clamp(32.0, 56.0).toDouble()
-        : 40.0;
+    final palette = UnifiedInputThemeResolver.resolvePalette(context);
+    final style = UnifiedInputThemeResolver.resolveNumericStepButtonStyle(
+      context,
+      decorationStyle: widget.adornmentDecoration?.numericStepButtonStyle,
+      widgetStyle: widget.stepButtonStyle,
+    );
+    final enabledColor = style.iconColor ??
+        UnifiedInputThemeResolver.resolvedSuffixIconColor(
+          context,
+          palette,
+          decoration: widget.adornmentDecoration,
+        );
+    final disabledColor = style.disabledIconColor ??
+        enabledColor.withValues(alpha: 0.35);
+    final buttonWidth = style.buttonWidth ?? 40;
+    final buttonHeight = style.buttonHeight ??
+        (widget.height != null
+            ? (widget.height! - 8).clamp(32.0, 56.0).toDouble()
+            : 40.0);
+    final iconSize = style.iconSize ?? 22;
+    final spacing = style.spacing ?? 0.0;
 
-    return ExcludeFocus(
+    final button = ExcludeFocus(
       child: Material(
-        color: Colors.transparent,
+        color: style.backgroundColor ?? Colors.transparent,
+        borderRadius: style.borderRadius,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapDown: enabled ? (_) => _beginStepHold(delta) : null,
           onTapUp: enabled ? (_) => _endStepHold() : null,
           onTapCancel: enabled ? _endStepHold : null,
           child: SizedBox(
-            width: 40,
-            height: h,
+            width: buttonWidth,
+            height: buttonHeight,
             child: Icon(
               icon,
-              size: 22,
-              color: enabled
-                  ? UnifiedColors.textColorDark.withValues(alpha: 0.85)
-                  : UnifiedColors.textColorDark.withValues(alpha: 0.35),
+              size: iconSize,
+              color: enabled ? enabledColor : disabledColor,
             ),
           ),
         ),
       ),
+    );
+
+    if (spacing <= 0) return button;
+    return Padding(
+      padding: EdgeInsetsDirectional.only(end: spacing),
+      child: button,
     );
   }
 
@@ -707,8 +839,8 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
         _clampTypedValueIfOutOfRange();
         widget.onSubmitted?.call(_effectiveController.text);
       },
-      prefix: _composePrefix(),
-      suffixIcon: _composeTrailingSuffixIcon(),
+      prefix: _composePrefix(context),
+      suffixIcon: _composeTrailingSuffixIcon(context),
       onChanged: (_) {
         final text = _effectiveController.text;
         if (_hasTrailingDecimalPointForTyping(text)) return;

@@ -302,7 +302,7 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       borderRadius: d.borderRadius,
       borderSide: d.borderSide,
       height: d.height,
-      rowLabelRatio: d.rowLabelRatio.isNotEmpty ? d.rowLabelRatio : null,
+      rowLabelRatio: d.optionalRowLabelRatio,
       labelMode: d.labelMode,
       requiredField: widget.isRequired,
       showError: d.showError,

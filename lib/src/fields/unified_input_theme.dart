@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
 import 'unified_field_label_mode.dart';
+import 'unified_input_adornment_style.dart';
 import 'unified_input_brightness.dart';
+import 'unified_input_decoration.dart';
 import '../unified_fields_date_format_style.dart';
 import '../unified_fields_duration_format_style.dart';
 import 'unified_input_field_defaults.dart';
 import 'unified_input_palette.dart';
+import 'unified_numeric_step_button_style.dart';
 import '../phone/unified_input_phone_style.dart';
 import '../unified_input_date_picker_style.dart';
 import 'unified_input_theme_data.dart';
@@ -15,9 +18,11 @@ import 'unified_suffix_icon.dart';
 import '../unified_date_picker_types.dart';
 import '../unified_fields_typography.dart';
 
+export 'unified_input_adornment_style.dart';
 export 'unified_input_field_defaults.dart';
 export 'unified_input_label_mode_style.dart';
 export 'unified_input_theme_data.dart';
+export 'unified_numeric_step_button_style.dart';
 export 'unified_picker_sheet_chrome.dart';
 export 'unified_picker_sheet_style.dart';
 export 'unified_suffix_icon.dart';
@@ -499,5 +504,93 @@ class UnifiedInputThemeResolver {
     }
     return decorationStyle ?? widgetStyle ?? themeStyle;
   }
+
+  /// Merged adornment chrome: theme → [fieldDefaults] → [decoration].
+  static UnifiedInputAdornmentStyle resolveAdornmentStyle(
+    BuildContext context, {
+    UnifiedInputDecoration? decoration,
+  }) {
+    final theme = _theme(context);
+    final fd = _fieldDefaults(context);
+    return const UnifiedInputAdornmentStyle()
+        .merge(theme.adornmentStyle)
+        .merge(fd?.adornmentStyle)
+        .merge(decoration?.adornmentStyle);
+  }
+
+  /// Merged +/- step button chrome for number fields.
+  static UnifiedNumericStepButtonStyle resolveNumericStepButtonStyle(
+    BuildContext context, {
+    UnifiedNumericStepButtonStyle? decorationStyle,
+    UnifiedNumericStepButtonStyle? widgetStyle,
+  }) {
+    final theme = _theme(context);
+    final fd = _fieldDefaults(context);
+    return const UnifiedNumericStepButtonStyle()
+        .merge(theme.numericStepButtonStyle)
+        .merge(fd?.numericStepButtonStyle)
+        .merge(decorationStyle)
+        .merge(widgetStyle);
+  }
+
+  /// Leading adornment icon tint (decoration → adornment style → suffix color).
+  static Color prefixIconColor(
+    BuildContext context,
+    UnifiedInputPalette palette, {
+    UnifiedInputDecoration? decoration,
+  }) {
+    final adornment = resolveAdornmentStyle(context, decoration: decoration);
+    return adornment.prefixIconColor ?? suffixIconColor(context, palette);
+  }
+
+  /// Trailing adornment icon tint (decoration → adornment style → theme suffix).
+  static Color resolvedSuffixIconColor(
+    BuildContext context,
+    UnifiedInputPalette palette, {
+    UnifiedInputDecoration? decoration,
+  }) {
+    if (decoration?.suffixIconColor != null) {
+      return decoration!.suffixIconColor!;
+    }
+    final adornment = resolveAdornmentStyle(context, decoration: decoration);
+    if (adornment.suffixIconColor != null) {
+      return _withOpacity(
+        adornment.suffixIconColor!,
+        _theme(context).suffixIconOpacity ?? 0.7,
+      );
+    }
+    return suffixIconColor(context, palette);
+  }
+
+  /// Padding around the composed leading adornment row.
+  static EdgeInsetsGeometry prefixAdornmentPadding(
+    BuildContext context, {
+    UnifiedInputDecoration? decoration,
+  }) =>
+      resolveAdornmentStyle(context, decoration: decoration).prefixPadding ??
+      const EdgeInsetsDirectional.fromSTEB(8, 0, 4, 0);
+
+  /// Padding around the composed trailing adornment row.
+  static EdgeInsetsGeometry suffixAdornmentPadding(
+    BuildContext context, {
+    UnifiedInputDecoration? decoration,
+  }) =>
+      resolveAdornmentStyle(context, decoration: decoration).suffixPadding ??
+      const EdgeInsets.all(8);
+
+  /// Glyph size for normalized icon adornments.
+  static double adornmentIconSize(
+    BuildContext context, {
+    UnifiedInputDecoration? decoration,
+  }) =>
+      resolveAdornmentStyle(context, decoration: decoration).iconSize ??
+      UnifiedSuffixIconChrome.iconSize;
+
+  /// Horizontal gap between adornments on the same side.
+  static double adornmentGap(
+    BuildContext context, {
+    UnifiedInputDecoration? decoration,
+  }) =>
+      resolveAdornmentStyle(context, decoration: decoration).gap ?? 0;
 }
 

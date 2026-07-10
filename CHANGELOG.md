@@ -1,3 +1,37 @@
+## 1.0.3+1
+
+### Features
+
+* **Styled date & time pickers** — creative picker UIs from the app brick are now available in `unified_fields`:
+  - Date: `monthGrid`, `dateStrip`, `verticalMonths`, `cascadeChips`, `heroCalendar` on [UnifiedFieldsDatePickerStyle] (legacy `calendar` / `wheels` unchanged with Jalali support).
+  - Time: `rulerTape`, `arcSlider`, `digitPad`, `timelineRail`, `clockDial` on [UnifiedFieldsTimePickerStyle] (legacy `dial` / `wheels` unchanged).
+* **[UnifiedFieldsPickerTheme]** — shared styling for styled pickers (colors, radii, action labels); resolves from [UnifiedInputDatePickerStyle] + [ThemeData] via [UnifiedFieldsPickerTheme.resolve].
+* **[UnifiedFieldsCalendarDayInfo]** / `dayInfoBuilder` — per-day price labels, event dots, and disabled days on styled date pickers.
+* **Field wiring** — [UnifiedDateField], [UnifiedDateRangeField], [UnifiedTimeOfDayField], form wrappers, and controllers accept `pickerStyle`, `pickerTheme`, `dayInfoBuilder` (date), and `presets` / `includeNowPreset` (time).
+
+### Fixes
+
+* **Global `height`** — [UnifiedFieldLabelMode.floatingLabel] now respects [UnifiedInputFieldDefaults.height] (label-in-row / label-in-column already did).
+* **Global `rowLabelRatio`** — date/time/duration/picker fields no longer pass an empty `rowLabelRatio` / explicit `labelInRow: false` into [UnifiedBaseTextField], which could block theme defaults; all fields now use [UnifiedResolvedFieldChrome.optionalRowLabelRatio].
+* **Label-in-row ratio** — [UnifiedBaseTextField] always uses the resolved decoration’s [UnifiedInputDecoration.effectiveRowLabelRatio].
+
+### Features
+
+* **[UnifiedInputAdornmentStyle]** — global prefix/suffix chrome: icon colors, slot sizes, padding, glyph size, gap between adornments. Set on [UnifiedInputThemeData.adornmentStyle], [UnifiedInputFieldDefaults], or per field via [UnifiedInputDecoration].
+* **[UnifiedNumericStepButtonStyle]** — themed +/- button color, size, spacing, and background. Global via [UnifiedInputThemeData.numericStepButtonStyle]; per field via [UnifiedInputDecoration.numericStepButtonStyle] or [UnifiedNumberField.stepButtonStyle].
+* **Number field adornment order** — [UnifiedNumericLeadingAdornmentOrder] and [UnifiedNumericTrailingAdornmentOrder] control whether custom prefix/suffix sit before or after step buttons.
+* **Prefix adornments** — [UnifiedBaseTextField] now normalizes and tints leading icons the same way as suffixes; prefix/suffix padding is themeable (no longer hardcoded `8.0`).
+
+## 1.0.2
+
+Maintenance release. Pubspec version is **`1.0.2+1`**. No public API changes.
+
+### Internal
+
+* **File rename** — `unified_cutomizable_picker_fields.dart` → `unified_customizable_picker_fields.dart` (fixes the historical *cutomizable* typo). Import the package barrel (`package:unified_fields/unified_fields.dart`) as before; only direct `src/` path imports (unsupported) are affected.
+* **`unified_form_more_fields.dart` split** — the 3300-line form-wrappers file is now a small library with `part` files grouped by domain (multi picker, date, time/duration, async pickers, number, async query). Public API and exports are unchanged.
+* **`UnifiedColors` trimmed** — removed ~100 app-specific legacy tokens (aviation seat/passenger accents, brand pinks, `brownGrey1‑7`, `veryLightPink1‑7`, gradients, …) that nothing in the package or known consumers referenced. The core semantic tokens (text, hint, borders, error, primary, scaffold, `mainGreen`, `fieldTextFor` / `fieldLabelFor`) remain.
+
 ## 1.0.1
 
 Patch release. Pubspec version is **`1.0.1+3`**.

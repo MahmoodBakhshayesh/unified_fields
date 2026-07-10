@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../time_picker_utils.dart';
 import '../unified_date_picker_types.dart';
+import '../unified_fields_picker_theme.dart';
+import '../unified_input_date_picker_style.dart';
 import '../unified_date_wheel_style.dart';
 import '../unified_time_format.dart';
 import '../unified_time_picker_types.dart';
@@ -22,6 +24,10 @@ class UnifiedTimeOfDayFieldController
         UnifiedFieldsCalendarKind.gregorian,
     this.showCalendarKindToggle = true,
     this.wheelStyle,
+    this.pickerTheme,
+    this.datePickerStyle,
+    this.presets = const [],
+    this.includeNowPreset = false,
     int initialSecond = 0,
   }) : _calendarKind = calendarKind,
        _second = initialSecond;
@@ -40,6 +46,18 @@ class UnifiedTimeOfDayFieldController
 
   /// Optional wheel chrome.
   final UnifiedFieldsDateWheelStyle? wheelStyle;
+
+  /// Extra styling for styled time pickers.
+  final UnifiedFieldsPickerTheme? pickerTheme;
+
+  /// Merged into [UnifiedFieldsPickerTheme.resolve].
+  final UnifiedInputDatePickerStyle? datePickerStyle;
+
+  /// Quick-pick chips for styled time pickers.
+  final List<TimeOfDay> presets;
+
+  /// Prepends a "Now" chip to [presets].
+  final bool includeNowPreset;
 
   /// Seconds when [granularity] is [UnifiedFieldsTimeGranularity.hoursMinutesSeconds].
   int _second;
@@ -102,6 +120,10 @@ class UnifiedTimeOfDayFieldController
       showCalendarKindToggle: showCalendarKindToggle,
       initialCalendarKind: calendarKind,
       wheelStyle: wheelStyle,
+      pickerTheme: pickerTheme,
+      datePickerStyle: datePickerStyle,
+      presets: presets,
+      includeNowPreset: includeNowPreset,
       onConfirmedCalendarKind: (k) => calendarKind = k,
     );
     if (picked != null) {

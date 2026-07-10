@@ -720,8 +720,9 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     UnifiedInputPhoneStyle ps,
     String? error,
   ) {
-    final labelFlex = d.rowLabelRatio.isNotEmpty ? d.rowLabelRatio[0] : 12;
-    final bodyFlex = d.rowLabelRatio.length > 1 ? d.rowLabelRatio[1] : 33;
+    final ratio = d.effectiveRowLabelRatio;
+    final labelFlex = ratio[0];
+    final bodyFlex = ratio[1];
     final h = _fieldHeight(d);
     final radius = d.borderRadius ?? palette.borderRadius;
     final divider = d.borderSide ?? palette.defaultBorderSide;
@@ -829,7 +830,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
       borderRadius: d.borderRadius,
       borderSide: d.borderSide,
       height: widget.height ?? d.height,
-      rowLabelRatio: d.rowLabelRatio,
+      rowLabelRatio: d.optionalRowLabelRatio ?? const [],
       labelInRow: useRow,
       labelMode: mode,
       requiredField: widget.isRequired || d.requiredField,

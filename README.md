@@ -668,7 +668,7 @@ UnifiedFormAsyncQueryPicker<City>(
 
 **Form:** `UnifiedFormAsyncQueryPicker`. **Controller:** `UnifiedAsyncQueryPickerFieldController`. **Sheet only:** `showUnifiedAsyncQueryPickerSheet`.
 
-**Customizable** APIs (`unified_cutomizable_picker_fields.dart` — filename keeps the historical typo **cutomizable**): single or multi selection with **`CustomizableSinglePickerController`** / **`CustomizableMultiPickerController`** plus async siblings for remote data. Each controller carries either typed text **or** the selected value(s); the matching **`UnifiedFormCustomizable…`** wrappers expose `resetValue` snapshots so `FormState.reset` restores both the mode and the payload in one step.
+**Customizable** APIs (`unified_customizable_picker_fields.dart`): single or multi selection with **`CustomizableSinglePickerController`** / **`CustomizableMultiPickerController`** plus async siblings for remote data. Each controller carries either typed text **or** the selected value(s); the matching **`UnifiedFormCustomizable…`** wrappers expose `resetValue` snapshots so `FormState.reset` restores both the mode and the payload in one step.
 
 **Form validation:** `validator` receives the **controller** (not `T?`). Inspect `fieldDisplayText`, `selectedItem`, `selectedItems`, or `inputKind`. After `FormState.validate()` shows an error, typing or picking a valid value clears the error automatically (same invalid→valid behavior as other unified form fields).
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../time_picker_utils.dart';
 import '../unified_date_picker_types.dart';
+import '../unified_fields_picker_theme.dart';
+import '../unified_input_date_picker_style.dart';
 import '../unified_date_wheel_style.dart';
 import '../unified_time_format.dart';
 import '../unified_time_picker_types.dart';
@@ -36,6 +38,10 @@ class UnifiedTimeOfDayField extends StatefulWidget {
     this.showCalendarKindToggle = true,
     this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
     this.wheelStyle,
+    this.pickerTheme,
+    this.datePickerStyle,
+    this.presets = const [],
+    this.includeNowPreset = false,
     this.label,
     this.placeholder,
     this.isRequired = false,
@@ -91,6 +97,18 @@ class UnifiedTimeOfDayField extends StatefulWidget {
 
   /// Optional wheel chrome when [pickerStyle] is [UnifiedFieldsTimePickerStyle.wheels].
   final UnifiedFieldsDateWheelStyle? wheelStyle;
+
+  /// Extra styling for styled time pickers; merged with [datePickerStyle] and theme.
+  final UnifiedFieldsPickerTheme? pickerTheme;
+
+  /// Merged into [UnifiedFieldsPickerTheme.resolve] for styled pickers.
+  final UnifiedInputDatePickerStyle? datePickerStyle;
+
+  /// Quick-pick chips under styled time pickers.
+  final List<TimeOfDay> presets;
+
+  /// Prepends a "Now" chip to [presets].
+  final bool includeNowPreset;
 
   /// Field label. Overrides [UnifiedInputDecoration.label] when set.
   final String? label;
@@ -250,6 +268,10 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
       showCalendarKindToggle: widget.showCalendarKindToggle,
       initialCalendarKind: _effectiveCalendarKind,
       wheelStyle: fc?.wheelStyle ?? widget.wheelStyle,
+      pickerTheme: fc?.pickerTheme ?? widget.pickerTheme,
+      datePickerStyle: fc?.datePickerStyle ?? widget.datePickerStyle,
+      presets: fc?.presets ?? widget.presets,
+      includeNowPreset: fc?.includeNowPreset ?? widget.includeNowPreset,
       onConfirmedCalendarKind: (kind) {
         _onPickerConfirmedCalendarKind(kind);
         if (fc != null &&
@@ -322,8 +344,7 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
               d.borderRadius,
           borderSide: d.borderSide,
           height: d.height,
-          rowLabelRatio: d.rowLabelRatio,
-          labelInRow: d.labelInRow,
+          rowLabelRatio: d.optionalRowLabelRatio,
           labelMode: d.labelMode,
           requiredField: widget.isRequired || d.requiredField,
           showError: d.showError,

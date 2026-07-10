@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../controllers/unified_number_field_controller.dart';
 import 'unified_numeric_step_buttons.dart';
+import 'unified_numeric_step_button_style.dart';
 import 'unified_numeric_step_field.dart';
 import 'unified_input_brightness.dart';
 import 'unified_field_decoration_context.dart';
@@ -46,6 +47,11 @@ class UnifiedNumberField extends StatelessWidget {
     this.incrementIcon = Icons.add_rounded,
     this.textAlign = TextAlign.center,
     this.style,
+    this.stepButtonStyle,
+    this.leadingAdornmentOrder =
+        UnifiedNumericLeadingAdornmentOrder.adornmentsThenSteps,
+    this.trailingAdornmentOrder =
+        UnifiedNumericTrailingAdornmentOrder.stepsThenAdornments,
   });
 
   /// Visual chrome.
@@ -138,6 +144,15 @@ class UnifiedNumberField extends StatelessWidget {
   /// Value text style; overrides theme [UnifiedInputFieldDefaults.textStyle] when set.
   final TextStyle? style;
 
+  /// Per-field +/- button style override.
+  final UnifiedNumericStepButtonStyle? stepButtonStyle;
+
+  /// Order of custom adornments vs step buttons on the leading edge.
+  final UnifiedNumericLeadingAdornmentOrder leadingAdornmentOrder;
+
+  /// Order of custom adornments vs step buttons on the trailing edge.
+  final UnifiedNumericTrailingAdornmentOrder trailingAdornmentOrder;
+
   @override
   Widget build(BuildContext context) {
     final chrome = resolveUnifiedFieldDecorationContext(
@@ -193,6 +208,10 @@ class UnifiedNumberField extends StatelessWidget {
       suffixIcon: d.suffixIcon,
       suffixWidth: d.suffixWidth,
       suffixHeight: d.suffixHeight,
+      adornmentDecoration: d,
+      stepButtonStyle: stepButtonStyle,
+      leadingAdornmentOrder: leadingAdornmentOrder,
+      trailingAdornmentOrder: trailingAdornmentOrder,
       stepButtons: stepButtons,
       stepButtonPlacement: stepButtonPlacement,
       decrementIcon: decrementIcon,

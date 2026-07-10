@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../unified_date_picker_sheet.dart';
+import '../unified_fields_picker_theme.dart';
+import '../unified_fields_styled_calendar_picker.dart';
 import '../unified_fields_date_format_style.dart';
 import '../unified_fields_typography.dart';
 import '../controllers/field_controller_sync.dart';
@@ -98,6 +100,8 @@ class UnifiedDateField extends StatefulWidget {
     this.wheelStyle,
     this.datePickerStyle,
     this.showWeekdayInWheel = true,
+    this.dayInfoBuilder,
+    this.pickerTheme,
     this.style,
     this.dateFormatStyle,
   });
@@ -209,6 +213,13 @@ class UnifiedDateField extends StatefulWidget {
 
   /// When [pickerStyle] is wheels, show weekday names in the day column.
   final bool showWeekdayInWheel;
+
+  /// Per-day price / event decorations for styled pickers
+  /// ([pickerStyle] [UnifiedFieldsDatePickerStyle.isStyledPicker]).
+  final UnifiedFieldsCalendarDayInfoBuilder? dayInfoBuilder;
+
+  /// Extra styling for styled pickers; merged with [datePickerStyle] and theme.
+  final UnifiedFieldsPickerTheme? pickerTheme;
 
   /// Value text style; overrides theme [UnifiedInputFieldDefaults.textStyle] when set.
   final TextStyle? style;
@@ -461,6 +472,8 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
       wheelStyle: fc?.wheelStyle ?? widget.wheelStyle,
       datePickerStyle: fc?.datePickerStyle ?? widget.datePickerStyle,
       showWeekdayInWheel: fc?.showWeekdayInWheel ?? widget.showWeekdayInWheel,
+      dayInfoBuilder: fc?.dayInfoBuilder ?? widget.dayInfoBuilder,
+      pickerTheme: fc?.pickerTheme ?? widget.pickerTheme,
       onConfirmedCalendarKind: _onPickerConfirmedCalendarKind,
     );
     if (!context.mounted) return;
@@ -509,9 +522,8 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
         borderRadius:
             d.borderRadius ?? const BorderRadius.all(Radius.circular(16)),
         borderSide: d.borderSide ?? BorderSide.none,
-        height: d.height ?? 56,
-        rowLabelRatio: d.rowLabelRatio,
-        labelInRow: d.labelInRow,
+        height: d.height,
+        rowLabelRatio: d.optionalRowLabelRatio,
         labelMode: d.labelMode,
         requiredField: widget.isRequired || d.requiredField,
         showError: true,
@@ -566,6 +578,9 @@ class UnifiedDateRangeField extends StatefulWidget {
     this.locked = false,
     this.style,
     this.datePickerStyle,
+    this.pickerStyle = UnifiedFieldsDatePickerStyle.verticalMonths,
+    this.dayInfoBuilder,
+    this.pickerTheme,
     this.initialCalendarKind = UnifiedFieldsCalendarKind.gregorian,
     this.dateFormatStyle,
   });
@@ -629,6 +644,15 @@ class UnifiedDateRangeField extends StatefulWidget {
 
   /// Picker sheet chrome; merged with [UnifiedInputThemeData.datePickerStyle].
   final UnifiedInputDatePickerStyle? datePickerStyle;
+
+  /// Styled range picker layout (defaults to [verticalMonths]).
+  final UnifiedFieldsDatePickerStyle pickerStyle;
+
+  /// Per-day decorations for styled range pickers.
+  final UnifiedFieldsCalendarDayInfoBuilder? dayInfoBuilder;
+
+  /// Extra styling for styled range pickers.
+  final UnifiedFieldsPickerTheme? pickerTheme;
 
   /// Calendar kind for digit localization and Persian [textStylePersian].
   final UnifiedFieldsCalendarKind initialCalendarKind;
@@ -780,7 +804,10 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
         lastDate: widget.max ?? DateTime(3000),
         title: title,
         showCalendarKindToggle: widget.showCalendarKindToggle,
+        pickerStyle: widget.pickerStyle,
         datePickerStyle: widget.datePickerStyle,
+        dayInfoBuilder: widget.dayInfoBuilder,
+        pickerTheme: widget.pickerTheme,
       );
     }
     if (!context.mounted || picked == null) return;
@@ -830,9 +857,8 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
         borderRadius:
             d.borderRadius ?? const BorderRadius.all(Radius.circular(16)),
         borderSide: d.borderSide ?? BorderSide.none,
-        height: d.height ?? 56,
-        rowLabelRatio: d.rowLabelRatio,
-        labelInRow: d.labelInRow,
+        height: d.height,
+        rowLabelRatio: d.optionalRowLabelRatio,
         labelMode: d.labelMode,
         requiredField: widget.isRequired || d.requiredField,
         showError: true,
