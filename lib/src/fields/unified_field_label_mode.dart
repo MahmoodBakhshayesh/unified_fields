@@ -10,14 +10,19 @@ enum UnifiedFieldLabelMode {
   floatingLabel,
 }
 
-/// Resolves [UnifiedFieldLabelMode] from explicit [mode], [themeMode], or legacy [labelInRow].
+/// Resolves [UnifiedFieldLabelMode] from explicit [mode], legacy [labelInRow], or [themeMode].
+///
+/// Order: explicit [mode] → field [labelInRow] flag → theme → floating.
+/// Field-level `labelInRow: true` must win over a theme default of column/floating,
+/// otherwise [UnifiedInputDecoration.rowLabelRatio] appears to do nothing in apps
+/// whose theme is not row-first (unlike the package example).
 UnifiedFieldLabelMode resolveUnifiedFieldLabelMode({
   UnifiedFieldLabelMode? mode,
   bool labelInRow = false,
   UnifiedFieldLabelMode? themeMode,
 }) {
   if (mode != null) return mode;
-  if (themeMode != null) return themeMode;
   if (labelInRow) return UnifiedFieldLabelMode.labelInRow;
+  if (themeMode != null) return themeMode;
   return UnifiedFieldLabelMode.floatingLabel;
 }

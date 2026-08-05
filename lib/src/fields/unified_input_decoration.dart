@@ -314,6 +314,9 @@ enum UnifiedInputFieldVisualState {
   /// Field has focus and is editable.
   focused,
 
+  /// Pointer is over the field (desktop/web); falls back to [focused] chrome if unset.
+  hovered,
+
   /// Validation succeeded (no error, validator has run).
   valid,
 
@@ -343,6 +346,7 @@ class UnifiedInputDecorationSet {
   const UnifiedInputDecorationSet({
     this.base,
     this.focused,
+    this.hovered,
     this.valid,
     this.error,
     this.locked,
@@ -356,6 +360,11 @@ class UnifiedInputDecorationSet {
 
   /// When the field has focus (and is editable).
   final UnifiedInputDecoration? focused;
+
+  /// When the pointer is over the field (and it is editable / not focused).
+  ///
+  /// If null, [focused] is used so hover matches focus chrome by default.
+  final UnifiedInputDecoration? hovered;
 
   /// When validation passed and there is no error (only applied if this layer is non-null).
   final UnifiedInputDecoration? valid;
@@ -381,6 +390,7 @@ class UnifiedInputDecorationSet {
     return UnifiedInputDecorationSet(
       base: other.base ?? base,
       focused: other.focused ?? focused,
+      hovered: other.hovered ?? hovered,
       valid: other.valid ?? valid,
       error: other.error ?? error,
       locked: other.locked ?? locked,
@@ -397,6 +407,8 @@ class UnifiedInputDecorationSet {
         return base;
       case UnifiedInputFieldVisualState.focused:
         return focused;
+      case UnifiedInputFieldVisualState.hovered:
+        return hovered ?? focused;
       case UnifiedInputFieldVisualState.valid:
         return valid;
       case UnifiedInputFieldVisualState.error:
@@ -419,6 +431,7 @@ class UnifiedInputDecorationSet {
   bool get isConfigured =>
       base != null ||
       focused != null ||
+      hovered != null ||
       valid != null ||
       error != null ||
       locked != null ||
@@ -467,14 +480,16 @@ UnifiedInputFieldVisualState resolveUnifiedInputFieldVisualState({
   required bool showValid,
   required bool readOnly,
   required bool focused,
+  bool hovered = false,
 }) {
   if (disabled) return UnifiedInputFieldVisualState.disabled;
   if (locked) return UnifiedInputFieldVisualState.locked;
   if (loading) return UnifiedInputFieldVisualState.loading;
   if (hasError) return UnifiedInputFieldVisualState.error;
+  if (focused) return UnifiedInputFieldVisualState.focused;
+  if (hovered) return UnifiedInputFieldVisualState.hovered;
   if (showValid) return UnifiedInputFieldVisualState.valid;
   if (readOnly) return UnifiedInputFieldVisualState.readOnly;
-  if (focused) return UnifiedInputFieldVisualState.focused;
   return UnifiedInputFieldVisualState.base;
 }
 

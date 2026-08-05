@@ -267,6 +267,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   bool _userInteracted = false;
   bool _validationRequested = false;
   bool _focusListenerAttached = false;
+  bool _hovered = false;
 
   FocusNode get _effectiveFocusNode {
     if (widget.focusNode != null) return widget.focusNode!;
@@ -491,6 +492,13 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
           !widget.locked &&
           !widget.loading &&
           !hasError,
+      hovered:
+          _hovered &&
+          !_effectiveFocusNode.hasFocus &&
+          !_visuallyDisabled &&
+          !widget.locked &&
+          !widget.loading &&
+          !hasError,
     );
   }
 
@@ -612,7 +620,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     if (hasError ?? false) {
       return Border.all(
         color: _validationColor(palette, dec),
-        width: 1,
+        width: side?.width ?? 1,
       );
     }
     if (side == null) return null;
@@ -1192,21 +1200,33 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec, {
     required bool labelInRow,
   }) {
-    final minH = dec.height ?? widget.height ?? 56;
+    final h = dec.height ?? widget.height ?? 56;
+    final field = _cupertinoField(
+      context,
+      palette,
+      dec,
+      labelInRow: labelInRow,
+    );
+    if (labelInRow) {
+      // Parent row already has a fixed height — keep full width and center vertically.
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: constraints.maxWidth.isFinite ? constraints.maxWidth : null,
+              child: field,
+            ),
+          );
+        },
+      );
+    }
     return Container(
-      constraints: BoxConstraints(minHeight: minH),
+      constraints: BoxConstraints(minHeight: h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: _cupertinoField(
-              context,
-              palette,
-              dec,
-              labelInRow: labelInRow,
-            ),
-          ),
-          // if (hasError && widget.showError) Expanded(child: _errorStrip(errorText)),
+          Expanded(child: field),
         ],
       ),
     );
@@ -1218,9 +1238,14 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec, {
     bool focused = false,
   }) {
+    final resolved =
+        dec.borderSide ?? widget.borderSide ?? palette.defaultBorderSide;
     final side = hasError
-        ? BorderSide(color: _validationColor(palette, dec), width: 1)
-        : (dec.borderSide ?? widget.borderSide ?? palette.defaultBorderSide);
+        ? BorderSide(
+            color: _validationColor(palette, dec),
+            width: resolved.width,
+          )
+        : resolved;
     final radius =
         dec.borderRadius ?? widget.borderRadius ?? palette.borderRadius;
     return OutlineInputBorder(
@@ -1358,6 +1383,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Do not set clipBehavior on the bordered container — it clips the stroke.
           Container(
             decoration: BoxDecoration(
               borderRadius: radius,
@@ -1368,46 +1394,48 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                 hasError,
               ),
             ),
-            clipBehavior: Clip.antiAlias,
             child: SizedBox(
               height: h,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    flex: labelFlex,
-                    child: Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: headerBg,
-                        border: BorderDirectional(end: divider),
-                      ),
-                      child: widget.label == null
-                          ? const SizedBox.shrink()
-                          : Padding(
-                              padding: _resolveLabelPadding(
-                                dec,
-                                UnifiedFieldLabelMode.labelInRow,
+              child: ClipRRect(
+                borderRadius: radius,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      flex: labelFlex,
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: headerBg,
+                          border: BorderDirectional(end: divider),
+                        ),
+                        child: widget.label == null
+                            ? const SizedBox.shrink()
+                            : Padding(
+                                padding: _resolveLabelPadding(
+                                  dec,
+                                  UnifiedFieldLabelMode.labelInRow,
+                                ),
+                                child: _labelRowCompact(palette, dec),
                               ),
-                              child: _labelRowCompact(palette, dec),
-                            ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: bodyFlex,
-                    child: Container(
-                      color: _effectiveBackgroundColor(palette, dec),
-                      child: _bodyRow(
-                        context,
-                        errorText,
-                        hasError,
-                        palette,
-                        dec,
-                        labelInRow: true,
                       ),
                     ),
-                  ),
-                ],
+                    Expanded(
+                      flex: bodyFlex,
+                      child: Container(
+                        color: _effectiveBackgroundColor(palette, dec),
+                        child: _bodyRow(
+                          context,
+                          errorText,
+                          hasError,
+                          palette,
+                          dec,
+                          labelInRow: true,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1437,26 +1465,28 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   ) {
     final radius =
         dec.borderRadius ?? widget.borderRadius ?? palette.borderRadius;
+    // Do not ClipRRect the bordered container — that clips the border stroke.
+    // Do not ClipRRect the label — high borderRadius clips glyph tops.
     return wrapInteraction(
-      ClipRRect(
-        borderRadius: radius,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _labelBlock(errorText, palette, dec),
-            Container(
-              height: dec.height ?? widget.height ?? 56,
-              decoration: BoxDecoration(
-                color: _effectiveBackgroundColor(palette, dec),
-                borderRadius: radius,
-                border: _borderFromSide(
-                  dec.borderSide ?? widget.borderSide,
-                  palette,
-                  dec,
-                  hasError,
-                ),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _labelBlock(errorText, palette, dec),
+          Container(
+            height: dec.height ?? widget.height ?? 56,
+            decoration: BoxDecoration(
+              color: _effectiveBackgroundColor(palette, dec),
+              borderRadius: radius,
+              border: _borderFromSide(
+                dec.borderSide ?? widget.borderSide,
+                palette,
+                dec,
+                hasError,
               ),
+            ),
+            child: ClipRRect(
+              borderRadius: radius,
               child: _bodyRow(
                 context,
                 errorText,
@@ -1466,8 +1496,8 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                 labelInRow: false,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -1501,27 +1531,34 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       palette,
       dec,
       UnifiedFieldLabelMode.labelInRow,
+    ).copyWith(height: 1.0);
+    final label = Text(
+      widget.label!,
+      style: defaultLabelStyle,
+      textAlign: TextAlign.center,
+      maxLines: 1,
+      softWrap: false,
+      overflow: TextOverflow.ellipsis,
+      textHeightBehavior: const TextHeightBehavior(
+        applyHeightToFirstAscent: false,
+        applyHeightToLastDescent: false,
+      ),
     );
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Flexible(
-          child: Text(
-            widget.label!,
-            style: defaultLabelStyle,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            softWrap: false,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (widget.requiredField)
+    if (!widget.requiredField) {
+      return Center(child: label);
+    }
+    return Center(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(child: label),
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsetsDirectional.only(start: 2),
             child: UnifiedInputThemeResolver.requiredIcon(context, palette),
           ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -1536,14 +1573,29 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         final dec = _resolveDecoration(context, palette, hasError);
 
         Widget wrapInteraction(Widget child) {
+          Widget result = MouseRegion(
+            onEnter: (_) {
+              if (_visuallyDisabled || widget.locked || widget.loading) return;
+              if (!_hovered) {
+                _hovered = true;
+                _tick.value++;
+              }
+            },
+            onExit: (_) {
+              if (!_hovered) return;
+              _hovered = false;
+              _tick.value++;
+            },
+            child: child,
+          );
           final m = _effectiveAutovalidateMode(context);
           if (m == AutovalidateMode.always || m == AutovalidateMode.disabled) {
-            return child;
+            return result;
           }
           return Listener(
             behavior: HitTestBehavior.translucent,
             onPointerDown: (_) => _markUserInteracted(),
-            child: child,
+            child: result,
           );
         }
 

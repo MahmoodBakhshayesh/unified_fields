@@ -1,3 +1,9 @@
+## 1.0.3+2
+
+### Fixes
+
+* **`resolveUnifiedFieldLabelMode`** — field-level `labelInRow: true` now wins over a theme `labelMode` of column/floating, so `rowLabelRatio` applies in apps whose theme is not row-first.
+
 ## 1.0.3+1
 
 ### Features

@@ -18,52 +18,29 @@ void main() {
 
         disabledFieldOpacity: 0.38,
         fieldDefaults: const UnifiedInputFieldDefaults(
-
           labelMode: UnifiedFieldLabelMode.labelInRow,
           borderRadius: BorderRadius.all(Radius.circular(8)),
-          textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w100,fontFamily: 'KookFaNum',color: Colors.blue),
-          textStylePersian: TextStyle(
-            fontSize: 15,
-            fontFamily: UnifiedFieldsTypography.kUnifiedFieldsDefaultPersianFontFamily,
-            color: Colors.red
-          ),
-          placeholderStyle: TextStyle(fontSize: 14,fontWeight: FontWeight.w500),
+          textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w100, fontFamily: 'KookFaNum', color: Colors.blue),
+          textStylePersian: TextStyle(fontSize: 15, fontFamily: UnifiedFieldsTypography.kUnifiedFieldsDefaultPersianFontFamily, color: Colors.red),
+          placeholderStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           labelInRowStyle: UnifiedInputLabelModeStyle(
             labelPadding: EdgeInsets.symmetric(horizontal: 10),
-            labelStyle: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
+            labelStyle: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           ),
-          labelInColumnStyle: UnifiedInputLabelModeStyle(
-            labelPadding: EdgeInsets.only(top: 4, bottom: 6),
-          ),
+          labelInColumnStyle: UnifiedInputLabelModeStyle(labelPadding: EdgeInsets.only(top: 4, bottom: 6)),
           selectTextOnFocus: true,
         ),
 
         pickerHeaderStyle: UnifiedInputPickerHeaderStyle(
-          itemOrder: const [
-
-            UnifiedPickerHeaderItem.title,
-            UnifiedPickerHeaderItem.help,
-            UnifiedPickerHeaderItem.clear,
-            UnifiedPickerHeaderItem.close,
-          ],
+          itemOrder: const [UnifiedPickerHeaderItem.title, UnifiedPickerHeaderItem.help, UnifiedPickerHeaderItem.clear, UnifiedPickerHeaderItem.close],
           helpWidget: const Text('Pick one option'),
           // closeButton: IconButton(...),
         ),
         placeholderOpacityWhenDisabled: 0.38,
         pickerSheetBackgroundColor: const Color(0xFFF5F7FA),
-        defaultSuffixIcons: const UnifiedInputDefaultSuffixIcons(
-          date: Icons.calendar_month_outlined,
-          time: Icons.access_time,
-          duration: Icons.timelapse_outlined,
-          picker: Icons.unfold_more,
-        ),
+        defaultSuffixIcons: const UnifiedInputDefaultSuffixIcons(date: Icons.calendar_month_outlined, time: Icons.access_time, duration: Icons.timelapse_outlined, picker: Icons.unfold_more),
 
-        multiPickerCheckboxStyle:  UnifiedInputMultiPickerCheckboxStyle(
-          fillColor: Color(0xFF1565C0),
-        ),
+        multiPickerCheckboxStyle: UnifiedInputMultiPickerCheckboxStyle(fillColor: Color(0xFF1565C0)),
       ),
       child: const UnifiedFieldsDemoApp(),
     ),
@@ -116,7 +93,8 @@ class _DemoHomePageState extends State<DemoHomePage> {
   static const _flavorChoices = <String>['Sweet', 'Acidic', 'Nutty', 'Floral', 'Chocolate'];
 
   String _savedSummary = '';
-  List<String> selectedGrid  = [];
+  List<String> selectedGrid = [];
+
   @override
   void initState() {
     super.initState();
@@ -137,8 +115,10 @@ class _DemoHomePageState extends State<DemoHomePage> {
     _quantity.dispose();
     super.dispose();
   }
+
   final testFC = CustomizableSinglePickerController<String>();
   final gridPickFC = UnifiedMultiPickerFieldController<String>();
+
   Future<List<String>> _loadAsyncCountries() async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
     return _countries;
@@ -192,7 +172,6 @@ class _DemoHomePageState extends State<DemoHomePage> {
             tooltip: 'Open full showcase',
             icon: const Icon(Icons.clear),
 
-
             onPressed: () {
               // _nameC.requestFocus();
               // log(phoneC.value!.nationalDigits);
@@ -231,21 +210,18 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   Text(phoneC.dialCodeController.text),
                   UnifiedCustomizablePickerField<String>(
                     label: "Test2222",
-                    decoration: UnifiedInputDecoration(
-                      labelInRow: true
-                    ),
+                    decoration: UnifiedInputDecoration(labelInRow: true),
                     valueToString: (v) => v.toString(),
-                    gridDelegate: unifiedPickerDefaultGridDelegate(
-                      crossAxisCount: 3,
-                      childAspectRatio: 4,
-                    ),
+                    gridDelegate: unifiedPickerDefaultGridDelegate(crossAxisCount: 3, childAspectRatio: 4),
 
-                    items:["1","2","3","4","5","6","7",],
-                    gridItemBuilder: (c,i,item,onselect){
-                      return TextButton(onPressed: (){
-                        onselect();
-
-                      }, child: Text("${i} -${item}"));
+                    items: ["1", "2", "3", "4", "5", "6", "7"],
+                    gridItemBuilder: (c, i, item, onselect) {
+                      return TextButton(
+                        onPressed: () {
+                          onselect();
+                        },
+                        child: Text("${i} -${item}"),
+                      );
                     },
                     pickerController: testFC,
                   ),
@@ -256,24 +232,19 @@ class _DemoHomePageState extends State<DemoHomePage> {
                       return GestureDetector(
                         onTap: onSelect,
                         child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: isSelected ? Colors.blue : Colors.grey.shade200,
-                          ),
+                          decoration: BoxDecoration(color: isSelected ? Colors.blue : Colors.grey.shade200),
                           child: Center(child: Text(item)),
                         ),
                       );
                     },
-                    onChanged: (a){
+                    onChanged: (a) {
                       selectedGrid = [...a];
-                      setState((){});
+                      setState(() {});
                     },
                     fieldController: gridPickFC,
                     valueToString: (v) => v.toString(),
-                    gridDelegate: unifiedPickerDefaultGridDelegate(
-                      crossAxisCount: 3,
-                      childAspectRatio: 4,
-                    ),
-                    items:["1","2","3","4","5","6","7",],
+                    gridDelegate: unifiedPickerDefaultGridDelegate(crossAxisCount: 3, childAspectRatio: 4),
+                    items: ["1", "2", "3", "4", "5", "6", "7"],
                     // gridItemBuilder: (c,i,item,onselect){
                     //   return TextButton(onPressed: (){
                     //     onselect();
@@ -291,17 +262,16 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     // editableCountryCode: true,
                     // showCountryCodeSection: true,
                     invalidDialCodeDisplay: UnifiedInvalidDialCodeDisplay.highlightText,
+
                     // fixedCountry: UnifiedPhoneCountry(isoCode: 'ir', name: 'ir', dialCode: '+98'),
 
                     // editableCountryCode: false,
-
                   ),
                   UnifiedFormTextField(
                     label: 'Full name',
                     decoration: UnifiedInputDecoration(
-
                       labelInRow: false,
-                      rowLabelRatio: [1,1],
+                      rowLabelRatio: [1, 1],
                       height: 40,
 
                       // headerBackgroundColor: Colors.red,
@@ -334,41 +304,31 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   ),
                   const SizedBox(height: 12),
                   CustomWheelPicker(
+                    pickerSheetStyle: UnifiedPickerSheetStyle(
+                      basePickerSheetStyle: UnifiedBasePickerSheetStyle(
+                        panelBorderRadius: BorderRadius.circular(0),
+                        sheetBackgroundColor: Colors.blue,
+                        sheetBorderRadius: BorderRadius.circular(0),
+                        panelBackgroundColor: Colors.green,
 
-                  pickerSheetStyle: UnifiedPickerSheetStyle(
-                    basePickerSheetStyle: UnifiedBasePickerSheetStyle(
-                      panelBorderRadius: BorderRadius.circular(0),
-                      sheetBackgroundColor: Colors.blue,
-                      sheetBorderRadius: BorderRadius.circular(0),
-                      panelBackgroundColor: Colors.green,
-
-
-                      contentPadding: EdgeInsets.all(0)
-                    )
-                  ),
+                        contentPadding: EdgeInsets.all(0),
+                      ),
+                    ),
                     label: 'Configuration',
                     columns: {
-                      0: CustomWheelPickerColumn.typed<int>(
-                        options: List.generate(20, (i)=>i),
-                        label: 'Qty',
-                        valueToString: (v) => '$v',
-                      ),
-                      1: CustomWheelPickerColumn.typed<String>(
-                        options: List.generate(20, (i)=>"item ${i}"),
-                        label: 'Size',
-                      ),
-
+                      0: CustomWheelPickerColumn.typed<int>(options: List.generate(20, (i) => i), label: 'Qty', valueToString: (v) => '$v'),
+                      1: CustomWheelPickerColumn.typed<String>(options: List.generate(20, (i) => "item ${i}"), label: 'Size'),
                     },
-                    value: {0: 2, 1: 'Large'},  // same keys as columns
+                    value: {0: 2, 1: 'Large'},
+                    // same keys as columns
                     onChanged: (map) {
                       log(map.toString());
                     },
-                    wheelLayout: CustomWheelPickerWheelLayout.horizontal, // or .horizontal
+                    wheelLayout: CustomWheelPickerWheelLayout.horizontal,
+                    // or .horizontal
                     wheelStyle: UnifiedFieldsDateWheelStyle(magnification: 1.12),
                   ),
-                  UnifiedFormMultiPickerField<String>(
-                      isDisabled: true,
-                      label: 'Flavors', placeholder: 'Add some', items: _flavorChoices, values: _flavors.value ?? const [], binding: _flavors, resetValue: () => const <String>[]),
+                  UnifiedFormMultiPickerField<String>(isDisabled: true, label: 'Flavors', placeholder: 'Add some', items: _flavorChoices, values: _flavors.value ?? const [], binding: _flavors, resetValue: () => const <String>[]),
                   const SizedBox(height: 12),
 
                   UnifiedFormDateField(
@@ -397,8 +357,6 @@ class _DemoHomePageState extends State<DemoHomePage> {
 
                     initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
 
-
-
                     max: DateTime(2035),
                     // pickerGranularity: UnifiedFieldsDatePickerGranularity.year,
                     validator: (v) => v.trim().isEmpty ? 'Pick a date' : null,
@@ -406,7 +364,8 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   const SizedBox(height: 12),
                   UnifiedTimeOfDayField(
                     pickerStyle: UnifiedFieldsTimePickerStyle.wheels,
-                    pickerGranularity: UnifiedFieldsTimeGranularity.hoursMinutesSeconds, // or .hours / .hoursMinutes
+                    pickerGranularity: UnifiedFieldsTimeGranularity.hoursMinutesSeconds,
+                    // or .hours / .hoursMinutes
                     initialCalendarKind: UnifiedFieldsCalendarKind.jalali,
 
                     showCalendarKindToggle: true,
@@ -414,11 +373,8 @@ class _DemoHomePageState extends State<DemoHomePage> {
                   ),
                   const SizedBox(height: 12),
                   UnifiedTextField(
-                    decoration: UnifiedInputDecoration(
-                      suffixIcon: Text("asdasd"),
-                      suffixWidth: 64
-                    ),
-                    
+                    decoration: UnifiedInputDecoration(suffixIcon: Text("asdasd"), suffixWidth: 64),
+
                     // locked: true,
                     // isDisabled: true,
                     // showCalendarKindToggle: false,
@@ -437,7 +393,6 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     //   suffixIcon: Text('kg'),
                     // ),
                     textAlign: TextAlign.start,
-
                   ),
                   const SizedBox(height: 12),
 
@@ -468,11 +423,13 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     resetValue: () => const CustomizableMultiPickerSnapshot<String>.empty(),
                   ),
                   const SizedBox(height: 12),
-                  UnifiedAsyncQueryPicker<String>(queryFetcher: (String query) async {
-                    await Future.delayed(Duration(seconds: 2));
-                    return List.generate(query.length, (i)=>"Time $i");
-
-                  }, label: 'Async',),
+                  UnifiedAsyncQueryPicker<String>(
+                    queryFetcher: (String query) async {
+                      await Future.delayed(Duration(seconds: 2));
+                      return List.generate(query.length, (i) => "Time $i");
+                    },
+                    label: 'Async',
+                  ),
                   const SizedBox(height: 20),
 
                   Row(
@@ -496,6 +453,7 @@ class _DemoHomePageState extends State<DemoHomePage> {
                     ),
                   ],
                   const SizedBox(height: 32),
+                  UnifiedTextField(label: "test", decoration: UnifiedInputDecoration(labelInRow: false,rowLabelRatio: [1,1])),
                 ],
               ),
             ),
@@ -520,10 +478,7 @@ class _ThemeScopeDemoCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'UnifiedInputThemeScope',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-            ),
+            Text('UnifiedInputThemeScope', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
             Text(
               'The whole app uses the scope from main() (blue required *, custom picker icons). '
@@ -531,19 +486,13 @@ class _ThemeScopeDemoCard extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
-            const UnifiedTextField(
-              label: 'App scope (blue *)',
-              isRequired: true,
-              initialValue: 'Uses main() theme',
-            ),
+            const UnifiedTextField(label: 'App scope (blue *)', isRequired: true, initialValue: 'Uses main() theme'),
             const SizedBox(height: 12),
             UnifiedInputThemeScope(
               data: const UnifiedInputThemeData(
                 requiredIconColor: Color(0xFFE65100),
                 requiredIconSize: 11,
-                fieldDefaults: UnifiedInputFieldDefaults(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(2))
-                ),
+                fieldDefaults: UnifiedInputFieldDefaults(borderRadius: BorderRadius.vertical(top: Radius.circular(2))),
                 validationColor: Color(0xFF6A1B9A),
                 disabledFieldColor: Color(0xFF757575),
                 disabledFieldOpacity: 0.5,
@@ -551,18 +500,9 @@ class _ThemeScopeDemoCard extends StatelessWidget {
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  UnifiedTextField(
-                    label: 'Nested scope (orange *)',
-
-                    isRequired: true,
-                    initialValue: 'Overrides required icon only',
-                  ),
+                  UnifiedTextField(label: 'Nested scope (orange *)', isRequired: true, initialValue: 'Overrides required icon only'),
                   SizedBox(height: 12),
-                  UnifiedTextField(
-                    label: 'Disabled (nested grey)',
-                    isDisabled: true,
-                    initialValue: 'Themed disabled value',
-                  ),
+                  UnifiedTextField(label: 'Disabled (nested grey)', isDisabled: true, initialValue: 'Themed disabled value'),
                 ],
               ),
             ),

@@ -167,6 +167,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
   late UnifiedPhoneFieldController _fc;
   bool _ownsController = false;
   bool _dialCodeInvalid = false;
+  bool _hovered = false;
 
   List<UnifiedCountry> get _countries =>
       widget.countries ?? widget.fieldController?.countries ?? UnifiedCountries.defaults;
@@ -507,9 +508,13 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
 
   Border? _fieldBorder(UnifiedInputDecoration d, UnifiedInputPalette palette, String? error) {
     final hasError = error != null && error.isNotEmpty;
+    final resolved = d.borderSide ?? palette.defaultBorderSide;
     final side = hasError
-        ? BorderSide(color: d.validationColor ?? palette.validationColor, width: 1)
-        : (d.borderSide ?? palette.defaultBorderSide);
+        ? BorderSide(
+            color: d.validationColor ?? palette.validationColor,
+            width: resolved.width,
+          )
+        : resolved;
     return Border.fromBorderSide(side);
   }
 
@@ -875,6 +880,12 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
           readOnly: widget.readOnly && !inactive && !widget.locked,
           focused:
               _fc.focusNode.hasFocus && !inactive && !widget.locked,
+          hovered:
+              _hovered &&
+              !_fc.focusNode.hasFocus &&
+              !inactive &&
+              !widget.locked &&
+              !hasError,
         ),
         brightness: widget.brightness,
         fieldDecoration: widget.decoration,
@@ -904,7 +915,19 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
         ),
     };
 
-    if (widget.width == null) return field;
-    return SizedBox(width: widget.width, child: field);
+    final Widget interactive = MouseRegion(
+      onEnter: (_) {
+        if (inactive || widget.locked) return;
+        if (!_hovered) setState(() => _hovered = true);
+      },
+      onExit: (_) {
+        if (!_hovered) return;
+        setState(() => _hovered = false);
+      },
+      child: field,
+    );
+
+    if (widget.width == null) return interactive;
+    return SizedBox(width: widget.width, child: interactive);
   }
 }
