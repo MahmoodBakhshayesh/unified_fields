@@ -1,3 +1,16 @@
+## 1.0.4+3
+
+### Fixes
+
+* **Picker / read-only `height`** — state chrome layers (`readOnly`, `focused`, `error`, …) no longer override layout props from the field decoration. Picker fields are permanently `readOnly`, so a theme `fieldDecorationSet.readOnly` with a `height` used to ignore per-field `UnifiedInputDecoration.height`.
+* **`UnifiedInputDecorationSet.merge`** — layers are deep-merged via [UnifiedInputDecoration.merge] instead of replacing the whole layer, so partial overlays keep `height` / ratios from beneath.
+
+## 1.0.3+2
+
+### Fixes
+
+* **`resolveUnifiedFieldLabelMode`** — field-level `labelInRow: true` now wins over a theme `labelMode` of column/floating, so `rowLabelRatio` applies in apps whose theme is not row-first.
+
 ## 1.0.3+1
 
 ### Features

@@ -314,6 +314,9 @@ enum UnifiedInputFieldVisualState {
   /// Field has focus and is editable.
   focused,
 
+  /// Pointer is over the field (desktop/web); falls back to [focused] chrome if unset.
+  hovered,
+
   /// Validation succeeded (no error, validator has run).
   valid,
 
@@ -343,6 +346,7 @@ class UnifiedInputDecorationSet {
   const UnifiedInputDecorationSet({
     this.base,
     this.focused,
+    this.hovered,
     this.valid,
     this.error,
     this.locked,
@@ -356,6 +360,11 @@ class UnifiedInputDecorationSet {
 
   /// When the field has focus (and is editable).
   final UnifiedInputDecoration? focused;
+
+  /// When the pointer is over the field (and it is editable / not focused).
+  ///
+  /// If null, [focused] is used so hover matches focus chrome by default.
+  final UnifiedInputDecoration? hovered;
 
   /// When validation passed and there is no error (only applied if this layer is non-null).
   final UnifiedInputDecoration? valid;
@@ -375,19 +384,32 @@ class UnifiedInputDecorationSet {
   /// When the field is read-only (and not disabled/locked).
   final UnifiedInputDecoration? readOnly;
 
-  /// Merges [other] on top of this; non-null layers from [other] replace this set's layers.
+  /// Merges [other] on top of this.
+  ///
+  /// When both sides define the same layer, decorations are [UnifiedInputDecoration.merge]d
+  /// (non-null fields from [other]'s layer win) instead of replacing the whole layer.
   UnifiedInputDecorationSet merge(UnifiedInputDecorationSet? other) {
     if (other == null) return this;
     return UnifiedInputDecorationSet(
-      base: other.base ?? base,
-      focused: other.focused ?? focused,
-      valid: other.valid ?? valid,
-      error: other.error ?? error,
-      locked: other.locked ?? locked,
-      disabled: other.disabled ?? disabled,
-      loading: other.loading ?? loading,
-      readOnly: other.readOnly ?? readOnly,
+      base: _mergeDecorationLayer(base, other.base),
+      focused: _mergeDecorationLayer(focused, other.focused),
+      hovered: _mergeDecorationLayer(hovered, other.hovered),
+      valid: _mergeDecorationLayer(valid, other.valid),
+      error: _mergeDecorationLayer(error, other.error),
+      locked: _mergeDecorationLayer(locked, other.locked),
+      disabled: _mergeDecorationLayer(disabled, other.disabled),
+      loading: _mergeDecorationLayer(loading, other.loading),
+      readOnly: _mergeDecorationLayer(readOnly, other.readOnly),
     );
+  }
+
+  static UnifiedInputDecoration? _mergeDecorationLayer(
+    UnifiedInputDecoration? beneath,
+    UnifiedInputDecoration? onTop,
+  ) {
+    if (onTop == null) return beneath;
+    if (beneath == null) return onTop;
+    return beneath.merge(onTop);
   }
 
   /// Decoration layer for [state] (may be null).
@@ -397,6 +419,8 @@ class UnifiedInputDecorationSet {
         return base;
       case UnifiedInputFieldVisualState.focused:
         return focused;
+      case UnifiedInputFieldVisualState.hovered:
+        return hovered ?? focused;
       case UnifiedInputFieldVisualState.valid:
         return valid;
       case UnifiedInputFieldVisualState.error:
@@ -419,6 +443,7 @@ class UnifiedInputDecorationSet {
   bool get isConfigured =>
       base != null ||
       focused != null ||
+      hovered != null ||
       valid != null ||
       error != null ||
       locked != null ||
@@ -427,6 +452,13 @@ class UnifiedInputDecorationSet {
       readOnly != null;
 
   /// Resolves the active decoration for [state] (palette applied).
+  ///
+  /// Order: theme defaults → [base] → [fieldDecoration] → state chrome (if not [base]).
+  ///
+  /// Layout props (`height`, label mode/ratio, padding, radius) are taken from the
+  /// pre-overlay merge and re-applied afterward. State layers are for visual chrome
+  /// (colors, borders); they must not resize picker fields, which stay in
+  /// [UnifiedInputFieldVisualState.readOnly] (or focused) permanently.
   UnifiedInputDecoration resolve(
     BuildContext context, {
     required UnifiedInputFieldVisualState state,
@@ -450,10 +482,22 @@ class UnifiedInputDecorationSet {
         )
         .merge(base)
         .merge(fieldDecoration);
-    final overlay = layerFor(state);
-    if (overlay != null) {
-      merged = merged.merge(overlay);
+    final layoutLock = UnifiedInputDecoration(
+      height: merged.height,
+      labelMode: merged.labelMode,
+      labelInRow: merged.labelInRow,
+      rowLabelRatio: merged.rowLabelRatio,
+      contentPadding: merged.contentPadding,
+      borderRadius: merged.borderRadius,
+    );
+    // [base] is already merged above — only apply non-base state chrome.
+    if (state != UnifiedInputFieldVisualState.base) {
+      final overlay = layerFor(state);
+      if (overlay != null) {
+        merged = merged.merge(overlay);
+      }
     }
+    merged = merged.merge(layoutLock);
     return merged.applyPalette(palette);
   }
 }
@@ -467,14 +511,16 @@ UnifiedInputFieldVisualState resolveUnifiedInputFieldVisualState({
   required bool showValid,
   required bool readOnly,
   required bool focused,
+  bool hovered = false,
 }) {
   if (disabled) return UnifiedInputFieldVisualState.disabled;
   if (locked) return UnifiedInputFieldVisualState.locked;
   if (loading) return UnifiedInputFieldVisualState.loading;
   if (hasError) return UnifiedInputFieldVisualState.error;
+  if (focused) return UnifiedInputFieldVisualState.focused;
+  if (hovered) return UnifiedInputFieldVisualState.hovered;
   if (showValid) return UnifiedInputFieldVisualState.valid;
   if (readOnly) return UnifiedInputFieldVisualState.readOnly;
-  if (focused) return UnifiedInputFieldVisualState.focused;
   return UnifiedInputFieldVisualState.base;
 }
 
