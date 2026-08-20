@@ -1,3 +1,9 @@
+## 1.0.4+5
+
+### Fixes
+
+* **Date picker dismiss** — closing/cancelling [UnifiedDateField]'s picker no longer clears the current value (only Confirm applies a change).
+
 ## 1.0.4+3
 
 ### Fixes

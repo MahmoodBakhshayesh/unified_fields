@@ -287,14 +287,8 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
   }
 
   void _applyPicked(DateTime? picked) {
-    if (picked == null) {
-      widget.onChanged?.call(null);
-      widget.binding?.value = null;
-      widget.fieldController?.value = null;
-      _effectiveController.text = '';
-      setState(() {});
-      return;
-    }
+    // Close / cancel pop `null` — keep the existing value (do not clear).
+    if (picked == null) return;
     widget.onChanged?.call(picked);
     final b = widget.binding;
     if (b != null && b.value != picked) {

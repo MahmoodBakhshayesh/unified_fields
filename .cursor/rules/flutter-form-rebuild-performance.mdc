@@ -1,0 +1,32 @@
+---
+description: Prevent unnecessary Flutter form rebuilds and image flicker while typing
+globs: "**/*.{dart}"
+alwaysApply: false
+---
+
+# Flutter Form Rebuild Performance
+
+Never rebuild an entire form/screen on every keystroke when only a button, validation hint, or search filter needs updating. Especially avoid rebuilding image previews, maps, network images, or large lists while typing.
+
+## Do NOT
+
+- `TextEditingController.addListener` → `setState` / `useState` / Riverpod `state =` for the whole form
+- `useListenable(controller)` at the top of a page that also shows images, maps, sliders, or lists
+- Sync every text field into a parent notifier/draft on each character
+- Create a new `Future`/`file.readAsBytes()` inside `build` or a `FutureBuilder` that restarts on parent rebuild
+- Undebounced search that filters and rebuilds image-heavy lists on every key
+
+## DO
+
+- Keep text in controllers; flush to parent/notifier on submit, blur, step change, or intentional actions
+- Scope rebuilds with `ValueListenableBuilder` / `ListenableBuilder` / `Listenable.merge` around **only** submit enablement, mismatch text, or password rules
+- Debounce search with `useDebouncedText` (or equivalent ~250ms) before filtering lists
+- Cache local image bytes in a `StatefulWidget` keyed by file identity; use `gaplessPlayback: true` on `Image.memory`
+- For nested editors (blend beans, etc.): emit parent updates for pickers/% that affect chips; keep free-text local until `flushToParent()` before submit/switch
+
+## Checklist when adding/editing forms
+
+1. Does typing rebuild an image, map, carousel, or list? → narrow the listenable scope or stop parent sync.
+2. Does submit/read still see the latest controller text? → flush before submit if you stopped live sync.
+3. Does search filter a grid/list of images? → debounce.
+4. Does a preview use `readAsBytes`? → cache until the file identity changes.
