@@ -9,6 +9,7 @@ import 'unified_duration_columns.dart';
 import 'unified_fields_strings.dart';
 import 'unified_fields_typography.dart';
 import 'unified_wheel_scroll_behavior.dart';
+import 'fields/unified_picker_keyboard.dart';
 
 /// Styled scroll-wheel duration picker with custom [columns] (e.g. year · week · day · hour).
 class UnifiedFieldsDurationColumnWheelPickerSheet extends StatefulWidget {
@@ -160,27 +161,38 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
     required UnifiedFieldsDateWheelStyle style,
   }) {
     if (count <= 0) return const SizedBox.shrink();
-    return ScrollConfiguration(
-      behavior: UnifiedFieldsWheelScrollBehavior.of(context),
-      child: ListWheelScrollView.useDelegate(
-        controller: controller,
-        itemExtent: style.itemExtent!,
-        diameterRatio: style.diameterRatio!,
-        magnification: style.magnification!,
-        squeeze: style.squeeze!,
-        useMagnifier: true,
-        physics: const FixedExtentScrollPhysics(),
-        onSelectedItemChanged: onSelected,
-        childDelegate: ListWheelChildBuilderDelegate(
-          childCount: count,
-          builder: (context, index) {
-            if (index < 0 || index >= count) return null;
-            return _wheelListChild(
-              label: '$index',
-              itemExtent: style.itemExtent!,
-              color: style.itemTextColor!,
-            );
-          },
+    final looping = unifiedFieldsLoopingWheelEnabled(count);
+    return UnifiedPickerWheelKeyboard(
+      controller: controller,
+      itemCount: count,
+      looping: looping,
+      child: ScrollConfiguration(
+        behavior: UnifiedFieldsWheelScrollBehavior.of(context),
+        child: ListWheelScrollView.useDelegate(
+          controller: controller,
+          itemExtent: style.itemExtent!,
+          diameterRatio: style.diameterRatio!,
+          magnification: style.magnification!,
+          squeeze: style.squeeze!,
+          useMagnifier: true,
+          physics: const FixedExtentScrollPhysics(),
+          onSelectedItemChanged: (index) => onSelected(
+            looping ? unifiedFieldsLoopingWheelIndex(index, count) : index,
+          ),
+          childDelegate: ListWheelChildBuilderDelegate(
+            childCount: looping ? null : count,
+            builder: (context, index) {
+              if (!looping && (index < 0 || index >= count)) return null;
+              final value = looping
+                  ? unifiedFieldsLoopingWheelIndex(index, count)
+                  : index;
+              return _wheelListChild(
+                label: '$value',
+                itemExtent: style.itemExtent!,
+                color: style.itemTextColor!,
+              );
+            },
+          ),
         ),
       ),
     );
@@ -373,101 +385,109 @@ class _UnifiedFieldsDurationColumnWheelPickerSheetState
     );
     final titleText = (widget.title ?? '').trim();
 
-    return Material(
-      color: UnifiedInputThemeResolver.resolvePickerSheetBackground(
-        context,
-        palette: palette,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 4, 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    titleText.isEmpty
-                        ? strings.defaultDurationTitle
-                        : titleText,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: palette.fieldTextColor,
-                      fontWeight: FontWeight.w600,
+    return UnifiedPickerModalScope(
+      onConfirm: () {
+        widget.onConfirmedCalendarKind?.call(_kind);
+        Navigator.of(
+          context,
+        ).pop(composeUnifiedDuration(widget.columns, _values));
+      },
+      child: Material(
+        color: UnifiedInputThemeResolver.resolvePickerSheetBackground(
+          context,
+          palette: palette,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 4, 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      titleText.isEmpty
+                          ? strings.defaultDurationTitle
+                          : titleText,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: palette.fieldTextColor,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  tooltip: strings.cancel,
-                  icon: Icon(
-                    Icons.close_rounded,
-                    color: palette.fieldTextColor.withValues(alpha: 0.85),
-                  ),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-          ),
-          if (widget.showCalendarKindToggle)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: SegmentedButton<UnifiedFieldsCalendarKind>(
-                style: ButtonStyle(
-                  visualDensity: VisualDensity.compact,
-                  foregroundColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return theme.colorScheme.onPrimary;
-                    }
-                    return palette.fieldTextColor;
-                  }),
-                  backgroundColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return theme.colorScheme.primary;
-                    }
-                    return palette.sheetHeaderBackground;
-                  }),
-                ),
-                segments: [
-                  ButtonSegment<UnifiedFieldsCalendarKind>(
-                    value: UnifiedFieldsCalendarKind.gregorian,
-                    label: Text(strings.calendarGregorian),
-                  ),
-                  ButtonSegment<UnifiedFieldsCalendarKind>(
-                    value: UnifiedFieldsCalendarKind.jalali,
-                    label: Text(strings.calendarShamsi),
+                  IconButton(
+                    tooltip: strings.cancel,
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: palette.fieldTextColor.withValues(alpha: 0.85),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
-                selected: {_kind},
-                onSelectionChanged: (s) => _onKindChanged(s.first),
               ),
             ),
-          _styledWheelPanel(
-            context: context,
-            style: wheelStyle,
-            strings: strings,
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Row(
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(strings.cancel),
+            if (widget.showCalendarKindToggle)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: SegmentedButton<UnifiedFieldsCalendarKind>(
+                  style: ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                    foregroundColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return theme.colorScheme.onPrimary;
+                      }
+                      return palette.fieldTextColor;
+                    }),
+                    backgroundColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return theme.colorScheme.primary;
+                      }
+                      return palette.sheetHeaderBackground;
+                    }),
+                  ),
+                  segments: [
+                    ButtonSegment<UnifiedFieldsCalendarKind>(
+                      value: UnifiedFieldsCalendarKind.gregorian,
+                      label: Text(strings.calendarGregorian),
+                    ),
+                    ButtonSegment<UnifiedFieldsCalendarKind>(
+                      value: UnifiedFieldsCalendarKind.jalali,
+                      label: Text(strings.calendarShamsi),
+                    ),
+                  ],
+                  selected: {_kind},
+                  onSelectionChanged: (s) => _onKindChanged(s.first),
                 ),
-                const Spacer(),
-                FilledButton(
-                  onPressed: () {
-                    widget.onConfirmedCalendarKind?.call(_kind);
-                    Navigator.of(
-                      context,
-                    ).pop(composeUnifiedDuration(widget.columns, _values));
-                  },
-                  child: Text(widget.confirmLabel ?? strings.done),
-                ),
-              ],
+              ),
+            _styledWheelPanel(
+              context: context,
+              style: wheelStyle,
+              strings: strings,
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Row(
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(strings.cancel),
+                  ),
+                  const Spacer(),
+                  FilledButton(
+                    onPressed: () {
+                      widget.onConfirmedCalendarKind?.call(_kind);
+                      Navigator.of(
+                        context,
+                      ).pop(composeUnifiedDuration(widget.columns, _values));
+                    },
+                    child: Text(widget.confirmLabel ?? strings.done),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

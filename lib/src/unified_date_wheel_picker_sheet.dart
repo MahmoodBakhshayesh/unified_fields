@@ -10,6 +10,7 @@ import 'unified_date_picker_types.dart';
 import 'unified_date_wheel_style.dart';
 import 'unified_fields_strings.dart';
 import 'unified_fields_typography.dart';
+import 'fields/unified_picker_keyboard.dart';
 
 export 'unified_date_wheel_style.dart';
 
@@ -498,36 +499,40 @@ class _UnifiedFieldsDateWheelPickerSheetState
     UnifiedWheelDayRow Function(int index)? dayRowOf,
   }) {
     if (count <= 0) return const SizedBox.shrink();
-    return ScrollConfiguration(
-      behavior: _UnifiedDateWheelScrollBehavior.of(context),
-      child: ListWheelScrollView.useDelegate(
-        controller: controller,
-        itemExtent: style.itemExtent!,
-        diameterRatio: style.diameterRatio!,
-        magnification: style.magnification!,
-        squeeze: style.squeeze!,
-        useMagnifier: true,
-        physics: const FixedExtentScrollPhysics(),
-        onSelectedItemChanged: onSelected,
-        childDelegate: ListWheelChildBuilderDelegate(
-          childCount: count,
-          builder: (context, index) {
-            if (index < 0 || index >= count) return null;
-            if (dayRowOf != null) {
-              return _wheelDayListChild(
-                row: dayRowOf(index),
+    return UnifiedPickerWheelKeyboard(
+      controller: controller,
+      itemCount: count,
+      child: ScrollConfiguration(
+        behavior: _UnifiedDateWheelScrollBehavior.of(context),
+        child: ListWheelScrollView.useDelegate(
+          controller: controller,
+          itemExtent: style.itemExtent!,
+          diameterRatio: style.diameterRatio!,
+          magnification: style.magnification!,
+          squeeze: style.squeeze!,
+          useMagnifier: true,
+          physics: const FixedExtentScrollPhysics(),
+          onSelectedItemChanged: onSelected,
+          childDelegate: ListWheelChildBuilderDelegate(
+            childCount: count,
+            builder: (context, index) {
+              if (index < 0 || index >= count) return null;
+              if (dayRowOf != null) {
+                return _wheelDayListChild(
+                  row: dayRowOf(index),
+                  itemExtent: style.itemExtent!,
+                  color: style.itemTextColor!,
+                  dayNumberWidth: style.wheelDayNumberWidth!,
+                  weekdayWidth: style.wheelWeekdayWidth!,
+                );
+              }
+              return _wheelListChild(
+                label: labelOf!(index),
                 itemExtent: style.itemExtent!,
                 color: style.itemTextColor!,
-                dayNumberWidth: style.wheelDayNumberWidth!,
-                weekdayWidth: style.wheelWeekdayWidth!,
               );
-            }
-            return _wheelListChild(
-              label: labelOf!(index),
-              itemExtent: style.itemExtent!,
-              color: style.itemTextColor!,
-            );
-          },
+            },
+          ),
         ),
       ),
     );
@@ -805,7 +810,8 @@ class _UnifiedFieldsDateWheelPickerSheetState
     final theme = Theme.of(context);
     final palette = _palette(theme.brightness);
     final strings = UnifiedFieldsStrings.instance;
-    final chrome = widget.datePickerStyle ??
+    final chrome =
+        widget.datePickerStyle ??
         UnifiedInputThemeResolver.resolveDatePickerStyle(
           context,
           palette: palette,
@@ -813,7 +819,8 @@ class _UnifiedFieldsDateWheelPickerSheetState
     final wheelStyle = UnifiedFieldsDateWheelStyle.forPicker(
       palette,
       theme,
-      overrides: chrome.wheelStyle?.merge(widget.wheelStyle) ?? widget.wheelStyle,
+      overrides:
+          chrome.wheelStyle?.merge(widget.wheelStyle) ?? widget.wheelStyle,
       context: context,
     );
     final titleText = (widget.title ?? '').trim();
@@ -822,101 +829,107 @@ class _UnifiedFieldsDateWheelPickerSheetState
       _last,
     ).isNotEmpty;
 
-    return Material(
-      color: chrome.sheetBackgroundColor,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 4, 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    titleText.isEmpty ? strings.date : titleText,
-                    style: _digitStyle(context, chrome.titleStyle!),
-                  ),
-                ),
-                IconButton(
-                  tooltip: strings.cancel,
-                  icon: Icon(
-                    Icons.close_rounded,
-                    color: chrome.closeIconColor,
-                  ),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-          ),
-          if (widget.showCalendarKindToggle && hasJalali)
+    return UnifiedPickerModalScope(
+      onConfirm: () {
+        widget.onConfirmedCalendarKind?.call(_kind);
+        Navigator.of(context).pop(_selected);
+      },
+      child: Material(
+        color: chrome.sheetBackgroundColor,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: SegmentedButton<UnifiedFieldsCalendarKind>(
-                style: ButtonStyle(
-                  visualDensity: VisualDensity.compact,
-                  foregroundColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return chrome.calendarToggleSelectedForeground;
-                    }
-                    return chrome.calendarToggleForeground;
-                  }),
-                  backgroundColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return chrome.calendarToggleSelectedBackground;
-                    }
-                    return chrome.calendarToggleBackground;
-                  }),
-                ),
-                segments: [
-                  ButtonSegment<UnifiedFieldsCalendarKind>(
-                    value: UnifiedFieldsCalendarKind.gregorian,
-                    label: Text(strings.calendarGregorian),
+              padding: const EdgeInsets.fromLTRB(16, 12, 4, 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      titleText.isEmpty ? strings.date : titleText,
+                      style: _digitStyle(context, chrome.titleStyle!),
+                    ),
                   ),
-                  ButtonSegment<UnifiedFieldsCalendarKind>(
-                    value: UnifiedFieldsCalendarKind.jalali,
-                    label: Text(strings.calendarShamsi),
+                  IconButton(
+                    tooltip: strings.cancel,
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: chrome.closeIconColor,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
-                selected: {_kind},
-                onSelectionChanged: (s) => _onKindChanged(s.first),
               ),
             ),
-          _styledWheelPanel(
-            context: context,
-            style: wheelStyle,
-            strings: strings,
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Row(
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: chrome.cancelButtonTextStyle != null
-                      ? TextButton.styleFrom(
-                          textStyle: chrome.cancelButtonTextStyle,
-                        )
-                      : null,
-                  child: Text(strings.cancel),
-                ),
-                const Spacer(),
-                FilledButton(
-                  onPressed: () {
-                    widget.onConfirmedCalendarKind?.call(_kind);
-                    Navigator.of(context).pop(_selected);
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: chrome.confirmButtonBackground,
-                    foregroundColor: chrome.confirmButtonForeground,
-                    textStyle: chrome.confirmButtonTextStyle,
+            if (widget.showCalendarKindToggle && hasJalali)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: SegmentedButton<UnifiedFieldsCalendarKind>(
+                  style: ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                    foregroundColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return chrome.calendarToggleSelectedForeground;
+                      }
+                      return chrome.calendarToggleForeground;
+                    }),
+                    backgroundColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return chrome.calendarToggleSelectedBackground;
+                      }
+                      return chrome.calendarToggleBackground;
+                    }),
                   ),
-                  child: Text(strings.confirm),
+                  segments: [
+                    ButtonSegment<UnifiedFieldsCalendarKind>(
+                      value: UnifiedFieldsCalendarKind.gregorian,
+                      label: Text(strings.calendarGregorian),
+                    ),
+                    ButtonSegment<UnifiedFieldsCalendarKind>(
+                      value: UnifiedFieldsCalendarKind.jalali,
+                      label: Text(strings.calendarShamsi),
+                    ),
+                  ],
+                  selected: {_kind},
+                  onSelectionChanged: (s) => _onKindChanged(s.first),
                 ),
-              ],
+              ),
+            _styledWheelPanel(
+              context: context,
+              style: wheelStyle,
+              strings: strings,
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Row(
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: chrome.cancelButtonTextStyle != null
+                        ? TextButton.styleFrom(
+                            textStyle: chrome.cancelButtonTextStyle,
+                          )
+                        : null,
+                    child: Text(strings.cancel),
+                  ),
+                  const Spacer(),
+                  FilledButton(
+                    onPressed: () {
+                      widget.onConfirmedCalendarKind?.call(_kind);
+                      Navigator.of(context).pop(_selected);
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: chrome.confirmButtonBackground,
+                      foregroundColor: chrome.confirmButtonForeground,
+                      textStyle: chrome.confirmButtonTextStyle,
+                    ),
+                    child: Text(strings.confirm),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

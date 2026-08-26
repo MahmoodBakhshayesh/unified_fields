@@ -10,6 +10,7 @@ import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_picker_item_builders.dart';
+import 'unified_picker_keyboard.dart';
 
 /// Read-only multi-picker: tap opens a sheet with header search, remote results,
 /// and a temp selection list (confirm to apply).
@@ -312,7 +313,7 @@ class _UnifiedAsyncQueryMultiPickerState<T>
     );
     final dec = chrome.resolved;
 
-    return GestureDetector(
+    final field = GestureDetector(
       onTap: widget.locked || widget.isDisabled
           ? null
           : () => _presentPicker(context),
@@ -367,6 +368,11 @@ class _UnifiedAsyncQueryMultiPickerState<T>
           },
         ),
       ),
+    );
+    return UnifiedPickerKeyboardActivator(
+      enabled: !widget.locked && !widget.isDisabled,
+      onActivate: () => _presentPicker(context),
+      child: field,
     );
   }
 }

@@ -14,6 +14,7 @@ import 'unified_fields_styled_picker_bridge.dart';
 import 'unified_fields_styled_calendar_picker.dart';
 import 'unified_fields_picker_theme.dart';
 import 'unified_date_year_strip_style.dart';
+import 'fields/unified_picker_keyboard.dart';
 
 export 'unified_date_picker_types.dart';
 export 'unified_input_date_picker_style.dart';
@@ -236,7 +237,7 @@ Future<T?> _presentPicker<T>({
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: 420, maxHeight: maxH),
-            child: body,
+            child: UnifiedPickerModalScope(child: body),
           ),
         );
       },
@@ -255,9 +256,11 @@ Future<T?> _presentPicker<T>({
       borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
     ),
     builder: (ctx) {
-      return Container(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
-        child: child,
+      return UnifiedPickerModalScope(
+        child: Container(
+          padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
+          child: child,
+        ),
       );
     },
   );
@@ -324,11 +327,13 @@ class _UnifiedFieldsDatePickerSheetState
   String _digitText(String text) => UnifiedFieldsTypography.instance
       .localizeDigits(text, calendarKind: _kind);
 
-  TextStyle _digitStyle(TextStyle style, UnifiedInputDatePickerStyle pickerStyle) =>
-      UnifiedFieldsTypography.instance.mergeDigitStyle(
-        pickerStyle.calendarTextStyle(style, _kind),
-        calendarKind: _kind,
-      );
+  TextStyle _digitStyle(
+    TextStyle style,
+    UnifiedInputDatePickerStyle pickerStyle,
+  ) => UnifiedFieldsTypography.instance.mergeDigitStyle(
+    pickerStyle.calendarTextStyle(style, _kind),
+    calendarKind: _kind,
+  );
 
   late DateTime _firstMonth;
   late int _monthCount;
@@ -677,116 +682,143 @@ class _UnifiedFieldsDatePickerSheetState
     final cellHeight = style.cellHeight!;
     final gridHeight = _kCalendarStaticRows * cellHeight;
 
-    return Material(
-      color: style.sheetBackgroundColor,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 4, 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    titleText.isEmpty
-                        ? UnifiedFieldsStrings.instance.date
-                        : titleText,
-                    style: _digitStyle(style.titleStyle!, style),
-                  ),
-                ),
-                IconButton(
-                  tooltip: UnifiedFieldsStrings.instance.cancel,
-                  icon: Icon(
-                    Icons.close_rounded,
-                    color: style.closeIconColor,
-                  ),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-          ),
-          if (widget.pickRange)
+    return UnifiedPickerModalScope(
+      onConfirm: _confirm,
+      child: Material(
+        color: style.sheetBackgroundColor,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-              child: Text(
-                UnifiedFieldsStrings.instance.pickDateRangeHint,
-                style: _digitStyle(style.rangeHintStyle!, style),
-              ),
-            ),
-          if (widget.showCalendarKindToggle && _jalaliMonths.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: SegmentedButton<UnifiedFieldsCalendarKind>(
-                style: ButtonStyle(
-                  visualDensity: VisualDensity.compact,
-                  foregroundColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return style.calendarToggleSelectedForeground;
-                    }
-                    return style.calendarToggleForeground;
-                  }),
-                  backgroundColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return style.calendarToggleSelectedBackground;
-                    }
-                    return style.calendarToggleBackground;
-                  }),
-                ),
-                segments: [
-                  ButtonSegment<UnifiedFieldsCalendarKind>(
-                    value: UnifiedFieldsCalendarKind.gregorian,
-                    label: Text(
-                      UnifiedFieldsStrings.instance.calendarGregorian,
+              padding: const EdgeInsets.fromLTRB(16, 12, 4, 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      titleText.isEmpty
+                          ? UnifiedFieldsStrings.instance.date
+                          : titleText,
+                      style: _digitStyle(style.titleStyle!, style),
                     ),
                   ),
-                  ButtonSegment<UnifiedFieldsCalendarKind>(
-                    value: UnifiedFieldsCalendarKind.jalali,
-                    label: Text(UnifiedFieldsStrings.instance.calendarShamsi),
+                  IconButton(
+                    tooltip: UnifiedFieldsStrings.instance.cancel,
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: style.closeIconColor,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
-                selected: {_kind},
-                onSelectionChanged: (s) => _onKindChanged(s.first),
               ),
             ),
-          if (_useDayCalendar) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: AnimatedBuilder(
-                animation: _pageController,
-                builder: (context, _) {
-                  return _PickerTitleBar(
-                    kind: _kind,
-                    style: style,
-                    pageController: _pageController,
-                    pageCount: pageCount,
-                    firstGregorianMonth: _firstMonth,
-                    jalaliMonths: _jalaliMonths,
-                    onTitleTap: _openMonthYearJump,
-                  );
-                },
+            if (widget.pickRange)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                child: Text(
+                  UnifiedFieldsStrings.instance.pickDateRangeHint,
+                  style: _digitStyle(style.rangeHintStyle!, style),
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: _WeekdayHeader(loc: loc, style: style, calendarKind: _kind),
-            ),
-            SizedBox(
-              height: gridHeight,
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: pageCount,
-                onPageChanged: (_) => setState(() {}),
-                itemBuilder: (context, pageIndex) {
-                  if (_kind == UnifiedFieldsCalendarKind.gregorian) {
-                    final month = DateTime(
-                      _firstMonth.year,
-                      _firstMonth.month + pageIndex,
-                    );
-                    return _GregorianMonthGrid(
+            if (widget.showCalendarKindToggle && _jalaliMonths.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: SegmentedButton<UnifiedFieldsCalendarKind>(
+                  style: ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                    foregroundColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return style.calendarToggleSelectedForeground;
+                      }
+                      return style.calendarToggleForeground;
+                    }),
+                    backgroundColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return style.calendarToggleSelectedBackground;
+                      }
+                      return style.calendarToggleBackground;
+                    }),
+                  ),
+                  segments: [
+                    ButtonSegment<UnifiedFieldsCalendarKind>(
+                      value: UnifiedFieldsCalendarKind.gregorian,
+                      label: Text(
+                        UnifiedFieldsStrings.instance.calendarGregorian,
+                      ),
+                    ),
+                    ButtonSegment<UnifiedFieldsCalendarKind>(
+                      value: UnifiedFieldsCalendarKind.jalali,
+                      label: Text(UnifiedFieldsStrings.instance.calendarShamsi),
+                    ),
+                  ],
+                  selected: {_kind},
+                  onSelectionChanged: (s) => _onKindChanged(s.first),
+                ),
+              ),
+            if (_useDayCalendar) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: AnimatedBuilder(
+                  animation: _pageController,
+                  builder: (context, _) {
+                    return _PickerTitleBar(
+                      kind: _kind,
                       style: style,
-                      month: month,
+                      pageController: _pageController,
+                      pageCount: pageCount,
+                      firstGregorianMonth: _firstMonth,
+                      jalaliMonths: _jalaliMonths,
+                      onTitleTap: _openMonthYearJump,
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: _WeekdayHeader(
+                  loc: loc,
+                  style: style,
+                  calendarKind: _kind,
+                ),
+              ),
+              SizedBox(
+                height: gridHeight,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: pageCount,
+                  onPageChanged: (_) => setState(() {}),
+                  itemBuilder: (context, pageIndex) {
+                    if (_kind == UnifiedFieldsCalendarKind.gregorian) {
+                      final month = DateTime(
+                        _firstMonth.year,
+                        _firstMonth.month + pageIndex,
+                      );
+                      return _GregorianMonthGrid(
+                        style: style,
+                        month: month,
+                        firstDate: widget.firstDate,
+                        lastDate: widget.lastDate,
+                        selected: _selected,
+                        rangeMode: widget.pickRange,
+                        rangeStart: _rangeStart,
+                        rangeEnd: _rangeEnd,
+                        loc: loc,
+                        staticRows: _kCalendarStaticRows,
+                        onDayTap: _handleDayTap,
+                      );
+                    }
+                    if (_jalaliMonths.isEmpty) return const SizedBox.shrink();
+                    final jmPair =
+                        _jalaliMonths[pageIndex.clamp(
+                          0,
+                          _jalaliMonths.length - 1,
+                        )];
+                    return _JalaliMonthGrid(
+                      style: style,
+                      jalaliYear: jmPair.$1,
+                      jalaliMonth: jmPair.$2,
                       firstDate: widget.firstDate,
                       lastDate: widget.lastDate,
                       selected: _selected,
@@ -797,65 +829,45 @@ class _UnifiedFieldsDatePickerSheetState
                       staticRows: _kCalendarStaticRows,
                       onDayTap: _handleDayTap,
                     );
-                  }
-                  if (_jalaliMonths.isEmpty) return const SizedBox.shrink();
-                  final jmPair =
-                      _jalaliMonths[pageIndex.clamp(
-                        0,
-                        _jalaliMonths.length - 1,
-                      )];
-                  return _JalaliMonthGrid(
-                    style: style,
-                    jalaliYear: jmPair.$1,
-                    jalaliMonth: jmPair.$2,
-                    firstDate: widget.firstDate,
-                    lastDate: widget.lastDate,
-                    selected: _selected,
-                    rangeMode: widget.pickRange,
-                    rangeStart: _rangeStart,
-                    rangeEnd: _rangeEnd,
-                    loc: loc,
-                    staticRows: _kCalendarStaticRows,
-                    onDayTap: _handleDayTap,
-                  );
-                },
+                  },
+                ),
               ),
-            ),
-          ] else
+            ] else
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                child: SizedBox(
+                  height: gridHeight,
+                  child: _buildGranularityBody(theme, palette, loc, style),
+                ),
+              ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-              child: SizedBox(
-                height: gridHeight,
-                child: _buildGranularityBody(theme, palette, loc, style),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: Row(
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: style.cancelButtonTextStyle != null
+                        ? TextButton.styleFrom(
+                            textStyle: style.cancelButtonTextStyle,
+                          )
+                        : null,
+                    child: Text(UnifiedFieldsStrings.instance.cancel),
+                  ),
+                  const Spacer(),
+                  FilledButton(
+                    onPressed: _confirm,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: style.confirmButtonBackground,
+                      foregroundColor: style.confirmButtonForeground,
+                      textStyle: style.confirmButtonTextStyle,
+                    ),
+                    child: Text(UnifiedFieldsStrings.instance.confirm),
+                  ),
+                ],
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: Row(
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: style.cancelButtonTextStyle != null
-                      ? TextButton.styleFrom(
-                          textStyle: style.cancelButtonTextStyle,
-                        )
-                      : null,
-                  child: Text(UnifiedFieldsStrings.instance.cancel),
-                ),
-                const Spacer(),
-                FilledButton(
-                  onPressed: _confirm,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: style.confirmButtonBackground,
-                    foregroundColor: style.confirmButtonForeground,
-                    textStyle: style.confirmButtonTextStyle,
-                  ),
-                  child: Text(UnifiedFieldsStrings.instance.confirm),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -947,8 +959,7 @@ class _UnifiedFieldsDatePickerSheetState
             selected: sel,
             selectedTileColor: selectedBg,
             selectedColor: selectedColor,
-            trailing:
-                sel ? Icon(Icons.check_rounded, color: checkColor) : null,
+            trailing: sel ? Icon(Icons.check_rounded, color: checkColor) : null,
             title: Text(
               _digitText('$y'),
               style: _digitStyle(
@@ -969,10 +980,7 @@ class _UnifiedFieldsDatePickerSheetState
     final years = <int>{for (final e in _jalaliMonths) e.$1}.toList()..sort();
     if (years.isEmpty) {
       return Center(
-        child: Text(
-          '-',
-          style: _digitStyle(style.rangeHintStyle!, style),
-        ),
+        child: Text('-', style: _digitStyle(style.rangeHintStyle!, style)),
       );
     }
     return ListView.builder(
@@ -989,8 +997,7 @@ class _UnifiedFieldsDatePickerSheetState
           selected: sel,
           selectedTileColor: selectedBg,
           selectedColor: selectedColor,
-          trailing:
-              sel ? Icon(Icons.check_rounded, color: checkColor) : null,
+          trailing: sel ? Icon(Icons.check_rounded, color: checkColor) : null,
           title: Text(
             _digitText('$jy'),
             style: _digitStyle(
@@ -1182,20 +1189,21 @@ class _UnifiedFieldsDatePickerSheetState
                             textAlign: TextAlign.center,
                             style: UnifiedFieldsTypography.instance
                                 .mergeDigitStyle(
-                              style.calendarTextStyle(
-                                TextStyle(
-                                  fontSize: 12,
-                                  color: ok
-                                      ? palette.fieldTextColor
-                                      : palette.hintColor,
-                                  fontWeight: sel
-                                      ? FontWeight.w700
-                                      : FontWeight.w400,
+                                  style.calendarTextStyle(
+                                    TextStyle(
+                                      fontSize: 12,
+                                      color: ok
+                                          ? palette.fieldTextColor
+                                          : palette.hintColor,
+                                      fontWeight: sel
+                                          ? FontWeight.w700
+                                          : FontWeight.w400,
+                                    ),
+                                    UnifiedFieldsCalendarKind.jalali,
+                                  ),
+                                  calendarKind:
+                                      UnifiedFieldsCalendarKind.jalali,
                                 ),
-                                UnifiedFieldsCalendarKind.jalali,
-                              ),
-                              calendarKind: UnifiedFieldsCalendarKind.jalali,
-                            ),
                           ),
                         ),
                       ),
@@ -1341,9 +1349,7 @@ class _WeekdayHeader extends StatelessWidget {
       children: [
         for (final s in labels)
           Expanded(
-            child: Center(
-              child: Text(s, style: weekdayStyle),
-            ),
+            child: Center(child: Text(s, style: weekdayStyle)),
           ),
       ],
     );
@@ -1569,7 +1575,8 @@ class _DayGrid extends StatelessWidget {
                         );
 
                         final typography = UnifiedFieldsTypography.instance;
-                        final kind = calendarKindForDigits ??
+                        final kind =
+                            calendarKindForDigits ??
                             UnifiedFieldsCalendarKind.gregorian;
                         final labelStyle = typography.mergeDigitStyle(
                           style.calendarTextStyle(
@@ -1622,11 +1629,13 @@ class _DayGrid extends StatelessWidget {
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               color: isEndpoint
-                                                  ? style.daySelectedBackgroundColor
+                                                  ? style
+                                                        .daySelectedBackgroundColor
                                                   : Colors.transparent,
                                               border: isToday && !isEndpoint
                                                   ? Border.all(
-                                                      color: style.dayTodayBorderColor!,
+                                                      color: style
+                                                          .dayTodayBorderColor!,
                                                       width: 2,
                                                     )
                                                   : null,
@@ -1667,12 +1676,12 @@ class _DatePickerHorizontalScrollBehavior extends MaterialScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.trackpad,
-        PointerDeviceKind.stylus,
-        PointerDeviceKind.unknown,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.unknown,
+  };
 }
 
 /// Horizontally scrollable year chips for month-granularity and jump panels.
@@ -1776,7 +1785,8 @@ class _HorizontalYearStripState extends State<_HorizontalYearStrip> {
     final itemCenter =
         _horizontalPadding + index * _itemStride + _itemWidth / 2;
     final viewportCenter =
-        _scrollController.offset + _scrollController.position.viewportDimension / 2;
+        _scrollController.offset +
+        _scrollController.position.viewportDimension / 2;
     final distance = (itemCenter - viewportCenter).abs();
     final halfViewport = _scrollController.position.viewportDimension / 2;
     if (halfViewport <= 0) return 1;
@@ -1865,8 +1875,7 @@ class _HorizontalYearStripState extends State<_HorizontalYearStrip> {
                                 : 0,
                           ),
                           itemCount: widget.years.length,
-                          separatorBuilder: (_, _) =>
-                              SizedBox(width: _spacing),
+                          separatorBuilder: (_, _) => SizedBox(width: _spacing),
                           itemBuilder: (context, index) {
                             final year = widget.years[index];
                             final selected = year == widget.selectedYear;
@@ -2045,13 +2054,8 @@ class _GregorianMonthYearJumpPanelState
   }
 
   List<int> get _years => [
-        for (
-          var y = widget.firstDate.year;
-          y <= widget.lastDate.year;
-          y++
-        )
-          y,
-      ];
+    for (var y = widget.firstDate.year; y <= widget.lastDate.year; y++) y,
+  ];
 
   bool monthAllowed(int y, int m) {
     final dim = DateUtils.getDaysInMonth(y, m);
@@ -2187,9 +2191,7 @@ class _JalaliMonthYearJumpPanelState extends State<_JalaliMonthYearJumpPanel> {
     }
   }
 
-  List<int> get _years => [
-        for (var y = _minY; y <= _maxY; y++) y,
-      ];
+  List<int> get _years => [for (var y = _minY; y <= _maxY; y++) y];
 
   int? firstAllowed() {
     for (var m = 1; m <= 12; m++) {

@@ -1,3 +1,16 @@
+## 1.0.4+7
+
+### Fixes
+
+* **Orphan `FocusNode` crash** — pick-only fields, picker sheets and `UnifiedPickerFieldController` no longer park focus on a throwaway `FocusScope.of(context).requestFocus(FocusNode())` before opening a sheet. That node stayed attached to the scope without an element, so it held primary focus with a null context: traversal that sorts by `FocusNode.rect` asserted with *"Tried to get the bounds of a focus node that didn't have its context set yet"*, and until then Tab and every other shortcut was silently dropped. All sites now call the shared `unifiedUnfocusBeforeModal()`.
+
+### Improvements
+
+* **Keyboard reachable pickers** — single / multi / async / customizable pickers, date, time, duration and wheel fields keep a stable `FocusNode`, render focused chrome, and open their sheet on Space / Enter (focus alone never opens it). Focus returns to the field after the sheet closes.
+* **Picker sheet navigation** — the sheet takes focus on open (the search field only when `searchAutoFocus` is set, so phones keep their soft keyboard closed). Tab / Shift+Tab and arrow keys (including Left / Right) move focus or the list highlight through items, Enter confirms the highlighted row or the current wheel/calendar selection, and Escape dismisses every picker / popup.
+* **Wheel column focus** — hour / minute / second (and other wheel) columns are Tab / arrow-key stops; ArrowUp / ArrowDown step the focused column, ArrowLeft / ArrowRight move to the next column.
+* **Number arrow step** — ArrowUp / ArrowDown on a focused numeric field step by `step` within `min` / `max` and `fractionDigits`; arrows with Ctrl / Cmd / Alt / Shift are left to text editing.
+
 ## 1.0.4+5
 
 ### Fixes

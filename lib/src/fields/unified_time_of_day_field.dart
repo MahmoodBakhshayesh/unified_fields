@@ -15,6 +15,7 @@ import 'unified_input_brightness.dart';
 import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
+import 'unified_picker_keyboard.dart';
 
 /// Time-of-day picker using unified chrome + dial or wheel picker.
 class UnifiedTimeOfDayField extends StatefulWidget {
@@ -127,6 +128,23 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
   late final TextEditingController _txt = TextEditingController();
   late UnifiedFieldsCalendarKind _calendarKind;
   int _second = 0;
+  late final UnifiedPickerFocusOwner _focus = UnifiedPickerFocusOwner(
+    _onFocusChanged,
+    debugLabel: 'UnifiedTimeOfDayField',
+  );
+
+  bool get _interactive => !widget.locked && !widget.isDisabled;
+
+  FocusNode get _focusNode => _focus.resolve(
+    unifiedEffectiveFocusNode(
+      fieldController: widget.fieldController,
+      binding: widget.binding,
+    ),
+  );
+
+  void _onFocusChanged() {
+    if (mounted) setState(() {});
+  }
 
   UnifiedFieldsCalendarKind get _effectiveCalendarKind =>
       widget.fieldController?.calendarKind ?? _calendarKind;
@@ -157,10 +175,7 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
     );
     attachUnifiedFieldHandles(
       opener: (context) => _pick(context),
-      focusNode: unifiedEffectiveFocusNode(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-      ),
+      focusNode: _focusNode,
       binding: widget.binding,
       fieldController: widget.fieldController,
     );
@@ -248,12 +263,14 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
     );
     widget.binding?.removeListener(_onBinding);
     widget.fieldController?.removeListener(_onBinding);
+    _focus.dispose();
     _txt.dispose();
     super.dispose();
   }
 
   Future<void> _pick(BuildContext context) async {
     if (widget.isDisabled || widget.locked) return;
+    _focusNode.requestFocus();
     final fc = widget.fieldController;
     final initial = _effective ?? TimeOfDay.now();
     final picked = await TimePickerUtils.show(
@@ -316,55 +333,54 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
     );
     final d = chrome.resolved;
 
-    return GestureDetector(
-      onTap: widget.locked || widget.isDisabled ? null : () => _pick(context),
-      child: AbsorbPointer(
-        absorbing: true,
-        child: UnifiedBaseTextField(
-          decorationSet: chrome.activeSet,
-          brightness: widget.brightness,
-          controller: _txt,
-          focusNode: unifiedEffectiveFocusNode(
-            fieldController: widget.fieldController,
-            binding: widget.binding,
+    return UnifiedPickerKeyboardActivator(
+      enabled: _interactive,
+      onActivate: () => _pick(context),
+      child: GestureDetector(
+        onTap: _interactive ? () => _pick(context) : null,
+        child: AbsorbPointer(
+          absorbing: true,
+          child: UnifiedBaseTextField(
+            decorationSet: chrome.activeSet,
+            brightness: widget.brightness,
+            controller: _txt,
+            focusNode: _focusNode,
+            errorText: widget.fieldController?.errorText,
+            isDisabled: widget.isDisabled,
+            locked: widget.locked,
+            readOnly: true,
+            label: widget.label ?? d.label,
+            placeholder: widget.placeholder ?? d.placeholder ?? d.label,
+            labelStyle: d.labelStyle,
+            style: d.fieldStyle,
+            placeholderStyle: d.placeholderStyle,
+            backgroundColor: d.backgroundColor,
+            headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor,
+            borderRadius: d.borderRadius,
+            borderSide: d.borderSide,
+            height: d.height,
+            rowLabelRatio: d.optionalRowLabelRatio,
+            labelMode: d.labelMode,
+            requiredField: widget.isRequired || d.requiredField,
+            showError: d.showError,
+            validationColor: d.validationColor,
+            validationIcon: d.validationIcon,
+            prefix: d.prefix,
+            prefixIcon: d.prefixIcon,
+            suffixIcon: widget.isDisabled || widget.locked
+                ? null
+                : (d.suffixIcon ??
+                      UnifiedInputThemeResolver.defaultSuffixIcon(
+                        context,
+                        UnifiedInputFieldSuffixKind.time,
+                        UnifiedInputThemeResolver.resolvePalette(context),
+                      )),
+            padding: d.contentPadding,
+            validator: widget.validator,
+            textAlign: TextAlign.center,
+            textInputAction: TextInputAction.done,
+            onSubmit: widget.onSubmitted,
           ),
-          errorText: widget.fieldController?.errorText,
-          isDisabled: widget.isDisabled,
-          locked: widget.locked,
-          readOnly: true,
-          label: widget.label ?? d.label,
-          placeholder: widget.placeholder ?? d.placeholder ?? d.label,
-          labelStyle: d.labelStyle,
-          style: d.fieldStyle,
-          placeholderStyle: d.placeholderStyle,
-          backgroundColor: d.backgroundColor,
-          headerBackgroundColor:
-          d.headerBackgroundColor ?? d.backgroundColor,
-          borderRadius:
-              d.borderRadius,
-          borderSide: d.borderSide,
-          height: d.height,
-          rowLabelRatio: d.optionalRowLabelRatio,
-          labelMode: d.labelMode,
-          requiredField: widget.isRequired || d.requiredField,
-          showError: d.showError,
-          validationColor: d.validationColor,
-          validationIcon: d.validationIcon,
-          prefix: d.prefix,
-          prefixIcon: d.prefixIcon,
-          suffixIcon: widget.isDisabled || widget.locked
-              ? null
-              : (d.suffixIcon ??
-                    UnifiedInputThemeResolver.defaultSuffixIcon(
-                      context,
-                      UnifiedInputFieldSuffixKind.time,
-                      UnifiedInputThemeResolver.resolvePalette(context),
-                    )),
-          padding: d.contentPadding,
-          validator: widget.validator,
-          textAlign: TextAlign.center,
-          textInputAction: TextInputAction.done,
-          onSubmit: widget.onSubmitted,
         ),
       ),
     );

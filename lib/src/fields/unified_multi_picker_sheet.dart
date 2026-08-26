@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../unified_fields_context.dart';
 import '../unified_colors.dart';
@@ -7,6 +8,7 @@ import '../unified_fields_strings.dart';
 import '../unified_sheet_button.dart';
 import 'unified_input_theme.dart';
 import 'unified_picker_item_builders.dart';
+import 'unified_picker_keyboard.dart';
 
 /// Bottom-sheet content used by [UnifiedMultiPickerField] for multi-selection.
 class MultiPickerSheetWidget<T> extends StatefulWidget {
@@ -82,14 +84,35 @@ class MultiPickerSheetWidget<T> extends StatefulWidget {
 
 class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
   final TextEditingController searchC = TextEditingController();
+  final FocusNode _sheetFocusNode = FocusNode(
+    debugLabel: 'MultiPickerSheetWidget',
+  );
+  final FocusNode _searchFocusNode = FocusNode(
+    debugLabel: 'MultiPickerSheetWidgetSearch',
+  );
   bool autoPop = false;
   List<T> selected = [];
+  int _highlight = -1;
+  List<T> _visibleItems = const [];
+
+  bool get _keyboardNavEnabled => widget.gridItemBuilder == null;
 
   @override
   void initState() {
     selected = [...widget.values];
     super.initState();
-    searchC.addListener(() => setState(() {}));
+    searchC.addListener(() {
+      _highlight = searchC.text.isEmpty ? -1 : 0;
+      setState(() {});
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (widget.hasSearch && widget.searchAutoFocus) {
+        _searchFocusNode.requestFocus();
+        return;
+      }
+      _sheetFocusNode.requestFocus();
+    });
   }
 
   @override
@@ -102,8 +125,56 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
 
   @override
   void dispose() {
+    _sheetFocusNode.dispose();
+    _searchFocusNode.dispose();
     searchC.dispose();
     super.dispose();
+  }
+
+  void _toggle(T item) {
+    if (selected.contains(item)) {
+      selected.remove(item);
+    } else {
+      selected.add(item);
+    }
+    setState(() {});
+  }
+
+  void _confirm() => Navigator.of(context).pop(selected);
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (!_keyboardNavEnabled) return KeyEventResult.ignored;
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final traverse = unifiedPickerTraversalDelta(event);
+    if (traverse != null) {
+      if (_searchFocusNode.hasFocus) {
+        _sheetFocusNode.requestFocus();
+      }
+      _moveHighlight(traverse);
+      return KeyEventResult.handled;
+    }
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (event.logicalKey == LogicalKeyboardKey.space) {
+      if (_highlight >= 0 && _highlight < _visibleItems.length) {
+        _toggle(_visibleItems[_highlight]);
+        return KeyEventResult.handled;
+      }
+      return KeyEventResult.ignored;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  void _moveHighlight(int delta) {
+    final items = _visibleItems;
+    if (items.isEmpty) return;
+    final raw = _highlight < 0
+        ? (delta > 0 ? 0 : items.length - 1)
+        : _highlight + delta;
+    final next = unifiedPickerWrapIndex(raw, items.length);
+    if (next == _highlight) return;
+    setState(() => _highlight = next);
   }
 
   String _searchLabel(T item) =>
@@ -117,10 +188,9 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
         .where(
           (a) =>
               query.isEmpty ||
-              _searchLabel(a)
-                  .toLowerCase()
-                  .split(' ')
-                  .any((sp) => sp.startsWith(query)),
+              _searchLabel(
+                a,
+              ).toLowerCase().split(' ').any((sp) => sp.startsWith(query)),
         )
         .toList();
 
@@ -142,6 +212,8 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
   @override
   Widget build(BuildContext context) {
     final items = _filteredSorted();
+    _visibleItems = items;
+    if (_highlight >= items.length) _highlight = items.length - 1;
     // if (items.length == 1 && !autoPop) {
     //   autoPop = true;
     //   Future.delayed(Duration(milliseconds: 300), () {
@@ -161,120 +233,128 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
       context,
       pickerSheetBackgroundColor: widget.sheetBackgroundColor,
     );
-    return SafeArea(
-      child: BottomSheet(
-        backgroundColor: baseSheet.sheetBackgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: baseSheet.sheetBorderRadius!,
-        ),
-        constraints: BoxConstraints(
-          maxHeight: context.unifiedFieldsScreenHeight * 0.9,
-        ),
-        // The outer showModalBottomSheet already owns drag-to-dismiss and the
-        // animation controller. Disabling drag here avoids the
-        // `BottomSheet.animationController cannot be null` assertion.
-        enableDrag: false,
-        onClosing: () {},
-        builder: (BuildContext context) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              UnifiedPickerSheetHeader(
-                title: UnifiedFieldsStrings.instance.multiPickerTitle(
-                  widget.label,
-                ),
-                showClear: widget.hasClear,
-                pickerHeaderStyle: widget.pickerHeaderStyle,
-              ),
-              if (widget.headerWidget != null) widget.headerWidget!,
-              // Search
-              if (widget.hasSearch)
-                CupertinoTextField(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
+    return UnifiedPickerModalScope(
+      onConfirm: _confirm,
+      child: Focus(
+        focusNode: _sheetFocusNode,
+        skipTraversal: true,
+        onKeyEvent: _handleKeyEvent,
+        child: SafeArea(
+          child: BottomSheet(
+            backgroundColor: baseSheet.sheetBackgroundColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: baseSheet.sheetBorderRadius!,
+            ),
+            constraints: BoxConstraints(
+              maxHeight: context.unifiedFieldsScreenHeight * 0.9,
+            ),
+            // The outer showModalBottomSheet already owns drag-to-dismiss and the
+            // animation controller. Disabling drag here avoids the
+            // `BottomSheet.animationController cannot be null` assertion.
+            enableDrag: false,
+            onClosing: () {},
+            builder: (BuildContext context) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UnifiedPickerSheetHeader(
+                    title: UnifiedFieldsStrings.instance.multiPickerTitle(
+                      widget.label,
+                    ),
+                    showClear: widget.hasClear,
+                    pickerHeaderStyle: widget.pickerHeaderStyle,
                   ),
-                  controller: searchC,
-                  autofocus: widget.searchAutoFocus,
-                  prefix: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Icon(Icons.search),
-                  ),
-                ),
-
-              // List
-              Column(
-                children: widget.suggestion.map((s) {
-                  return InkWell(
-                    onTap: () => Navigator.of(context).pop(s),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: UnifiedColors.mainGreen.withValues(alpha: 0.18),
-                        border: const Border(
-                          bottom: BorderSide(color: Colors.white),
-                        ),
-                      ),
+                  if (widget.headerWidget != null) widget.headerWidget!,
+                  // Search
+                  if (widget.hasSearch)
+                    CupertinoTextField(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 12,
+                        horizontal: 12,
+                        vertical: 4,
                       ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child:
-                                unifiedPickerResolveListItem(
+                      controller: searchC,
+                      focusNode: _searchFocusNode,
+                      autofocus: widget.searchAutoFocus,
+                      prefix: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(Icons.search),
+                      ),
+                    ),
+
+                  // List
+                  Column(
+                    children: widget.suggestion.map((s) {
+                      return InkWell(
+                        onTap: () => Navigator.of(context).pop(s),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: UnifiedColors.mainGreen.withValues(
+                              alpha: 0.18,
+                            ),
+                            border: const Border(
+                              bottom: BorderSide(color: Colors.white),
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12.0,
+                            vertical: 12,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: unifiedPickerResolveListItem(
                                   s,
                                   itemToWidget: widget.itemToWidget,
                                   valueToString: widget.valueToString,
                                 ),
+                              ),
+                              Text(
+                                UnifiedFieldsStrings.instance.suggestion,
+                                style: TextStyle(
+                                  color: Colors.black45,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            UnifiedFieldsStrings.instance.suggestion,
-                            style: TextStyle(
-                              color: Colors.black45,
-                              fontSize: 10,
-                            ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  Expanded(child: _buildItemBody(context, items)),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Row(
+                      spacing: 12,
+                      children: [
+                        Expanded(
+                          child: UnifiedSheetButton(
+                            label: UnifiedFieldsStrings.instance.cancel,
+                            radius: 12,
+                            color: UnifiedColors.headlineColor,
+                            reverse: true,
+                            textColor: Colors.black,
+                            borderSide: BorderSide(color: Colors.grey),
+                            onPressed: () {
+                              Navigator.pop(context, widget.values);
+                            },
                           ),
-                        ],
-                      ),
+                        ),
+                        Expanded(
+                          child: UnifiedSheetButton(
+                            label: UnifiedFieldsStrings.instance.confirm,
+                            radius: 12,
+                            onPressed: _confirm,
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                }).toList(),
-              ),
-              Expanded(child: _buildItemBody(context, items)),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Row(
-                  spacing: 12,
-                  children: [
-                    Expanded(
-                      child: UnifiedSheetButton(
-                        label: UnifiedFieldsStrings.instance.cancel,
-                        radius: 12,
-                        color: UnifiedColors.headlineColor,
-                        reverse: true,
-                        textColor: Colors.black,
-                        borderSide: BorderSide(color: Colors.grey),
-                        onPressed: () {
-                          Navigator.pop(context, widget.values);
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: UnifiedSheetButton(
-                        label: UnifiedFieldsStrings.instance.confirm,
-                        radius: 12,
-                        onPressed: () {
-                          Navigator.pop(context, selected);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -289,21 +369,15 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
         itemBuilder: (context, index) {
           final item = items[index];
           final isSelected = selected.contains(item);
-          return gridBuilder(
-            context,
-            index,
-            item,
-            isSelected,
-            () {
-              setState(() {
-                if (isSelected) {
-                  selected.remove(item);
-                } else {
-                  selected.add(item);
-                }
-              });
-            },
-          );
+          return gridBuilder(context, index, item, isSelected, () {
+            setState(() {
+              if (isSelected) {
+                selected.remove(item);
+              } else {
+                selected.add(item);
+              }
+            });
+          });
         },
       );
     }
@@ -313,39 +387,35 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
       itemBuilder: (c, i) {
         final item = items[i];
         final isSelected = selected.contains(item);
+        final isHighlighted = i == _highlight;
         return InkWell(
-          onTap: () {
-            if (isSelected) {
-              selected.remove(item);
-            } else {
-              selected.add(item);
-            }
-            setState(() {});
-          },
+          canRequestFocus: false,
+          onTap: () => _toggle(item),
           child: Container(
             decoration: BoxDecoration(
               color: isSelected
                   ? Colors.blueAccent.withValues(alpha: 0.3)
-                  : const Color(0xffF2F3F6),
-              border: const Border(
-                bottom: BorderSide(color: Colors.white),
+                  : (isHighlighted
+                        ? Colors.blueAccent.withValues(alpha: 0.12)
+                        : const Color(0xffF2F3F6)),
+              border: Border(
+                bottom: const BorderSide(color: Colors.white),
+                left: isHighlighted
+                    ? const BorderSide(color: Colors.blueAccent, width: 3)
+                    : BorderSide.none,
               ),
             ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
             child: Row(
               children: [
                 UnifiedMultiPickerCheckbox(value: isSelected),
                 const SizedBox(width: 8),
                 Expanded(
-                  child:
-                      unifiedPickerResolveListItem(
-                        item,
-                        itemToWidget: widget.itemToWidget,
-                        valueToString: widget.valueToString,
-                      ),
+                  child: unifiedPickerResolveListItem(
+                    item,
+                    itemToWidget: widget.itemToWidget,
+                    valueToString: widget.valueToString,
+                  ),
                 ),
               ],
             ),
@@ -377,15 +447,14 @@ Future<List<T>?> showUnifiedMultiPickerSheet<T>({
   UnifiedPickerSheetStyle? pickerSheetStyle,
   UnifiedPickerSheetModalSettings? pickerSheetModalSettings,
 }) async {
-  FocusScope.of(context).requestFocus(FocusNode());
-  final bg = sheetBackgroundColor ?? pickerSheetStyle?.pickerSheetBackgroundColor;
-  final header =
-      pickerHeaderStyle ?? pickerSheetStyle?.pickerHeaderStyle;
+  unifiedUnfocusBeforeModal(context);
+  final bg =
+      sheetBackgroundColor ?? pickerSheetStyle?.pickerSheetBackgroundColor;
+  final header = pickerHeaderStyle ?? pickerSheetStyle?.pickerHeaderStyle;
   final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
     context: context,
     pickerSheetStyle: pickerSheetStyle,
-    modalSettings:
-        pickerSheetModalSettings ?? pickerSheetStyle?.modalSettings,
+    modalSettings: pickerSheetModalSettings ?? pickerSheetStyle?.modalSettings,
     builder: (c) => Padding(
       padding: EdgeInsets.zero,
       child: MultiPickerSheetWidget<T>(

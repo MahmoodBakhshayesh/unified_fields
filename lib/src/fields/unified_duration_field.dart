@@ -8,6 +8,7 @@ import 'unified_input_picker.dart';
 import 'unified_input_brightness.dart';
 import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
+import 'unified_picker_keyboard.dart';
 import '../unified_date_picker_types.dart';
 import '../unified_date_wheel_style.dart';
 import '../unified_fields_context.dart';
@@ -17,6 +18,7 @@ import '../unified_duration_column_wheel_picker_sheet.dart';
 import '../unified_duration_columns.dart';
 import '../unified_fields_duration_format_style.dart';
 import '../unified_time_picker_types.dart';
+import '../unified_wheel_scroll_behavior.dart';
 import 'unified_input_palette.dart';
 import 'unified_input_theme.dart';
 
@@ -143,7 +145,7 @@ Future<Duration?> showUnifiedFieldsDurationPicker({
             maxWidth: 420,
             maxHeight: MediaQuery.sizeOf(ctx).height * 0.92,
           ),
-          child: sheet,
+          child: UnifiedPickerModalScope(child: sheet),
         ),
       ),
     ).then((d) => d == null ? null : unifiedClampDuration(d, min, max));
@@ -534,14 +536,16 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
         builder: (ctx) {
-          return UnifiedDurationPickerSheet(
-            title: title,
-            palette: palette,
-            initial: _effective,
-            min: minDur,
-            max: maxDur,
-            columns: _effectiveColumns,
-            calendarKind: _effectiveCalendarKind,
+          return UnifiedPickerModalScope(
+            child: UnifiedDurationPickerSheet(
+              title: title,
+              palette: palette,
+              initial: _effective,
+              min: minDur,
+              max: maxDur,
+              columns: _effectiveColumns,
+              calendarKind: _effectiveCalendarKind,
+            ),
           );
         },
       );
@@ -576,7 +580,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
     );
     final d = chrome.resolved;
 
-    return GestureDetector(
+    final field = GestureDetector(
       onTap: widget.locked || widget.isDisabled
           ? null
           : () => _openSheet(context, d),
@@ -597,10 +601,8 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
           style: d.fieldStyle,
           placeholderStyle: d.placeholderStyle,
           backgroundColor: d.backgroundColor,
-          headerBackgroundColor:
-          d.headerBackgroundColor ?? d.backgroundColor,
-          borderRadius:
-              d.borderRadius,
+          headerBackgroundColor: d.headerBackgroundColor ?? d.backgroundColor,
+          borderRadius: d.borderRadius,
           borderSide: d.borderSide,
           height: d.height,
           rowLabelRatio: d.optionalRowLabelRatio,
@@ -629,6 +631,11 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
           },
         ),
       ),
+    );
+    return UnifiedPickerKeyboardActivator(
+      enabled: !widget.locked && !widget.isDisabled,
+      onActivate: () => _openSheet(context, d),
+      child: field,
     );
   }
 }
@@ -740,24 +747,31 @@ class _UnifiedDurationPickerSheetState
             ),
           ),
           Expanded(
-            child: CupertinoPicker(
-              scrollController: controller,
-              itemExtent: 36,
-              onSelectedItemChanged: (i) {
-                if (i < 0 || i > maxIndex) return;
-                setState(() => onPick(i));
-              },
-              children: List.generate(
-                maxIndex + 1,
-                (i) => Center(
-                  child: Text(
-                    UnifiedFieldsTypography.instance.localizeDigits(
-                      '$i',
-                      calendarKind: _digitKind,
-                    ),
-                    style: UnifiedFieldsTypography.instance.mergeDigitStyle(
-                      TextStyle(color: pal.fieldTextColor),
-                      calendarKind: _digitKind,
+            child: UnifiedPickerWheelKeyboard(
+              controller: controller,
+              itemCount: maxIndex + 1,
+              looping: unifiedFieldsLoopingWheelEnabled(maxIndex + 1),
+              child: CupertinoPicker(
+                scrollController: controller,
+                itemExtent: 36,
+                looping: unifiedFieldsLoopingWheelEnabled(maxIndex + 1),
+                onSelectedItemChanged: (i) {
+                  final value = unifiedFieldsLoopingWheelIndex(i, maxIndex + 1);
+                  if (value < 0 || value > maxIndex) return;
+                  setState(() => onPick(value));
+                },
+                children: List.generate(
+                  maxIndex + 1,
+                  (i) => Center(
+                    child: Text(
+                      UnifiedFieldsTypography.instance.localizeDigits(
+                        '$i',
+                        calendarKind: _digitKind,
+                      ),
+                      style: UnifiedFieldsTypography.instance.mergeDigitStyle(
+                        TextStyle(color: pal.fieldTextColor),
+                        calendarKind: _digitKind,
+                      ),
                     ),
                   ),
                 ),
@@ -775,73 +789,82 @@ class _UnifiedDurationPickerSheetState
     final minDur = widget.min;
     final maxDur = widget.max;
 
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: pal.sheetHeaderBackground,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
+    return UnifiedPickerModalScope(
+      onConfirm: () {
+        final composed = unifiedClampDuration(_compose(), minDur, maxDur);
+        Navigator.pop(context, composed);
+      },
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: pal.sheetHeaderBackground,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(UnifiedFieldsStrings.instance.cancel),
+                    ),
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: pal.fieldTextColor,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        final composed = unifiedClampDuration(
+                          _compose(),
+                          minDur,
+                          maxDur,
+                        );
+                        Navigator.pop(context, composed);
+                      },
+                      child: Text(UnifiedFieldsStrings.instance.done),
+                    ),
+                  ],
                 ),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(UnifiedFieldsStrings.instance.cancel),
-                  ),
-                  Expanded(
-                    child: Text(
-                      widget.title,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: pal.fieldTextColor,
+              SizedBox(
+                height: 220,
+                child: Row(
+                  children: [
+                    for (var i = 0; i < widget.columns.length; i++)
+                      _wheel(
+                        flex: 2,
+                        maxIndex: unifiedDurationColumnMaxIndex(
+                          widget.columns[i],
+                          widget.columns,
+                          maxDur,
+                        ),
+                        controller: _controllers[i],
+                        onPick: (v) => _values[i] = v,
+                        suffix: _suffixFor(widget.columns[i]),
+                        pal: pal,
                       ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      final composed = unifiedClampDuration(
-                        _compose(),
-                        minDur,
-                        maxDur,
-                      );
-                      Navigator.pop(context, composed);
-                    },
-                    child: Text(UnifiedFieldsStrings.instance.done),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            SizedBox(
-              height: 220,
-              child: Row(
-                children: [
-                  for (var i = 0; i < widget.columns.length; i++)
-                    _wheel(
-                      flex: 2,
-                      maxIndex: unifiedDurationColumnMaxIndex(
-                        widget.columns[i],
-                        widget.columns,
-                        maxDur,
-                      ),
-                      controller: _controllers[i],
-                      onPick: (v) => _values[i] = v,
-                      suffix: _suffixFor(widget.columns[i]),
-                      pal: pal,
-                    ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

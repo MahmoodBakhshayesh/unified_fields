@@ -9,6 +9,7 @@ import '../unified_fields_strings.dart';
 import '../unified_sheet_button.dart';
 import 'unified_input_theme.dart';
 import 'unified_picker_item_builders.dart';
+import 'unified_picker_keyboard.dart';
 
 /// Loads options for [UnifiedAsyncQueryPicker] / [showUnifiedAsyncQueryPickerSheet].
 typedef UnifiedAsyncQueryFetcher<T> = Future<List<T>> Function(String query);
@@ -185,9 +186,7 @@ class _AsyncQueryPickerSheetWidgetState<T>
               color: isSelected
                   ? Colors.blueAccent.withValues(alpha: 0.3)
                   : const Color(0xffF2F3F6),
-              border: const Border(
-                bottom: BorderSide(color: Colors.white),
-              ),
+              border: const Border(bottom: BorderSide(color: Colors.white)),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: unifiedPickerResolveListItem(
@@ -207,45 +206,47 @@ class _AsyncQueryPickerSheetWidgetState<T>
       context,
       pickerSheetBackgroundColor: widget.sheetBackgroundColor,
     );
-    return SafeArea(
-      child: BottomSheet(
-        backgroundColor: baseSheet.sheetBackgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: baseSheet.sheetBorderRadius!,
-        ),
-        constraints: BoxConstraints(
-          maxHeight: context.unifiedFieldsScreenHeight * 0.9,
-        ),
-        enableDrag: false,
-        onClosing: () {},
-        builder: (context) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              UnifiedPickerSheetHeader(
-                title: widget.label,
-                showClear: widget.showClearButton,
-                pickerHeaderStyle: widget.pickerHeaderStyle,
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                child: CupertinoTextField(
-                  controller: _searchC,
-                  autofocus: widget.searchAutoFocus,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  prefix: const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Icon(Icons.search),
+    return UnifiedPickerModalScope(
+      child: SafeArea(
+        child: BottomSheet(
+          backgroundColor: baseSheet.sheetBackgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: baseSheet.sheetBorderRadius!,
+          ),
+          constraints: BoxConstraints(
+            maxHeight: context.unifiedFieldsScreenHeight * 0.9,
+          ),
+          enableDrag: false,
+          onClosing: () {},
+          builder: (context) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                UnifiedPickerSheetHeader(
+                  title: widget.label,
+                  showClear: widget.showClearButton,
+                  pickerHeaderStyle: widget.pickerHeaderStyle,
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                  child: CupertinoTextField(
+                    controller: _searchC,
+                    autofocus: widget.searchAutoFocus,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    prefix: const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Icon(Icons.search),
+                    ),
                   ),
                 ),
-              ),
-              Expanded(child: _buildBody()),
-            ],
-          );
-        },
+                Expanded(child: _buildBody()),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -269,15 +270,14 @@ Future<T?> showUnifiedAsyncQueryPickerSheet<T>({
   UnifiedPickerSheetStyle? pickerSheetStyle,
   UnifiedPickerSheetModalSettings? pickerSheetModalSettings,
 }) async {
-  FocusScope.of(context).requestFocus(FocusNode());
-  final bg = sheetBackgroundColor ?? pickerSheetStyle?.pickerSheetBackgroundColor;
-  final header =
-      pickerHeaderStyle ?? pickerSheetStyle?.pickerHeaderStyle;
+  unifiedUnfocusBeforeModal(context);
+  final bg =
+      sheetBackgroundColor ?? pickerSheetStyle?.pickerSheetBackgroundColor;
+  final header = pickerHeaderStyle ?? pickerSheetStyle?.pickerHeaderStyle;
   return showUnifiedFieldsPickerBottomSheet<T>(
     context: context,
     pickerSheetStyle: pickerSheetStyle,
-    modalSettings:
-        pickerSheetModalSettings ?? pickerSheetStyle?.modalSettings,
+    modalSettings: pickerSheetModalSettings ?? pickerSheetStyle?.modalSettings,
     backgroundColor: bg,
     builder: (c) => AsyncQueryPickerSheetWidget<T>(
       label: label,
@@ -480,9 +480,7 @@ class _AsyncQueryMultiPickerSheetWidgetState<T>
               color: isSelected
                   ? Colors.blueAccent.withValues(alpha: 0.3)
                   : const Color(0xffF2F3F6),
-              border: const Border(
-                bottom: BorderSide(color: Colors.white),
-              ),
+              border: const Border(bottom: BorderSide(color: Colors.white)),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: Row(
@@ -510,77 +508,80 @@ class _AsyncQueryMultiPickerSheetWidgetState<T>
       context,
       pickerSheetBackgroundColor: widget.sheetBackgroundColor,
     );
-    return SafeArea(
-      child: BottomSheet(
-        backgroundColor: baseSheet.sheetBackgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: baseSheet.sheetBorderRadius!,
-        ),
-        constraints: BoxConstraints(
-          maxHeight: context.unifiedFieldsScreenHeight * 0.9,
-        ),
-        enableDrag: false,
-        onClosing: () {},
-        builder: (context) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              UnifiedPickerSheetHeader(
-                title: UnifiedFieldsStrings.instance.multiPickerTitle(
-                  widget.label,
-                ),
-                showClear: widget.showClearButton,
-                onClear: () => setState(() => _selected = []),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                child: CupertinoTextField(
-                  controller: _searchC,
-                  autofocus: widget.searchAutoFocus,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
+    return UnifiedPickerModalScope(
+      onConfirm: () => Navigator.pop(context, _selected),
+      child: SafeArea(
+        child: BottomSheet(
+          backgroundColor: baseSheet.sheetBackgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: baseSheet.sheetBorderRadius!,
+          ),
+          constraints: BoxConstraints(
+            maxHeight: context.unifiedFieldsScreenHeight * 0.9,
+          ),
+          enableDrag: false,
+          onClosing: () {},
+          builder: (context) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                UnifiedPickerSheetHeader(
+                  title: UnifiedFieldsStrings.instance.multiPickerTitle(
+                    widget.label,
                   ),
-                  prefix: const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Icon(Icons.search),
+                  showClear: widget.showClearButton,
+                  onClear: () => setState(() => _selected = []),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                  child: CupertinoTextField(
+                    controller: _searchC,
+                    autofocus: widget.searchAutoFocus,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    prefix: const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Icon(Icons.search),
+                    ),
                   ),
                 ),
-              ),
-              Expanded(child: _buildBody()),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                child: Row(
-                  spacing: 12,
-                  children: [
-                    Expanded(
-                      child: UnifiedSheetButton(
-                        label: UnifiedFieldsStrings.instance.cancel,
-                        radius: 12,
-                        color: UnifiedColors.headlineColor,
-                        reverse: true,
-                        textColor: Colors.black,
-                        borderSide: const BorderSide(color: Colors.grey),
-                        onPressed: () {
-                          Navigator.pop(context, widget.values);
-                        },
+                Expanded(child: _buildBody()),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                  child: Row(
+                    spacing: 12,
+                    children: [
+                      Expanded(
+                        child: UnifiedSheetButton(
+                          label: UnifiedFieldsStrings.instance.cancel,
+                          radius: 12,
+                          color: UnifiedColors.headlineColor,
+                          reverse: true,
+                          textColor: Colors.black,
+                          borderSide: const BorderSide(color: Colors.grey),
+                          onPressed: () {
+                            Navigator.pop(context, widget.values);
+                          },
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: UnifiedSheetButton(
-                        label: UnifiedFieldsStrings.instance.confirm,
-                        radius: 12,
-                        onPressed: () {
-                          Navigator.pop(context, _selected);
-                        },
+                      Expanded(
+                        child: UnifiedSheetButton(
+                          label: UnifiedFieldsStrings.instance.confirm,
+                          radius: 12,
+                          onPressed: () {
+                            Navigator.pop(context, _selected);
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -604,15 +605,14 @@ Future<List<T>?> showUnifiedAsyncQueryMultiPickerSheet<T>({
   UnifiedPickerSheetStyle? pickerSheetStyle,
   UnifiedPickerSheetModalSettings? pickerSheetModalSettings,
 }) async {
-  FocusScope.of(context).requestFocus(FocusNode());
-  final bg = sheetBackgroundColor ?? pickerSheetStyle?.pickerSheetBackgroundColor;
-  final header =
-      pickerHeaderStyle ?? pickerSheetStyle?.pickerHeaderStyle;
+  unifiedUnfocusBeforeModal(context);
+  final bg =
+      sheetBackgroundColor ?? pickerSheetStyle?.pickerSheetBackgroundColor;
+  final header = pickerHeaderStyle ?? pickerSheetStyle?.pickerHeaderStyle;
   final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
     context: context,
     pickerSheetStyle: pickerSheetStyle,
-    modalSettings:
-        pickerSheetModalSettings ?? pickerSheetStyle?.modalSettings,
+    modalSettings: pickerSheetModalSettings ?? pickerSheetStyle?.modalSettings,
     backgroundColor: bg,
     builder: (c) => AsyncQueryMultiPickerSheetWidget<T>(
       label: label,

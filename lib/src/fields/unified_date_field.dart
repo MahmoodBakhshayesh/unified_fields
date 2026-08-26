@@ -15,6 +15,7 @@ import 'unified_input_brightness.dart';
 import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
+import 'unified_picker_keyboard.dart';
 
 /// Formats [dt] for display inside a [UnifiedDateField].
 ///
@@ -232,6 +233,24 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
   TextEditingController? _ownedController;
   late UnifiedFieldsCalendarKind _calendarKind;
   UnifiedFieldsDateFormatStyle? _cachedDateFormatStyle;
+  late final UnifiedPickerFocusOwner _focus = UnifiedPickerFocusOwner(
+    _onFocusChanged,
+    debugLabel: 'UnifiedDateField',
+  );
+
+  bool get _interactive => !widget.isDisabled && !widget.locked;
+
+  FocusNode get _focusNode => _focus.resolve(
+    unifiedEffectiveFocusNode(
+      fieldController: widget.fieldController,
+      binding: widget.binding,
+      direct: widget.focusNode,
+    ),
+  );
+
+  void _onFocusChanged() {
+    if (mounted) setState(() {});
+  }
 
   TextEditingController get _effectiveController =>
       widget.controller ?? _ownedController!;
@@ -276,11 +295,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
     );
     attachUnifiedFieldHandles(
       opener: (context) => _pickBody(context, d),
-      focusNode: unifiedEffectiveFocusNode(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-        direct: widget.focusNode,
-      ),
+      focusNode: _focusNode,
       binding: widget.binding,
       fieldController: widget.fieldController,
     );
@@ -447,6 +462,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
     );
     widget.binding?.removeListener(_onBinding);
     widget.fieldController?.removeListener(_onBinding);
+    _focus.dispose();
     _ownedController?.dispose();
     super.dispose();
   }
@@ -476,6 +492,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
 
   Future<void> _pick(BuildContext context, UnifiedInputDecoration d) async {
     if (widget.isDisabled || widget.locked) return;
+    _focusNode.requestFocus();
     await _pickBody(context, d);
   }
 
@@ -492,56 +509,54 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
     final headerBg =
         d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26;
 
-    return GestureDetector(
-      onTap: widget.isDisabled || widget.locked
-          ? null
-          : () => _pick(context, d),
-      child: UnifiedBaseTextField(
-        decorationSet: chrome.activeSet,
-        brightness: widget.brightness,
-        focusNode: unifiedEffectiveFocusNode(
-          fieldController: widget.fieldController,
-          binding: widget.binding,
-          direct: widget.focusNode,
+    return UnifiedPickerKeyboardActivator(
+      enabled: _interactive,
+      onActivate: () => _pick(context, d),
+      child: GestureDetector(
+        onTap: _interactive ? () => _pick(context, d) : null,
+        child: UnifiedBaseTextField(
+          decorationSet: chrome.activeSet,
+          brightness: widget.brightness,
+          focusNode: _focusNode,
+          controller: _effectiveController,
+          errorText: widget.fieldController?.errorText,
+          label: widget.label ?? d.label,
+          placeholder: widget.placeholder ?? d.placeholder,
+          placeholderStyle: d.placeholderStyle,
+          style: widget.style ?? d.fieldStyle,
+          digitCalendarKind: _effectiveCalendarKind,
+          backgroundColor: bg,
+          headerBackgroundColor: headerBg,
+          borderRadius:
+              d.borderRadius ?? const BorderRadius.all(Radius.circular(16)),
+          borderSide: d.borderSide ?? BorderSide.none,
+          height: d.height,
+          rowLabelRatio: d.optionalRowLabelRatio,
+          labelMode: d.labelMode,
+          requiredField: widget.isRequired || d.requiredField,
+          showError: true,
+          validationColor: d.validationColor,
+          validationIcon: d.validationIcon,
+          prefix: widget.prefix ?? d.prefix,
+          prefixIcon: widget.prefixIcon ?? d.prefixIcon,
+          suffixIcon: widget.isDisabled || widget.locked
+              ? null
+              : (widget.suffixIcon ??
+                    d.suffixIcon ??
+                    UnifiedInputThemeResolver.defaultSuffixIcon(
+                      context,
+                      UnifiedInputFieldSuffixKind.date,
+                      UnifiedInputThemeResolver.resolvePalette(context),
+                    )),
+          validator: widget.validator,
+          isDisabled: widget.isDisabled,
+          locked: widget.locked,
+          interactionBlocked: true,
+          readOnly: true,
+          textAlign: widget.textAlign,
+          autofocus: widget.autofocus,
+          onSubmit: widget.onSubmit,
         ),
-        controller: _effectiveController,
-        errorText: widget.fieldController?.errorText,
-        label: widget.label ?? d.label,
-        placeholder: widget.placeholder ?? d.placeholder,
-        placeholderStyle: d.placeholderStyle,
-        style: widget.style ?? d.fieldStyle,
-        digitCalendarKind: _effectiveCalendarKind,
-        backgroundColor: bg,
-        headerBackgroundColor: headerBg,
-        borderRadius:
-            d.borderRadius ?? const BorderRadius.all(Radius.circular(16)),
-        borderSide: d.borderSide ?? BorderSide.none,
-        height: d.height,
-        rowLabelRatio: d.optionalRowLabelRatio,
-        labelMode: d.labelMode,
-        requiredField: widget.isRequired || d.requiredField,
-        showError: true,
-        validationColor: d.validationColor,
-        validationIcon: d.validationIcon,
-        prefix: widget.prefix ?? d.prefix,
-        prefixIcon: widget.prefixIcon ?? d.prefixIcon,
-        suffixIcon: widget.isDisabled || widget.locked
-            ? null
-            : (widget.suffixIcon ??
-                  d.suffixIcon ??
-                  UnifiedInputThemeResolver.defaultSuffixIcon(
-                    context,
-                    UnifiedInputFieldSuffixKind.date,
-                    UnifiedInputThemeResolver.resolvePalette(context),
-                  )),
-        validator: widget.validator,
-        isDisabled: widget.isDisabled,
-        locked: widget.locked,
-        interactionBlocked: true,
-        readOnly: true,
-        textAlign: widget.textAlign,
-        autofocus: widget.autofocus,
-        onSubmit: widget.onSubmit,
       ),
     );
   }
@@ -661,6 +676,18 @@ class UnifiedDateRangeField extends StatefulWidget {
 class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
   TextEditingController? _ownedController;
   UnifiedFieldsDateFormatStyle? _cachedDateFormatStyle;
+  late final UnifiedPickerFocusOwner _focus = UnifiedPickerFocusOwner(
+    _onFocusChanged,
+    debugLabel: 'UnifiedDateRangeField',
+  );
+
+  bool get _interactive => !widget.isDisabled && !widget.locked;
+
+  FocusNode get _focusNode => _focus.resolve(widget.fieldController?.focusNode);
+
+  void _onFocusChanged() {
+    if (mounted) setState(() {});
+  }
 
   TextEditingController get _effectiveController =>
       widget.controller ?? _ownedController!;
@@ -771,12 +798,14 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
   void dispose() {
     widget.binding?.removeListener(_onBinding);
     widget.fieldController?.removeListener(_onBinding);
+    _focus.dispose();
     _ownedController?.dispose();
     super.dispose();
   }
 
   Future<void> _pick(BuildContext context, UnifiedInputDecoration d) async {
     if (widget.isDisabled || widget.locked) return;
+    _focusNode.requestFocus();
     final titleRaw = ((d.label ?? '').trim().isEmpty)
         ? (d.placeholder ?? d.label)
         : d.label;
@@ -831,47 +860,49 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
     final headerBg =
         d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26;
 
-    return GestureDetector(
-      onTap: widget.isDisabled || widget.locked
-          ? null
-          : () => _pick(context, d),
-      child: UnifiedBaseTextField(
-        decorationSet: chrome.activeSet,
-        brightness: widget.brightness,
-        controller: _effectiveController,
-        focusNode: widget.fieldController?.focusNode,
-        errorText: widget.fieldController?.errorText,
-        label: widget.label ?? d.label,
-        placeholder: widget.placeholder ?? d.placeholder,
-        placeholderStyle: d.placeholderStyle,
-        style: widget.style ?? d.fieldStyle,
-        digitCalendarKind: widget.initialCalendarKind,
-        backgroundColor: bg,
-        headerBackgroundColor: headerBg,
-        borderRadius:
-            d.borderRadius ?? const BorderRadius.all(Radius.circular(16)),
-        borderSide: d.borderSide ?? BorderSide.none,
-        height: d.height,
-        rowLabelRatio: d.optionalRowLabelRatio,
-        labelMode: d.labelMode,
-        requiredField: widget.isRequired || d.requiredField,
-        showError: true,
-        validationColor: d.validationColor,
-        validationIcon: d.validationIcon,
-        suffixIcon: widget.isDisabled || widget.locked
-            ? null
-            : (d.suffixIcon ??
-                  UnifiedInputThemeResolver.defaultSuffixIcon(
-                    context,
-                    UnifiedInputFieldSuffixKind.date,
-                    UnifiedInputThemeResolver.resolvePalette(context),
-                  )),
-        validator: widget.validator,
-        isDisabled: widget.isDisabled,
-        locked: widget.locked,
-        interactionBlocked: true,
-        readOnly: true,
-        textAlign: widget.textAlign,
+    return UnifiedPickerKeyboardActivator(
+      enabled: _interactive,
+      onActivate: () => _pick(context, d),
+      child: GestureDetector(
+        onTap: _interactive ? () => _pick(context, d) : null,
+        child: UnifiedBaseTextField(
+          decorationSet: chrome.activeSet,
+          brightness: widget.brightness,
+          controller: _effectiveController,
+          focusNode: _focusNode,
+          errorText: widget.fieldController?.errorText,
+          label: widget.label ?? d.label,
+          placeholder: widget.placeholder ?? d.placeholder,
+          placeholderStyle: d.placeholderStyle,
+          style: widget.style ?? d.fieldStyle,
+          digitCalendarKind: widget.initialCalendarKind,
+          backgroundColor: bg,
+          headerBackgroundColor: headerBg,
+          borderRadius:
+              d.borderRadius ?? const BorderRadius.all(Radius.circular(16)),
+          borderSide: d.borderSide ?? BorderSide.none,
+          height: d.height,
+          rowLabelRatio: d.optionalRowLabelRatio,
+          labelMode: d.labelMode,
+          requiredField: widget.isRequired || d.requiredField,
+          showError: true,
+          validationColor: d.validationColor,
+          validationIcon: d.validationIcon,
+          suffixIcon: widget.isDisabled || widget.locked
+              ? null
+              : (d.suffixIcon ??
+                    UnifiedInputThemeResolver.defaultSuffixIcon(
+                      context,
+                      UnifiedInputFieldSuffixKind.date,
+                      UnifiedInputThemeResolver.resolvePalette(context),
+                    )),
+          validator: widget.validator,
+          isDisabled: widget.isDisabled,
+          locked: widget.locked,
+          interactionBlocked: true,
+          readOnly: true,
+          textAlign: widget.textAlign,
+        ),
       ),
     );
   }

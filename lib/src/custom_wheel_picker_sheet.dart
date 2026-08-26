@@ -8,6 +8,7 @@ import 'fields/unified_input_theme.dart';
 import 'unified_date_wheel_style.dart';
 import 'unified_fields_strings.dart';
 import 'unified_wheel_scroll_behavior.dart';
+import 'fields/unified_picker_keyboard.dart';
 
 /// Multi-column scroll-wheel picker sheet for [CustomWheelPicker].
 ///
@@ -103,20 +104,24 @@ Future<CustomWheelPickerValue?> showCustomWheelPicker({
           ? 0.0
           : MediaQuery.viewPaddingOf(ctx).bottom;
       final child = CustomWheelPickerSheet(
-          columns: columns,
-          value: value,
-          title: title,
-          confirmLabel: confirmLabel,
-          wheelLayout: wheelLayout,
-          wheelStyle: wheelStyle,
-          pickerSheetStyle: pickerSheetStyle,
-          pickerSheetBackgroundColor: pickerSheetBackgroundColor,
-          pickerHeaderStyle: pickerHeaderStyle,
-        );
-      if (bottomInset <= 0) return child;
-      return Padding(
-        padding: EdgeInsets.only(bottom: bottomInset),
-        child: child,
+        columns: columns,
+        value: value,
+        title: title,
+        confirmLabel: confirmLabel,
+        wheelLayout: wheelLayout,
+        wheelStyle: wheelStyle,
+        pickerSheetStyle: pickerSheetStyle,
+        pickerSheetBackgroundColor: pickerSheetBackgroundColor,
+        pickerHeaderStyle: pickerHeaderStyle,
+      );
+      if (bottomInset <= 0) {
+        return UnifiedPickerModalScope(child: child);
+      }
+      return UnifiedPickerModalScope(
+        child: Padding(
+          padding: EdgeInsets.only(bottom: bottomInset),
+          child: child,
+        ),
       );
     },
   );
@@ -141,13 +146,10 @@ class _CustomWheelPickerSheetState extends State<CustomWheelPickerSheet> {
       for (final k in _keys)
         k: widget.columns[k]!.indexForValue(widget.value[k]),
     };
-    _verticalControllers = List.generate(
-      _keys.length,
-      (i) {
-        final key = _keys[i];
-        return FixedExtentScrollController(initialItem: _indices[key]!);
-      },
-    );
+    _verticalControllers = List.generate(_keys.length, (i) {
+      final key = _keys[i];
+      return FixedExtentScrollController(initialItem: _indices[key]!);
+    });
     _horizontalControllers = List.generate(
       _keys.length,
       (i) => ScrollController(),
@@ -179,8 +181,11 @@ class _CustomWheelPickerSheetState extends State<CustomWheelPickerSheet> {
 
   double _horizontalStride() => _kHorizontalItemWidth + _kHorizontalSpacing;
 
-  void _scrollHorizontalToIndex(int columnIndex, int itemIndex,
-      {bool animate = true}) {
+  void _scrollHorizontalToIndex(
+    int columnIndex,
+    int itemIndex, {
+    bool animate = true,
+  }) {
     final controller = _horizontalControllers[columnIndex];
     if (!controller.hasClients) return;
     final target = itemIndex * _horizontalStride();
@@ -202,8 +207,10 @@ class _CustomWheelPickerSheetState extends State<CustomWheelPickerSheet> {
     final key = _keys[columnIndex];
     final count = widget.columns[key]!.options.length;
     if (count <= 0) return;
-    final index =
-        (controller.offset / _horizontalStride()).round().clamp(0, count - 1);
+    final index = (controller.offset / _horizontalStride()).round().clamp(
+      0,
+      count - 1,
+    );
     _scrollHorizontalToIndex(columnIndex, index);
     _setIndex(key, index);
   }
@@ -212,12 +219,15 @@ class _CustomWheelPickerSheetState extends State<CustomWheelPickerSheet> {
     if (event is! PointerScrollEvent) return;
     final controller = _horizontalControllers[columnIndex];
     if (!controller.hasClients) return;
-    final delta =
-        event.scrollDelta.dx != 0 ? event.scrollDelta.dx : event.scrollDelta.dy;
+    final delta = event.scrollDelta.dx != 0
+        ? event.scrollDelta.dx
+        : event.scrollDelta.dy;
     if (delta == 0) return;
     controller.jumpTo(
-      (controller.offset + delta)
-          .clamp(0.0, controller.position.maxScrollExtent),
+      (controller.offset + delta).clamp(
+        0.0,
+        controller.position.maxScrollExtent,
+      ),
     );
   }
 
@@ -324,31 +334,35 @@ class _CustomWheelPickerSheetState extends State<CustomWheelPickerSheet> {
   }) {
     final count = column.options.length;
     if (count <= 0) return const SizedBox.shrink();
-    return Listener(
-      onPointerSignal: (e) =>
-          _onVerticalPointerSignal(controllerIndex, columnKey, count, e),
-      child: ScrollConfiguration(
-        behavior: UnifiedFieldsWheelScrollBehavior.of(context),
-        child: ListWheelScrollView.useDelegate(
-          controller: _verticalControllers[controllerIndex],
-          itemExtent: style.itemExtent!,
-          diameterRatio: style.diameterRatio!,
-          magnification: style.magnification!,
-          squeeze: style.squeeze!,
-          useMagnifier: true,
-          physics: const FixedExtentScrollPhysics(),
-          onSelectedItemChanged: (index) => _setIndex(columnKey, index),
-          childDelegate: ListWheelChildBuilderDelegate(
-            childCount: count,
-            builder: (context, index) {
-              if (index < 0 || index >= count) return null;
-              return _wheelLabel(
-                value: column.options[index],
-                column: column,
-                style: style,
-                itemExtent: style.itemExtent!,
-              );
-            },
+    return UnifiedPickerWheelKeyboard(
+      controller: _verticalControllers[controllerIndex],
+      itemCount: count,
+      child: Listener(
+        onPointerSignal: (e) =>
+            _onVerticalPointerSignal(controllerIndex, columnKey, count, e),
+        child: ScrollConfiguration(
+          behavior: UnifiedFieldsWheelScrollBehavior.of(context),
+          child: ListWheelScrollView.useDelegate(
+            controller: _verticalControllers[controllerIndex],
+            itemExtent: style.itemExtent!,
+            diameterRatio: style.diameterRatio!,
+            magnification: style.magnification!,
+            squeeze: style.squeeze!,
+            useMagnifier: true,
+            physics: const FixedExtentScrollPhysics(),
+            onSelectedItemChanged: (index) => _setIndex(columnKey, index),
+            childDelegate: ListWheelChildBuilderDelegate(
+              childCount: count,
+              builder: (context, index) {
+                if (index < 0 || index >= count) return null;
+                return _wheelLabel(
+                  value: column.options[index],
+                  column: column,
+                  style: style,
+                  itemExtent: style.itemExtent!,
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -385,9 +399,7 @@ class _CustomWheelPickerSheetState extends State<CustomWheelPickerSheet> {
                 : style.wheelBackground?.withValues(alpha: 0.65),
             borderRadius: BorderRadius.circular(style.selectionRadius!),
             border: Border.all(
-              color: selected
-                  ? style.selectionBorder!
-                  : style.columnDivider!,
+              color: selected ? style.selectionBorder! : style.columnDivider!,
               width: selected ? 1.5 : 1,
             ),
           ),
@@ -411,7 +423,8 @@ class _CustomWheelPickerSheetState extends State<CustomWheelPickerSheet> {
     final count = column.options.length;
     if (count <= 0) return const SizedBox.shrink();
     final controller = _horizontalControllers[controllerIndex];
-    final contentWidth = count * _kHorizontalItemWidth +
+    final contentWidth =
+        count * _kHorizontalItemWidth +
         (count > 1 ? (count - 1) * _kHorizontalSpacing : 0);
 
     return LayoutBuilder(
@@ -621,32 +634,32 @@ class _CustomWheelPickerSheetState extends State<CustomWheelPickerSheet> {
                           ],
                         ),
                         _selectionOverlay(style),
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: wheelsHeight * 0.34,
-                        child: _wheelFade(
-                          style: style,
-                          top: true,
-                          vertical: true,
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: wheelsHeight * 0.34,
+                          child: _wheelFade(
+                            style: style,
+                            top: true,
+                            vertical: true,
+                          ),
                         ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: wheelsHeight * 0.34,
-                        child: _wheelFade(
-                          style: style,
-                          top: false,
-                          vertical: true,
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: wheelsHeight * 0.34,
+                          child: _wheelFade(
+                            style: style,
+                            top: false,
+                            vertical: true,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
               ),
             ),
           ),
@@ -746,40 +759,43 @@ class _CustomWheelPickerSheetState extends State<CustomWheelPickerSheet> {
     );
     final titleText = (widget.title ?? '').trim();
 
-    return ClipRRect(
-      borderRadius: baseSheet.sheetBorderRadius!,
-      child: Material(
-        color: baseSheet.sheetBackgroundColor,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            UnifiedPickerSheetHeader(
-              title: titleText.isEmpty ? 'Choose' : titleText,
-              pickerHeaderStyle: widget.pickerHeaderStyle,
-              sheetBorderRadius: baseSheet.sheetBorderRadius,
-            ),
-          if (widget.wheelLayout == CustomWheelPickerWheelLayout.vertical)
-            _verticalPanel(wheelStyle, baseSheet)
-          else
-            _horizontalPanel(wheelStyle, baseSheet),
-          Padding(
-            padding: baseSheet.footerPadding!,
-            child: Row(
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(strings.cancel),
+    return UnifiedPickerModalScope(
+      onConfirm: () => Navigator.of(context).pop(_currentValue),
+      child: ClipRRect(
+        borderRadius: baseSheet.sheetBorderRadius!,
+        child: Material(
+          color: baseSheet.sheetBackgroundColor,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              UnifiedPickerSheetHeader(
+                title: titleText.isEmpty ? 'Choose' : titleText,
+                pickerHeaderStyle: widget.pickerHeaderStyle,
+                sheetBorderRadius: baseSheet.sheetBorderRadius,
+              ),
+              if (widget.wheelLayout == CustomWheelPickerWheelLayout.vertical)
+                _verticalPanel(wheelStyle, baseSheet)
+              else
+                _horizontalPanel(wheelStyle, baseSheet),
+              Padding(
+                padding: baseSheet.footerPadding!,
+                child: Row(
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(strings.cancel),
+                    ),
+                    const Spacer(),
+                    FilledButton(
+                      onPressed: () => Navigator.of(context).pop(_currentValue),
+                      child: Text(widget.confirmLabel ?? strings.confirm),
+                    ),
+                  ],
                 ),
-                const Spacer(),
-                FilledButton(
-                  onPressed: () => Navigator.of(context).pop(_currentValue),
-                  child: Text(widget.confirmLabel ?? strings.confirm),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
         ),
       ),
     );

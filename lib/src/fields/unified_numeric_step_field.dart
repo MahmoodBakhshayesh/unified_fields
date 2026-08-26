@@ -14,6 +14,7 @@ import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_numeric_step_button_style.dart';
 import 'unified_numeric_step_buttons.dart';
+import 'unified_picker_keyboard.dart';
 import 'unified_suffix_icon.dart';
 
 double _pow10(int digits) {
@@ -564,6 +565,15 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       !widget.locked &&
       !widget.readOnly;
 
+  /// ArrowUp / ArrowDown step the value while the field has focus.
+  KeyEventResult _handleStepKey(FocusNode node, KeyEvent event) {
+    if (!_stepButtonsActive) return KeyEventResult.ignored;
+    final direction = unifiedArrowStepDirection(event);
+    if (direction == null) return KeyEventResult.ignored;
+    _applyDelta(widget.step * direction);
+    return KeyEventResult.handled;
+  }
+
   bool get _showDecrementButton =>
       _stepButtonsActive &&
       widget.stepButtons != UnifiedNumericStepButtons.none &&
@@ -801,52 +811,57 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   Widget build(BuildContext context) {
     final placeholder = widget.placeholder ?? widget.label;
 
-    return UnifiedBaseTextField(
-      decorationSet: widget.decorationSet,
-      brightness: widget.brightness,
-      digitCalendarKind: widget.digitCalendarKind,
-      label: widget.label,
-      labelStyle: widget.labelStyle,
-      placeholderStyle: widget.placeholderStyle,
-      focusNode: _focusNode,
-      controller: _effectiveController,
-      errorText: widget.fieldController?.errorText,
-      placeholder: placeholder,
-      borderRadius: widget.borderRadius,
-      backgroundColor: widget.backgroundColor,
-      headerBackgroundColor:
-          widget.headerBackgroundColor ?? widget.backgroundColor,
-      borderSide: widget.borderSide,
-      validator: widget.validator,
-      height: widget.height,
-      keyboardType: _keyboardType,
-      inputFormatters: _formatters,
-      textAlign: widget.textAlign,
-      style: widget.style,
-      padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 4),
-      disabled: widget.disabled,
-      isDisabled: widget.isDisabled,
-      locked: widget.locked,
-      readOnly: widget.readOnly,
-      autofocus: widget.autofocus,
-      selectTextOnFocus: widget.selectTextOnFocus,
-      textInputAction: widget.textInputAction ?? TextInputAction.done,
-      requiredField: widget.requiredField,
-      showError: widget.showError,
-      validationColor: widget.validationColor,
-      validationIcon: widget.validationIcon,
-      onSubmit: (_) {
-        _clampTypedValueIfOutOfRange();
-        widget.onSubmitted?.call(_effectiveController.text);
-      },
-      prefix: _composePrefix(context),
-      suffixIcon: _composeTrailingSuffixIcon(context),
-      onChanged: (_) {
-        final text = _effectiveController.text;
-        if (_hasTrailingDecimalPointForTyping(text)) return;
-        final parsed = _tryParse(text);
-        if (parsed != null) widget.onChanged?.call(parsed);
-      },
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      onKeyEvent: _handleStepKey,
+      child: UnifiedBaseTextField(
+        decorationSet: widget.decorationSet,
+        brightness: widget.brightness,
+        digitCalendarKind: widget.digitCalendarKind,
+        label: widget.label,
+        labelStyle: widget.labelStyle,
+        placeholderStyle: widget.placeholderStyle,
+        focusNode: _focusNode,
+        controller: _effectiveController,
+        errorText: widget.fieldController?.errorText,
+        placeholder: placeholder,
+        borderRadius: widget.borderRadius,
+        backgroundColor: widget.backgroundColor,
+        headerBackgroundColor:
+            widget.headerBackgroundColor ?? widget.backgroundColor,
+        borderSide: widget.borderSide,
+        validator: widget.validator,
+        height: widget.height,
+        keyboardType: _keyboardType,
+        inputFormatters: _formatters,
+        textAlign: widget.textAlign,
+        style: widget.style,
+        padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 4),
+        disabled: widget.disabled,
+        isDisabled: widget.isDisabled,
+        locked: widget.locked,
+        readOnly: widget.readOnly,
+        autofocus: widget.autofocus,
+        selectTextOnFocus: widget.selectTextOnFocus,
+        textInputAction: widget.textInputAction ?? TextInputAction.done,
+        requiredField: widget.requiredField,
+        showError: widget.showError,
+        validationColor: widget.validationColor,
+        validationIcon: widget.validationIcon,
+        onSubmit: (_) {
+          _clampTypedValueIfOutOfRange();
+          widget.onSubmitted?.call(_effectiveController.text);
+        },
+        prefix: _composePrefix(context),
+        suffixIcon: _composeTrailingSuffixIcon(context),
+        onChanged: (_) {
+          final text = _effectiveController.text;
+          if (_hasTrailingDecimalPointForTyping(text)) return;
+          final parsed = _tryParse(text);
+          if (parsed != null) widget.onChanged?.call(parsed);
+        },
+      ),
     );
   }
 }

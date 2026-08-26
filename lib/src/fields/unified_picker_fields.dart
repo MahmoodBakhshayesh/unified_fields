@@ -10,6 +10,7 @@ import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_item_builders.dart';
+import 'unified_picker_keyboard.dart';
 import 'unified_picker_sheet.dart';
 
 /// Single-select field backed by [PickerSheetWidget] (search + scroll-to-item list).
@@ -141,6 +142,23 @@ class UnifiedSinglePickerField<T> extends StatefulWidget {
 class _UnifiedSinglePickerFieldState<T>
     extends State<UnifiedSinglePickerField<T>> {
   late final TextEditingController _txt = TextEditingController();
+  late final UnifiedPickerFocusOwner _focus = UnifiedPickerFocusOwner(
+    _onFocusChanged,
+    debugLabel: 'UnifiedSinglePickerField',
+  );
+
+  bool get _interactive => !widget.locked && !widget.isDisabled;
+
+  FocusNode get _focusNode => _focus.resolve(
+    unifiedEffectiveFocusNode(
+      fieldController: widget.fieldController,
+      binding: widget.binding,
+    ),
+  );
+
+  void _onFocusChanged() {
+    if (mounted) setState(() {});
+  }
 
   String _display(T? v) {
     if (v == null) return '';
@@ -178,10 +196,7 @@ class _UnifiedSinglePickerFieldState<T>
     }
     attachUnifiedFieldHandles(
       opener: _presentPicker,
-      focusNode: unifiedEffectiveFocusNode(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-      ),
+      focusNode: _focusNode,
       binding: widget.binding,
       fieldController: widget.fieldController,
     );
@@ -255,6 +270,7 @@ class _UnifiedSinglePickerFieldState<T>
     );
     widget.binding?.removeListener(_onBinding);
     widget.fieldController?.removeListener(_onBinding);
+    _focus.dispose();
     _txt.dispose();
     super.dispose();
   }
@@ -271,7 +287,8 @@ class _UnifiedSinglePickerFieldState<T>
       overrides: widget.decoration,
       brightness: widget.brightness,
     );
-    FocusScope.of(context).requestFocus(FocusNode());
+    final restoreFocus = _focus.hasFocus;
+    unifiedUnfocusBeforeModal(context);
     final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
       pickerSheetStyle: widget.pickerSheetStyle,
@@ -304,9 +321,12 @@ class _UnifiedSinglePickerFieldState<T>
     } else if (result != null) {
       _commit(result as T);
     }
+    // Keyboard users keep their place in the traversal order after the sheet closes.
+    if (restoreFocus && mounted) _focus.requestFocus();
   }
 
   Future<void> _open(BuildContext context) async {
+    _focusNode.requestFocus();
     await _presentPicker(context);
   }
 
@@ -331,60 +351,60 @@ class _UnifiedSinglePickerFieldState<T>
     );
     final dec = chrome.resolved;
 
-    return GestureDetector(
-      onTap: widget.locked || widget.isDisabled ? null : () => _open(context),
-      child: AbsorbPointer(
-        child: UnifiedBaseTextField(
-          decorationSet: chrome.activeSet,
-          brightness: widget.brightness,
-          controller: _txt,
-          focusNode: unifiedEffectiveFocusNode(
-            fieldController: widget.fieldController,
-            binding: widget.binding,
+    return UnifiedPickerKeyboardActivator(
+      enabled: _interactive,
+      onActivate: () => _open(context),
+      child: GestureDetector(
+        onTap: _interactive ? () => _open(context) : null,
+        child: AbsorbPointer(
+          child: UnifiedBaseTextField(
+            decorationSet: chrome.activeSet,
+            brightness: widget.brightness,
+            controller: _txt,
+            focusNode: _focusNode,
+            errorText: widget.fieldController?.errorText,
+            readOnly: true,
+            label: dec.label ?? widget.label,
+            placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
+            labelStyle: dec.labelStyle,
+            style: dec.fieldStyle,
+            placeholderStyle: dec.placeholderStyle,
+            backgroundColor: dec.backgroundColor,
+            headerBackgroundColor:
+                dec.headerBackgroundColor ??
+                dec.backgroundColor ??
+                Colors.black26,
+            borderRadius: dec.borderRadius,
+            borderSide: dec.borderSide,
+            height: dec.height,
+            rowLabelRatio: dec.optionalRowLabelRatio,
+            labelMode: dec.labelMode,
+            requiredField: widget.isRequired || dec.requiredField,
+            showError: dec.showError,
+            validationColor: dec.validationColor,
+            validationIcon: dec.validationIcon,
+            prefix: dec.prefix,
+            prefixIcon: dec.prefixIcon,
+            suffixIcon:
+                dec.suffixIcon ??
+                (widget.isDisabled || widget.locked
+                    ? null
+                    : UnifiedInputThemeResolver.defaultSuffixIcon(
+                        context,
+                        UnifiedInputFieldSuffixKind.picker,
+                        UnifiedInputThemeResolver.resolvePalette(context),
+                      )),
+            padding: dec.contentPadding,
+            isDisabled: widget.isDisabled,
+            locked: widget.locked,
+            validator: (value) {
+              final o = widget.validationOverrideMessage;
+              if (o != null) {
+                return o.isEmpty ? null : o;
+              }
+              return widget.validator?.call(value);
+            },
           ),
-          errorText: widget.fieldController?.errorText,
-          readOnly: true,
-          label: dec.label ?? widget.label,
-          placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
-          labelStyle: dec.labelStyle,
-          style: dec.fieldStyle,
-          placeholderStyle: dec.placeholderStyle,
-          backgroundColor: dec.backgroundColor,
-          headerBackgroundColor:
-              dec.headerBackgroundColor ??
-              dec.backgroundColor ??
-              Colors.black26,
-          borderRadius:
-              dec.borderRadius,
-          borderSide: dec.borderSide,
-          height: dec.height,
-          rowLabelRatio: dec.optionalRowLabelRatio,
-          labelMode: dec.labelMode,
-          requiredField: widget.isRequired || dec.requiredField,
-          showError: dec.showError,
-          validationColor: dec.validationColor,
-          validationIcon: dec.validationIcon,
-          prefix: dec.prefix,
-          prefixIcon: dec.prefixIcon,
-          suffixIcon:
-              dec.suffixIcon ??
-              (widget.isDisabled || widget.locked
-                  ? null
-                  : UnifiedInputThemeResolver.defaultSuffixIcon(
-                      context,
-                      UnifiedInputFieldSuffixKind.picker,
-                      UnifiedInputThemeResolver.resolvePalette(context),
-                    )),
-          padding: dec.contentPadding,
-          isDisabled: widget.isDisabled,
-          locked: widget.locked,
-          validator: (value) {
-            final o = widget.validationOverrideMessage;
-            if (o != null) {
-              return o.isEmpty ? null : o;
-            }
-            return widget.validator?.call(value);
-          },
         ),
       ),
     );
@@ -520,6 +540,23 @@ class UnifiedMultiPickerField<T> extends StatefulWidget {
 class _UnifiedMultiPickerFieldState<T>
     extends State<UnifiedMultiPickerField<T>> {
   late final TextEditingController _txt = TextEditingController();
+  late final UnifiedPickerFocusOwner _focus = UnifiedPickerFocusOwner(
+    _onFocusChanged,
+    debugLabel: 'UnifiedMultiPickerField',
+  );
+
+  bool get _interactive => !widget.locked && !widget.isDisabled;
+
+  FocusNode get _focusNode => _focus.resolve(
+    unifiedEffectiveFocusNode(
+      fieldController: widget.fieldController,
+      binding: widget.binding,
+    ),
+  );
+
+  void _onFocusChanged() {
+    if (mounted) setState(() {});
+  }
 
   List<T> get _effective => unifiedEffectiveListValue(
     fieldController: widget.fieldController,
@@ -553,10 +590,7 @@ class _UnifiedMultiPickerFieldState<T>
     }
     attachUnifiedFieldHandles(
       opener: (context) => _presentPicker(context, dec),
-      focusNode: unifiedEffectiveFocusNode(
-        fieldController: widget.fieldController,
-        binding: widget.binding,
-      ),
+      focusNode: _focusNode,
       binding: widget.binding,
       fieldController: widget.fieldController,
     );
@@ -640,6 +674,7 @@ class _UnifiedMultiPickerFieldState<T>
     );
     widget.binding?.removeListener(_onBinding);
     widget.fieldController?.removeListener(_onBinding);
+    _focus.dispose();
     _txt.dispose();
     super.dispose();
   }
@@ -654,7 +689,8 @@ class _UnifiedMultiPickerFieldState<T>
       pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
       pickerHeaderStyle: widget.pickerHeaderStyle,
     );
-    FocusScope.of(context).requestFocus(FocusNode());
+    final restoreFocus = _focus.hasFocus;
+    unifiedUnfocusBeforeModal(context);
     final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
       pickerSheetStyle: widget.pickerSheetStyle,
@@ -688,9 +724,12 @@ class _UnifiedMultiPickerFieldState<T>
       final raw = result as List;
       _commit(raw.cast<T>().toList());
     }
+    // Keyboard users keep their place in the traversal order after the sheet closes.
+    if (restoreFocus && mounted) _focus.requestFocus();
   }
 
   Future<void> _open(BuildContext context, UnifiedInputDecoration dec) async {
+    _focusNode.requestFocus();
     await _presentPicker(context, dec);
   }
 
@@ -715,62 +754,60 @@ class _UnifiedMultiPickerFieldState<T>
     );
     final dec = chrome.resolved;
 
-    return GestureDetector(
-      onTap: widget.locked || widget.isDisabled
-          ? null
-          : () => _open(context, dec),
-      child: AbsorbPointer(
-        child: UnifiedBaseTextField(
-          decorationSet: chrome.activeSet,
-          brightness: widget.brightness,
-          controller: _txt,
-          focusNode: unifiedEffectiveFocusNode(
-            fieldController: widget.fieldController,
-            binding: widget.binding,
+    return UnifiedPickerKeyboardActivator(
+      enabled: _interactive,
+      onActivate: () => _open(context, dec),
+      child: GestureDetector(
+        onTap: _interactive ? () => _open(context, dec) : null,
+        child: AbsorbPointer(
+          child: UnifiedBaseTextField(
+            decorationSet: chrome.activeSet,
+            brightness: widget.brightness,
+            controller: _txt,
+            focusNode: _focusNode,
+            errorText: widget.fieldController?.errorText,
+            readOnly: true,
+            label: dec.label ?? widget.label,
+            placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
+            labelStyle: dec.labelStyle,
+            style: dec.fieldStyle,
+            placeholderStyle: dec.placeholderStyle,
+            backgroundColor: dec.backgroundColor,
+            headerBackgroundColor:
+                dec.headerBackgroundColor ??
+                dec.backgroundColor ??
+                Colors.black26,
+            borderRadius: dec.borderRadius,
+            borderSide: dec.borderSide,
+            height: dec.height,
+            rowLabelRatio: dec.optionalRowLabelRatio,
+            labelMode: dec.labelMode,
+            requiredField: widget.isRequired || dec.requiredField,
+            showError: dec.showError,
+            validationColor: dec.validationColor,
+            validationIcon: dec.validationIcon,
+            prefix: dec.prefix,
+            prefixIcon: dec.prefixIcon,
+            suffixIcon:
+                dec.suffixIcon ??
+                (widget.isDisabled || widget.locked
+                    ? null
+                    : UnifiedInputThemeResolver.defaultSuffixIcon(
+                        context,
+                        UnifiedInputFieldSuffixKind.multiPicker,
+                        UnifiedInputThemeResolver.resolvePalette(context),
+                      )),
+            padding: dec.contentPadding,
+            isDisabled: widget.isDisabled,
+            locked: widget.locked,
+            validator: (value) {
+              final o = widget.validationOverrideMessage;
+              if (o != null) {
+                return o.isEmpty ? null : o;
+              }
+              return widget.validator?.call(value);
+            },
           ),
-          errorText: widget.fieldController?.errorText,
-          readOnly: true,
-          label: dec.label ?? widget.label,
-          placeholder: widget.placeholder ?? dec.placeholder ?? widget.label,
-          labelStyle: dec.labelStyle,
-          style: dec.fieldStyle,
-          placeholderStyle: dec.placeholderStyle,
-          backgroundColor: dec.backgroundColor,
-          headerBackgroundColor:
-              dec.headerBackgroundColor ??
-              dec.backgroundColor ??
-              Colors.black26,
-          borderRadius:
-              dec.borderRadius,
-          borderSide: dec.borderSide,
-          height: dec.height,
-          rowLabelRatio: dec.optionalRowLabelRatio,
-          labelMode: dec.labelMode,
-          requiredField: widget.isRequired || dec.requiredField,
-          showError: dec.showError,
-          validationColor: dec.validationColor,
-          validationIcon: dec.validationIcon,
-          prefix: dec.prefix,
-          prefixIcon: dec.prefixIcon,
-          suffixIcon:
-              dec.suffixIcon ??
-              (widget.isDisabled || widget.locked
-                  ? null
-                  : UnifiedInputThemeResolver.defaultSuffixIcon(
-                      context,
-                      UnifiedInputFieldSuffixKind.multiPicker,
-                      UnifiedInputThemeResolver.resolvePalette(context),
-                    )),
-          padding: dec.contentPadding,
-          isDisabled: widget.isDisabled,
-          locked: widget.locked,
-          validator: (value) {
-            final o = widget.validationOverrideMessage;
-            if (o != null) {
-              return o.isEmpty ? null : o;
-            }
-            return widget.validator?.call(value);
-          },
         ),
       ),
     );

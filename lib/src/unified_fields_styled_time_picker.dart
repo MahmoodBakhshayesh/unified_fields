@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'unified_fields_strings.dart';
 import 'unified_fields_picker_theme.dart';
 import 'unified_sheet_button.dart';
-
+import 'fields/unified_picker_keyboard.dart';
 
 /// Visual style of [UnifiedFieldsStyledTimePicker].
 enum UnifiedFieldsStyledTimePickerStyle {
@@ -64,10 +64,12 @@ class UnifiedFieldsStyledTimePicker extends StatefulWidget {
   final UnifiedFieldsPickerTheme theme;
 
   @override
-  State<UnifiedFieldsStyledTimePicker> createState() => _UnifiedFieldsStyledTimePickerState();
+  State<UnifiedFieldsStyledTimePicker> createState() =>
+      _UnifiedFieldsStyledTimePickerState();
 }
 
-class _UnifiedFieldsStyledTimePickerState extends State<UnifiedFieldsStyledTimePicker> {
+class _UnifiedFieldsStyledTimePickerState
+    extends State<UnifiedFieldsStyledTimePicker> {
   late int _hour = widget.initialTime.hour;
   late int _minute = widget.initialTime.minute;
 
@@ -84,16 +86,36 @@ class _UnifiedFieldsStyledTimePickerState extends State<UnifiedFieldsStyledTimeP
   @override
   Widget build(BuildContext context) {
     final body = switch (widget.style) {
-      UnifiedFieldsStyledTimePickerStyle.rulerTape =>
-        _RulerTapeBody(hour: _hour, minute: _minute, onSet: _set, t: _t),
-      UnifiedFieldsStyledTimePickerStyle.arcSlider =>
-        _ArcSliderBody(hour: _hour, minute: _minute, onSet: _set, t: _t),
-      UnifiedFieldsStyledTimePickerStyle.digitPad =>
-        _DigitPadBody(hour: _hour, minute: _minute, onSet: _set, t: _t),
-      UnifiedFieldsStyledTimePickerStyle.timelineRail =>
-        _TimelineRailBody(hour: _hour, minute: _minute, onSet: _set, t: _t),
-      UnifiedFieldsStyledTimePickerStyle.clockDial =>
-        _ClockDialBody(hour: _hour, minute: _minute, onSet: _set, t: _t),
+      UnifiedFieldsStyledTimePickerStyle.rulerTape => _RulerTapeBody(
+        hour: _hour,
+        minute: _minute,
+        onSet: _set,
+        t: _t,
+      ),
+      UnifiedFieldsStyledTimePickerStyle.arcSlider => _ArcSliderBody(
+        hour: _hour,
+        minute: _minute,
+        onSet: _set,
+        t: _t,
+      ),
+      UnifiedFieldsStyledTimePickerStyle.digitPad => _DigitPadBody(
+        hour: _hour,
+        minute: _minute,
+        onSet: _set,
+        t: _t,
+      ),
+      UnifiedFieldsStyledTimePickerStyle.timelineRail => _TimelineRailBody(
+        hour: _hour,
+        minute: _minute,
+        onSet: _set,
+        t: _t,
+      ),
+      UnifiedFieldsStyledTimePickerStyle.clockDial => _ClockDialBody(
+        hour: _hour,
+        minute: _minute,
+        onSet: _set,
+        t: _t,
+      ),
     };
 
     return Column(
@@ -119,7 +141,8 @@ class _UnifiedFieldsStyledTimePickerState extends State<UnifiedFieldsStyledTimeP
 /// dialog above it. Resolves with the confirmed [TimeOfDay] or null.
 Future<TimeOfDay?> showUnifiedFieldsStyledTimePickerSheet({
   required BuildContext context,
-  UnifiedFieldsStyledTimePickerStyle style = UnifiedFieldsStyledTimePickerStyle.rulerTape,
+  UnifiedFieldsStyledTimePickerStyle style =
+      UnifiedFieldsStyledTimePickerStyle.rulerTape,
   TimeOfDay? initialTime,
   String? title,
   List<TimeOfDay> presets = const [],
@@ -148,7 +171,10 @@ Future<TimeOfDay?> showUnifiedFieldsStyledTimePickerSheet({
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(theme.modalRadius * 0.7),
         ),
-        child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 420), child: content),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: UnifiedPickerModalScope(child: content),
+        ),
       ),
     );
   }
@@ -159,9 +185,12 @@ Future<TimeOfDay?> showUnifiedFieldsStyledTimePickerSheet({
     barrierColor: theme.barrierColor,
     backgroundColor: theme.background,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(theme.modalRadius)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(theme.modalRadius),
+      ),
     ),
-    builder: (context) => SafeArea(child: content),
+    builder: (context) =>
+        SafeArea(child: UnifiedPickerModalScope(child: content)),
   );
 }
 
@@ -183,48 +212,53 @@ class _UnifiedFieldsStyledTimePickerSheet extends StatefulWidget {
   final UnifiedFieldsPickerTheme t;
 
   @override
-  State<_UnifiedFieldsStyledTimePickerSheet> createState() => _UnifiedFieldsStyledTimePickerSheetState();
+  State<_UnifiedFieldsStyledTimePickerSheet> createState() =>
+      _UnifiedFieldsStyledTimePickerSheetState();
 }
 
-class _UnifiedFieldsStyledTimePickerSheetState extends State<_UnifiedFieldsStyledTimePickerSheet> {
+class _UnifiedFieldsStyledTimePickerSheetState
+    extends State<_UnifiedFieldsStyledTimePickerSheet> {
   late TimeOfDay _value = widget.initialTime;
 
   @override
   Widget build(BuildContext context) {
     final t = widget.t;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (widget.title != null) ...[
-            Text(
-              widget.title!,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: t.headline,
+    return UnifiedPickerModalScope(
+      onConfirm: () => Navigator.of(context).pop(_value),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.title != null) ...[
+              Text(
+                widget.title!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: t.headline,
+                ),
               ),
+              const SizedBox(height: 12),
+            ],
+            UnifiedFieldsStyledTimePicker(
+              style: widget.style,
+              initialTime: widget.initialTime,
+              presets: widget.presets,
+              includeNowPreset: widget.includeNowPreset,
+              theme: t,
+              onChanged: (v) => _value = v,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
+            _PickerActions(
+              t: t,
+              onCancel: () => Navigator.of(context).pop(),
+              onConfirm: () => Navigator.of(context).pop(_value),
+            ),
           ],
-          UnifiedFieldsStyledTimePicker(
-            style: widget.style,
-            initialTime: widget.initialTime,
-            presets: widget.presets,
-            includeNowPreset: widget.includeNowPreset,
-            theme: t,
-            onChanged: (v) => _value = v,
-          ),
-          const SizedBox(height: 16),
-          _PickerActions(
-            t: t,
-            onCancel: () => Navigator.of(context).pop(),
-            onConfirm: () => Navigator.of(context).pop(_value),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -248,7 +282,8 @@ class _PickerActions extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: UnifiedSheetButton(reverse: true, 
+          child: UnifiedSheetButton(
+            reverse: true,
             label: t.cancelLabel ?? UnifiedFieldsStrings.instance.cancel,
             textColor: t.cancelFg,
             borderSide: BorderSide(color: t.cancelFg.withValues(alpha: 0.6)),
@@ -302,11 +337,22 @@ class _TimeReadout extends StatelessWidget {
       fontFeatures: const [FontFeature.tabularFigures()],
     );
     return Text.rich(
-      TextSpan(children: [
-        TextSpan(text: _two(hour), style: base.copyWith(color: hourColor ?? t.headline)),
-        TextSpan(text: ':', style: base.copyWith(color: t.subhead)),
-        TextSpan(text: _two(minute), style: base.copyWith(color: minuteColor ?? t.headline)),
-      ]),
+      TextSpan(
+        children: [
+          TextSpan(
+            text: _two(hour),
+            style: base.copyWith(color: hourColor ?? t.headline),
+          ),
+          TextSpan(
+            text: ':',
+            style: base.copyWith(color: t.subhead),
+          ),
+          TextSpan(
+            text: _two(minute),
+            style: base.copyWith(color: minuteColor ?? t.headline),
+          ),
+        ],
+      ),
       textAlign: TextAlign.center,
     );
   }
@@ -376,7 +422,11 @@ class _PresetChips extends StatelessWidget {
 }
 
 class _RoundStepButton extends StatelessWidget {
-  const _RoundStepButton({required this.icon, required this.onPressed, required this.t});
+  const _RoundStepButton({
+    required this.icon,
+    required this.onPressed,
+    required this.t,
+  });
 
   final IconData icon;
   final VoidCallback onPressed;
@@ -401,7 +451,11 @@ class _RoundStepButton extends StatelessWidget {
 }
 
 class _MinuteSlider extends StatelessWidget {
-  const _MinuteSlider({required this.minute, required this.onChanged, required this.t});
+  const _MinuteSlider({
+    required this.minute,
+    required this.onChanged,
+    required this.t,
+  });
 
   final int minute;
   final ValueChanged<int> onChanged;
@@ -451,9 +505,19 @@ class _RulerTapeBody extends StatelessWidget {
       children: [
         _TimeReadout(hour: hour, minute: minute, t: t),
         const SizedBox(height: 12),
-        _RulerTape(count: 24, value: hour, onChanged: (v) => onSet(hour: v), t: t),
+        _RulerTape(
+          count: 24,
+          value: hour,
+          onChanged: (v) => onSet(hour: v),
+          t: t,
+        ),
         const SizedBox(height: 16),
-        _RulerTape(count: 60, value: minute, onChanged: (v) => onSet(minute: v), t: t),
+        _RulerTape(
+          count: 60,
+          value: minute,
+          onChanged: (v) => onSet(minute: v),
+          t: t,
+        ),
       ],
     );
   }
@@ -524,7 +588,11 @@ class _RulerTapeState extends State<_RulerTape> {
                   for (var i = 0; i < widget.count; i++)
                     RotatedBox(
                       quarterTurns: 1,
-                      child: _TapeItem(label: _two(i), selected: i == widget.value, t: t),
+                      child: _TapeItem(
+                        label: _two(i),
+                        selected: i == widget.value,
+                        t: t,
+                      ),
                     ),
                 ],
               ),
@@ -548,7 +616,11 @@ class _RulerTapeState extends State<_RulerTape> {
 }
 
 class _TapeItem extends StatelessWidget {
-  const _TapeItem({required this.label, required this.selected, required this.t});
+  const _TapeItem({
+    required this.label,
+    required this.selected,
+    required this.t,
+  });
 
   final String label;
   final bool selected;
@@ -561,7 +633,10 @@ class _TapeItem extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          CustomPaint(size: const Size(56, 18), painter: _TapeTicksPainter(color: t.border)),
+          CustomPaint(
+            size: const Size(56, 18),
+            painter: _TapeTicksPainter(color: t.border),
+          ),
           const SizedBox(height: 6),
           AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 120),
@@ -597,12 +672,17 @@ class _TapeTicksPainter extends CustomPainter {
       final x = i * step;
       final isItemTick = i == divisions ~/ 2;
       final h = isItemTick ? size.height : size.height * 0.55;
-      canvas.drawLine(Offset(x, size.height - h), Offset(x, size.height), minor);
+      canvas.drawLine(
+        Offset(x, size.height - h),
+        Offset(x, size.height),
+        minor,
+      );
     }
   }
 
   @override
-  bool shouldRepaint(covariant _TapeTicksPainter oldDelegate) => oldDelegate.color != color;
+  bool shouldRepaint(covariant _TapeTicksPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 // --- style 2: arc slider -----------------------------------------------------
@@ -631,13 +711,21 @@ class _ArcSliderBody extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _ArcHourSlider(hour: hour, onChanged: (v) => onSet(hour: v), t: t),
+        _ArcHourSlider(
+          hour: hour,
+          onChanged: (v) => onSet(hour: v),
+          t: t,
+        ),
         const SizedBox(height: 4),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 16,
           children: [
-            _RoundStepButton(icon: Icons.remove, onPressed: () => _bumpMinute(-1), t: t),
+            _RoundStepButton(
+              icon: Icons.remove,
+              onPressed: () => _bumpMinute(-1),
+              t: t,
+            ),
             _TimeReadout(
               hour: hour,
               minute: minute,
@@ -646,11 +734,19 @@ class _ArcSliderBody extends StatelessWidget {
               hourColor: t.primary,
               minuteColor: t.subhead,
             ),
-            _RoundStepButton(icon: Icons.add, onPressed: () => _bumpMinute(1), t: t),
+            _RoundStepButton(
+              icon: Icons.add,
+              onPressed: () => _bumpMinute(1),
+              t: t,
+            ),
           ],
         ),
         const SizedBox(height: 4),
-        _MinuteSlider(minute: minute, onChanged: (v) => onSet(minute: v), t: t),
+        _MinuteSlider(
+          minute: minute,
+          onChanged: (v) => onSet(minute: v),
+          t: t,
+        ),
       ],
     );
   }
@@ -658,7 +754,11 @@ class _ArcSliderBody extends StatelessWidget {
 
 /// Semicircular 0–24h gauge with a draggable knob.
 class _ArcHourSlider extends StatelessWidget {
-  const _ArcHourSlider({required this.hour, required this.onChanged, required this.t});
+  const _ArcHourSlider({
+    required this.hour,
+    required this.onChanged,
+    required this.t,
+  });
 
   final int hour;
   final ValueChanged<int> onChanged;
@@ -684,7 +784,10 @@ class _ArcHourSlider extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onPanDown: (d) => _handle(d.localPosition, size),
           onPanUpdate: (d) => _handle(d.localPosition, size),
-          child: CustomPaint(size: size, painter: _ArcPainter(hour: hour, t: t)),
+          child: CustomPaint(
+            size: size,
+            painter: _ArcPainter(hour: hour, t: t),
+          ),
         );
       },
     );
@@ -721,7 +824,8 @@ class _ArcPainter extends CustomPainter {
     // Hour labels outside the arc.
     for (final h in const [0, 6, 12, 18, 24]) {
       final angle = math.pi + h / 24 * math.pi;
-      final pos = center + Offset(math.cos(angle), math.sin(angle)) * (radius + 24);
+      final pos =
+          center + Offset(math.cos(angle), math.sin(angle)) * (radius + 24);
       final tp = TextPainter(
         text: TextSpan(
           text: '$h',
@@ -734,12 +838,17 @@ class _ArcPainter extends CustomPainter {
 
     // Knob.
     final knobAngle = math.pi + hour / 24 * math.pi;
-    final knobPos = center + Offset(math.cos(knobAngle), math.sin(knobAngle)) * radius;
+    final knobPos =
+        center + Offset(math.cos(knobAngle), math.sin(knobAngle)) * radius;
     canvas.drawCircle(knobPos, 14, Paint()..color = t.background);
-    canvas.drawCircle(knobPos, 14, Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..color = t.primary.withValues(alpha: 0.4));
+    canvas.drawCircle(
+      knobPos,
+      14,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..color = t.primary.withValues(alpha: 0.4),
+    );
     canvas.drawCircle(knobPos, 9, Paint()..color = t.primary);
   }
 
@@ -797,7 +906,11 @@ class _DigitPadBody extends StatelessWidget {
             digitCard(_two(hour), active: true),
             Text(
               ':',
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700, color: t.subhead),
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.w700,
+                color: t.subhead,
+              ),
             ),
             digitCard(_two(minute), active: false),
           ],
@@ -809,15 +922,28 @@ class _DigitPadBody extends StatelessWidget {
           alignment: WrapAlignment.center,
           children: [
             for (var h = 0; h < 24; h++)
-              _HourChip(hour: h, selected: h == hour, onTap: () => onSet(hour: h), t: t),
+              _HourChip(
+                hour: h,
+                selected: h == hour,
+                onTap: () => onSet(hour: h),
+                t: t,
+              ),
           ],
         ),
         const SizedBox(height: 10),
         Text(
           UnifiedFieldsStrings.instance.minuteLabel,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: t.primary),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: t.primary,
+          ),
         ),
-        _MinuteSlider(minute: minute, onChanged: (v) => onSet(minute: v), t: t),
+        _MinuteSlider(
+          minute: minute,
+          onChanged: (v) => onSet(minute: v),
+          t: t,
+        ),
       ],
     );
   }
@@ -892,7 +1018,12 @@ class _TimelineRailBody extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _TimelineRail(hour: hour, minute: minute, onChanged: (v) => onSet(hour: v), t: t),
+          _TimelineRail(
+            hour: hour,
+            minute: minute,
+            onChanged: (v) => onSet(hour: v),
+            t: t,
+          ),
           const SizedBox(width: 20),
           Expanded(
             child: Column(
@@ -909,7 +1040,11 @@ class _TimelineRailBody extends StatelessWidget {
                 const SizedBox(height: 14),
                 Text(
                   UnifiedFieldsStrings.instance.minuteLabel,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: t.subhead),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: t.subhead,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -932,9 +1067,15 @@ class _TimelineRailBody extends StatelessWidget {
                   spacing: 10,
                   children: [
                     _RoundStepButton(
-                        icon: Icons.keyboard_arrow_up, onPressed: () => _bumpMinute(1), t: t),
+                      icon: Icons.keyboard_arrow_up,
+                      onPressed: () => _bumpMinute(1),
+                      t: t,
+                    ),
                     _RoundStepButton(
-                        icon: Icons.keyboard_arrow_down, onPressed: () => _bumpMinute(-1), t: t),
+                      icon: Icons.keyboard_arrow_down,
+                      onPressed: () => _bumpMinute(-1),
+                      t: t,
+                    ),
                   ],
                 ),
               ],
@@ -1045,14 +1186,19 @@ class _TimelineRail extends StatelessWidget {
                   top: 0,
                   bottom: 0,
                   width: railWidth,
-                  child: CustomPaint(painter: _RailPainter(colors: t.railGradient)),
+                  child: CustomPaint(
+                    painter: _RailPainter(colors: t.railGradient),
+                  ),
                 ),
                 // Draggable handle pill.
                 Positioned(
                   left: labelWidth - 10,
                   top: (handleY - 14).clamp(0.0, height - 28),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: t.primary,
                       borderRadius: BorderRadius.circular(999),
@@ -1091,14 +1237,20 @@ class _RailPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rrect = RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(size.width / 2));
+    final rrect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      Radius.circular(size.width / 2),
+    );
     // Night at the edges, warm daylight midday.
     final gradient = LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: colors,
     );
-    canvas.drawRRect(rrect, Paint()..shader = gradient.createShader(Offset.zero & size));
+    canvas.drawRRect(
+      rrect,
+      Paint()..shader = gradient.createShader(Offset.zero & size),
+    );
 
     final tick = Paint()
       ..color = Colors.white.withValues(alpha: 0.75)
@@ -1115,7 +1267,8 @@ class _RailPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _RailPainter oldDelegate) => oldDelegate.colors != colors;
+  bool shouldRepaint(covariant _RailPainter oldDelegate) =>
+      oldDelegate.colors != colors;
 }
 
 // --- style 5: clock dial -----------------------------------------------------
@@ -1147,7 +1300,11 @@ class _ClockDialBodyState extends State<_ClockDialBody> {
 
   UnifiedFieldsPickerTheme get t => widget.t;
 
-  Widget _readoutSegment(String text, {required bool active, required VoidCallback onTap}) {
+  Widget _readoutSegment(
+    String text, {
+    required bool active,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(t.radius),
@@ -1156,7 +1313,9 @@ class _ClockDialBodyState extends State<_ClockDialBody> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(t.radius),
-          color: active ? t.primary.withValues(alpha: 0.12) : Colors.transparent,
+          color: active
+              ? t.primary.withValues(alpha: 0.12)
+              : Colors.transparent,
           border: Border.all(color: active ? t.primary : t.border),
         ),
         child: Text(
@@ -1188,7 +1347,11 @@ class _ClockDialBodyState extends State<_ClockDialBody> {
             ),
             Text(
               ':',
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700, color: t.subhead),
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.w700,
+                color: t.subhead,
+              ),
             ),
             _readoutSegment(
               _two(widget.minute),
@@ -1244,9 +1407,12 @@ class _ClockDial extends StatelessWidget {
       final slot = (angle / (2 * math.pi) * 12).round() % 12;
       final outerRadius = dim / 2 - 26;
       final innerRadius = dim / 2 - 64;
-      final onOuter = (distance - outerRadius).abs() <= (distance - innerRadius).abs();
+      final onOuter =
+          (distance - outerRadius).abs() <= (distance - innerRadius).abs();
       // Outer ring: 12,1..11 → 12..23? No: outer = daytime 1..12, inner = 13..00.
-      final value = onOuter ? (slot == 0 ? 12 : slot) : (slot == 0 ? 0 : slot + 12);
+      final value = onOuter
+          ? (slot == 0 ? 12 : slot)
+          : (slot == 0 ? 0 : slot + 12);
       onHour(value);
       if (commit) onHourPicked();
     } else {
@@ -1309,7 +1475,12 @@ class _ClockDialPainter extends CustomPainter {
   final int minute;
   final UnifiedFieldsPickerTheme t;
 
-  void _paintLabel(Canvas canvas, Offset pos, String text, {required bool selected}) {
+  void _paintLabel(
+    Canvas canvas,
+    Offset pos,
+    String text, {
+    required bool selected,
+  }) {
     final tp = TextPainter(
       text: TextSpan(
         text: text,
@@ -1337,13 +1508,22 @@ class _ClockDialPainter extends CustomPainter {
     final outerRadius = faceRadius - 26;
     final innerRadius = faceRadius - 64;
 
-    canvas.drawCircle(center, faceRadius, Paint()..color = t.border.withValues(alpha: 0.35));
+    canvas.drawCircle(
+      center,
+      faceRadius,
+      Paint()..color = t.border.withValues(alpha: 0.35),
+    );
 
     Offset handTarget;
     if (phase == _DialPhase.hour) {
       final slot = hour % 12;
       final onOuter = hour >= 1 && hour <= 12;
-      handTarget = _slotPos(center, onOuter ? outerRadius : innerRadius, slot, 12);
+      handTarget = _slotPos(
+        center,
+        onOuter ? outerRadius : innerRadius,
+        slot,
+        12,
+      );
     } else {
       handTarget = _slotPos(center, outerRadius, minute, 60);
     }

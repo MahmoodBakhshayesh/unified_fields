@@ -9,6 +9,7 @@ import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
+import 'unified_picker_keyboard.dart';
 import 'unified_picker_sheet.dart';
 
 /// Single-select field backed by [PickerSheetWidget] (search + scroll-to-item list).
@@ -256,7 +257,7 @@ class _UnifiedCustomizablePickerFieldState<T>
       pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
       pickerHeaderStyle: widget.pickerHeaderStyle,
     );
-    FocusScope.of(context).requestFocus(FocusNode());
+    unifiedUnfocusBeforeModal(context);
     final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
       pickerSheetStyle: widget.pickerSheetStyle,
@@ -364,9 +365,13 @@ class _UnifiedCustomizablePickerFieldState<T>
 
     if (canType) return field;
 
-    return GestureDetector(
-      onTap: widget.locked || _inactive ? null : () => _open(context),
-      child: field,
+    return UnifiedPickerKeyboardActivator(
+      enabled: !widget.locked && !_inactive,
+      onActivate: () => _open(context),
+      child: GestureDetector(
+        onTap: widget.locked || _inactive ? null : () => _open(context),
+        child: field,
+      ),
     );
   }
 }
@@ -614,7 +619,7 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
       pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
       pickerHeaderStyle: widget.pickerHeaderStyle,
     );
-    FocusScope.of(context).requestFocus(FocusNode());
+    unifiedUnfocusBeforeModal(context);
     final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
       pickerSheetStyle: widget.pickerSheetStyle,
@@ -723,9 +728,13 @@ class _UnifiedCustomizableMultiPickerFieldState<T>
 
     if (canType) return field;
 
-    return GestureDetector(
-      onTap: widget.locked || _inactive ? null : () => _open(context),
-      child: field,
+    return UnifiedPickerKeyboardActivator(
+      enabled: !widget.locked && !_inactive,
+      onActivate: () => _open(context),
+      child: GestureDetector(
+        onTap: widget.locked || _inactive ? null : () => _open(context),
+        child: field,
+      ),
     );
   }
 }

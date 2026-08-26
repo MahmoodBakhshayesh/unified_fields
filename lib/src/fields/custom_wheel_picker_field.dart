@@ -8,6 +8,7 @@ import 'unified_field_decoration_context.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
+import 'unified_picker_keyboard.dart';
 export '../custom_wheel_picker_types.dart';
 export '../custom_wheel_picker_sheet.dart';
 
@@ -201,7 +202,7 @@ class _CustomWheelPickerState extends State<CustomWheelPicker> {
     );
     final dec = chrome.resolved;
 
-    return GestureDetector(
+    final field = GestureDetector(
       onTap: widget.locked || widget.isDisabled
           ? null
           : () => _open(context),
@@ -250,6 +251,11 @@ class _CustomWheelPickerState extends State<CustomWheelPicker> {
           },
         ),
       ),
+    );
+    return UnifiedPickerKeyboardActivator(
+      enabled: !widget.locked && !widget.isDisabled,
+      onActivate: () => _open(context),
+      child: field,
     );
   }
 }

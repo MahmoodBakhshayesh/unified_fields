@@ -10,6 +10,7 @@ import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 import 'unified_multi_picker_sheet.dart';
 import 'unified_picker_item_builders.dart';
+import 'unified_picker_keyboard.dart';
 import 'unified_picker_sheet.dart';
 
 /// Like [UnifiedSinglePickerField] but loads choices with [itemProvider] when the
@@ -282,7 +283,7 @@ class _UnifiedAsyncPickerFieldState<T>
       pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
       pickerHeaderStyle: widget.pickerHeaderStyle,
     );
-    FocusScope.of(context).requestFocus(FocusNode());
+    unifiedUnfocusBeforeModal(context);
     final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
       pickerSheetStyle: widget.pickerSheetStyle,
@@ -354,7 +355,7 @@ class _UnifiedAsyncPickerFieldState<T>
                 onPressed: _open,
               ));
 
-    return GestureDetector(
+    final field = GestureDetector(
       onTap: widget.locked || widget.isDisabled || _loading ? null : _open,
       child: UnifiedBaseTextField(
         decorationSet: chrome.activeSet,
@@ -400,6 +401,11 @@ class _UnifiedAsyncPickerFieldState<T>
           return widget.validator?.call(value);
         },
       ),
+    );
+    return UnifiedPickerKeyboardActivator(
+      enabled: !widget.locked && !widget.isDisabled && !_loading,
+      onActivate: _open,
+      child: field,
     );
   }
 }
@@ -677,7 +683,7 @@ class _UnifiedAsyncMultiPickerFieldState<T>
       pickerSheetBackgroundColor: widget.pickerSheetBackgroundColor,
       pickerHeaderStyle: widget.pickerHeaderStyle,
     );
-    FocusScope.of(context).requestFocus(FocusNode());
+    unifiedUnfocusBeforeModal(context);
     final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
       pickerSheetStyle: widget.pickerSheetStyle,
@@ -750,7 +756,7 @@ class _UnifiedAsyncMultiPickerFieldState<T>
                 onPressed: () => _open(dec),
               ));
 
-    return GestureDetector(
+    final field = GestureDetector(
       onTap: widget.locked || widget.isDisabled || _loading
           ? null
           : () => _open(dec),
@@ -798,6 +804,11 @@ class _UnifiedAsyncMultiPickerFieldState<T>
           return widget.validator?.call(value);
         },
       ),
+    );
+    return UnifiedPickerKeyboardActivator(
+      enabled: !widget.locked && !widget.isDisabled && !_loading,
+      onActivate: () => _open(dec),
+      child: field,
     );
   }
 }

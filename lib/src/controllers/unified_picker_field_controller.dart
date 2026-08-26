@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../fields/unified_multi_picker_sheet.dart';
 import '../fields/unified_picker_item_builders.dart';
 import '../fields/unified_input_theme.dart';
+import '../fields/unified_picker_keyboard.dart';
 import '../fields/unified_picker_sheet.dart';
 import 'base_unified_field_controller.dart';
 
@@ -107,7 +108,7 @@ class UnifiedPickerFieldController<T> extends BaseUnifiedFieldController<T> {
     required List<T> items,
     required String label,
   }) async {
-    FocusScope.of(context).requestFocus(FocusNode());
+    unifiedUnfocusBeforeModal(context);
     final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
       pickerSheetStyle: pickerSheetStyle,
@@ -258,7 +259,7 @@ class UnifiedMultiPickerFieldController<T>
     required List<T> items,
     required String label,
   }) async {
-    FocusScope.of(context).requestFocus(FocusNode());
+    unifiedUnfocusBeforeModal(context);
     final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
       context: context,
       pickerSheetStyle: pickerSheetStyle,

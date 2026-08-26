@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'unified_fields_strings.dart';
 import 'unified_fields_picker_theme.dart';
 import 'unified_sheet_button.dart';
-
+import 'fields/unified_picker_keyboard.dart';
 
 /// Visual style of [UnifiedFieldsStyledCalendarPicker].
 enum UnifiedFieldsStyledCalendarStyle {
@@ -57,7 +57,8 @@ class UnifiedFieldsCalendarDayInfo {
 }
 
 /// Resolves per-day decorations. Return null for a plain day.
-typedef UnifiedFieldsCalendarDayInfoBuilder = UnifiedFieldsCalendarDayInfo? Function(DateTime day);
+typedef UnifiedFieldsCalendarDayInfoBuilder =
+    UnifiedFieldsCalendarDayInfo? Function(DateTime day);
 
 /// Current selection of an [UnifiedFieldsStyledCalendarPicker]. In single mode only [date]
 /// is set; in range mode [start]/[end] fill in as the user taps.
@@ -70,16 +71,22 @@ class UnifiedFieldsStyledCalendarSelection {
 
   bool get isComplete => date != null || (start != null && end != null);
 
-  DateTimeRange? get range =>
-      start != null && end != null ? DateTimeRange(start: start!, end: end!) : null;
+  DateTimeRange? get range => start != null && end != null
+      ? DateTimeRange(start: start!, end: end!)
+      : null;
 }
 
 bool _sameDay(DateTime? a, DateTime? b) =>
-    a != null && b != null && a.year == b.year && a.month == b.month && a.day == b.day;
+    a != null &&
+    b != null &&
+    a.year == b.year &&
+    a.month == b.month &&
+    a.day == b.day;
 
 DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
-String _localeOf(BuildContext context) => Localizations.localeOf(context).toString();
+String _localeOf(BuildContext context) =>
+    Localizations.localeOf(context).toString();
 
 /// Allow dragging scrollables with mouse/trackpad as well as touch, so the
 /// strip and month lists feel right on web/desktop too.
@@ -88,11 +95,11 @@ class _AnyDeviceScrollBehavior extends MaterialScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => const {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.trackpad,
-        PointerDeviceKind.stylus,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+    PointerDeviceKind.stylus,
+  };
 }
 
 /// Embeddable date picker that renders as any [UnifiedFieldsStyledCalendarStyle], in single
@@ -138,18 +145,24 @@ class UnifiedFieldsStyledCalendarPicker extends StatefulWidget {
   final UnifiedFieldsPickerTheme theme;
 
   @override
-  State<UnifiedFieldsStyledCalendarPicker> createState() => _UnifiedFieldsStyledCalendarPickerState();
+  State<UnifiedFieldsStyledCalendarPicker> createState() =>
+      _UnifiedFieldsStyledCalendarPickerState();
 }
 
-class _UnifiedFieldsStyledCalendarPickerState extends State<UnifiedFieldsStyledCalendarPicker> {
+class _UnifiedFieldsStyledCalendarPickerState
+    extends State<UnifiedFieldsStyledCalendarPicker> {
   DateTime? _start;
   DateTime? _end;
   late DateTime _visibleMonth;
 
   UnifiedFieldsPickerTheme get _t => widget.theme;
 
-  DateTime get _min => _dateOnly(widget.minDate ?? DateTime.now().subtract(const Duration(days: 365)));
-  DateTime get _max => _dateOnly(widget.maxDate ?? DateTime.now().add(const Duration(days: 730)));
+  DateTime get _min => _dateOnly(
+    widget.minDate ?? DateTime.now().subtract(const Duration(days: 365)),
+  );
+  DateTime get _max => _dateOnly(
+    widget.maxDate ?? DateTime.now().add(const Duration(days: 730)),
+  );
 
   @override
   void initState() {
@@ -164,9 +177,11 @@ class _UnifiedFieldsStyledCalendarPickerState extends State<UnifiedFieldsStyledC
     _visibleMonth = DateTime(anchor.year, anchor.month);
   }
 
-  void _setVisibleMonth(DateTime month) => setState(() => _visibleMonth = month);
+  void _setVisibleMonth(DateTime month) =>
+      setState(() => _visibleMonth = month);
 
-  UnifiedFieldsStyledCalendarSelection get _selection => widget.mode == UnifiedFieldsStyledCalendarMode.single
+  UnifiedFieldsStyledCalendarSelection get _selection =>
+      widget.mode == UnifiedFieldsStyledCalendarMode.single
       ? UnifiedFieldsStyledCalendarSelection(date: _start)
       : UnifiedFieldsStyledCalendarSelection(start: _start, end: _end);
 
@@ -207,7 +222,8 @@ class _UnifiedFieldsStyledCalendarPickerState extends State<UnifiedFieldsStyledC
   _DayCellState _cellState(DateTime day) {
     final info = widget.dayInfoBuilder?.call(day);
     final hasRange = _start != null && _end != null;
-    final inRange = hasRange &&
+    final inRange =
+        hasRange &&
         day.isAfter(_start!) &&
         day.isBefore(_end!) &&
         !_sameDay(day, _start) &&
@@ -216,7 +232,9 @@ class _UnifiedFieldsStyledCalendarPickerState extends State<UnifiedFieldsStyledC
       info: info,
       isToday: _sameDay(day, DateTime.now()),
       isStart: _sameDay(day, _start),
-      isEnd: widget.mode == UnifiedFieldsStyledCalendarMode.range && _sameDay(day, _end),
+      isEnd:
+          widget.mode == UnifiedFieldsStyledCalendarMode.range &&
+          _sameDay(day, _end),
       inRange: inRange,
       hasCompleteRange: hasRange,
       disabled: _isDisabled(day, info),
@@ -228,12 +246,22 @@ class _UnifiedFieldsStyledCalendarPickerState extends State<UnifiedFieldsStyledC
     return ScrollConfiguration(
       behavior: const _AnyDeviceScrollBehavior(),
       child: switch (widget.style) {
-        UnifiedFieldsStyledCalendarStyle.monthGrid => _MonthGridBody(host: this),
-        UnifiedFieldsStyledCalendarStyle.dateStrip => _DateStripBody(host: this),
-        UnifiedFieldsStyledCalendarStyle.verticalMonths => _VerticalMonthsBody(host: this),
-        UnifiedFieldsStyledCalendarStyle.cascadeChips => _CascadeChipsBody(host: this),
+        UnifiedFieldsStyledCalendarStyle.monthGrid => _MonthGridBody(
+          host: this,
+        ),
+        UnifiedFieldsStyledCalendarStyle.dateStrip => _DateStripBody(
+          host: this,
+        ),
+        UnifiedFieldsStyledCalendarStyle.verticalMonths => _VerticalMonthsBody(
+          host: this,
+        ),
+        UnifiedFieldsStyledCalendarStyle.cascadeChips => _CascadeChipsBody(
+          host: this,
+        ),
         UnifiedFieldsStyledCalendarStyle.wheels => _WheelsBody(host: this),
-        UnifiedFieldsStyledCalendarStyle.heroCalendar => _HeroCalendarBody(host: this),
+        UnifiedFieldsStyledCalendarStyle.heroCalendar => _HeroCalendarBody(
+          host: this,
+        ),
       },
     );
   }
@@ -242,9 +270,11 @@ class _UnifiedFieldsStyledCalendarPickerState extends State<UnifiedFieldsStyledC
 /// Modal wrapper around [UnifiedFieldsStyledCalendarPicker]: bottom sheet on phones, dialog
 /// on wide layouts. Resolves with the confirmed [UnifiedFieldsStyledCalendarSelection] or
 /// null when dismissed.
-Future<UnifiedFieldsStyledCalendarSelection?> showUnifiedFieldsStyledCalendarPicker({
+Future<UnifiedFieldsStyledCalendarSelection?>
+showUnifiedFieldsStyledCalendarPicker({
   required BuildContext context,
-  UnifiedFieldsStyledCalendarStyle style = UnifiedFieldsStyledCalendarStyle.monthGrid,
+  UnifiedFieldsStyledCalendarStyle style =
+      UnifiedFieldsStyledCalendarStyle.monthGrid,
   UnifiedFieldsStyledCalendarMode mode = UnifiedFieldsStyledCalendarMode.single,
   DateTime? initialDate,
   DateTimeRange? initialRange,
@@ -279,7 +309,10 @@ Future<UnifiedFieldsStyledCalendarSelection?> showUnifiedFieldsStyledCalendarPic
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(theme.modalRadius * 0.7),
         ),
-        child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 440), child: content),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440),
+          child: UnifiedPickerModalScope(child: content),
+        ),
       ),
     );
   }
@@ -290,9 +323,12 @@ Future<UnifiedFieldsStyledCalendarSelection?> showUnifiedFieldsStyledCalendarPic
     barrierColor: theme.barrierColor,
     backgroundColor: theme.background,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(theme.modalRadius)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(theme.modalRadius),
+      ),
     ),
-    builder: (context) => SafeArea(child: content),
+    builder: (context) =>
+        SafeArea(child: UnifiedPickerModalScope(child: content)),
   );
 }
 
@@ -300,7 +336,8 @@ Future<UnifiedFieldsStyledCalendarSelection?> showUnifiedFieldsStyledCalendarPic
 /// [DateTimeRange] (or null).
 Future<DateTimeRange?> showUnifiedFieldsStyledDateRangePicker({
   required BuildContext context,
-  UnifiedFieldsStyledCalendarStyle style = UnifiedFieldsStyledCalendarStyle.verticalMonths,
+  UnifiedFieldsStyledCalendarStyle style =
+      UnifiedFieldsStyledCalendarStyle.verticalMonths,
   DateTimeRange? initialRange,
   DateTime? minDate,
   DateTime? maxDate,
@@ -352,7 +389,8 @@ class _AppCalendarSheet extends StatefulWidget {
 }
 
 class _AppCalendarSheetState extends State<_AppCalendarSheet> {
-  UnifiedFieldsStyledCalendarSelection _value = const UnifiedFieldsStyledCalendarSelection();
+  UnifiedFieldsStyledCalendarSelection _value =
+      const UnifiedFieldsStyledCalendarSelection();
 
   @override
   void initState() {
@@ -360,14 +398,18 @@ class _AppCalendarSheetState extends State<_AppCalendarSheet> {
     _value = widget.mode == UnifiedFieldsStyledCalendarMode.single
         ? UnifiedFieldsStyledCalendarSelection(date: widget.initialDate)
         : UnifiedFieldsStyledCalendarSelection(
-            start: widget.initialRange?.start, end: widget.initialRange?.end);
+            start: widget.initialRange?.start,
+            end: widget.initialRange?.end,
+          );
   }
 
   String get _summary {
     final locale = _localeOf(context);
     final fmt = DateFormat.MMMd(locale);
     if (widget.mode == UnifiedFieldsStyledCalendarMode.single) {
-      return _value.date != null ? DateFormat.yMMMEd(locale).format(_value.date!) : '';
+      return _value.date != null
+          ? DateFormat.yMMMEd(locale).format(_value.date!)
+          : '';
     }
     final start = _value.start != null ? fmt.format(_value.start!) : '…';
     final end = _value.end != null ? fmt.format(_value.end!) : '…';
@@ -377,73 +419,85 @@ class _AppCalendarSheetState extends State<_AppCalendarSheet> {
   @override
   Widget build(BuildContext context) {
     final t = widget.t;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (widget.title != null) ...[
-            Text(
-              widget.title!,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: t.headline,
+    return UnifiedPickerModalScope(
+      onConfirm: _value.isComplete
+          ? () => Navigator.of(context).pop(_value)
+          : null,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.title != null) ...[
+              Text(
+                widget.title!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: t.headline,
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            Flexible(
+              child: UnifiedFieldsStyledCalendarPicker(
+                style: widget.style,
+                mode: widget.mode,
+                initialDate: widget.initialDate,
+                initialRange: widget.initialRange,
+                minDate: widget.minDate,
+                maxDate: widget.maxDate,
+                dayInfoBuilder: widget.dayInfoBuilder,
+                theme: t,
+                onChanged: (s) => setState(() => _value = s),
               ),
             ),
             const SizedBox(height: 12),
-          ],
-          Flexible(
-            child: UnifiedFieldsStyledCalendarPicker(
-              style: widget.style,
-              mode: widget.mode,
-              initialDate: widget.initialDate,
-              initialRange: widget.initialRange,
-              minDate: widget.minDate,
-              maxDate: widget.maxDate,
-              dayInfoBuilder: widget.dayInfoBuilder,
-              theme: t,
-              onChanged: (s) => setState(() => _value = s),
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (_summary.isNotEmpty) ...[
-            Text(
-              _summary,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: t.headline,
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
-          Row(
-            children: [
-              Expanded(
-                child: UnifiedSheetButton(reverse: true, 
-                  label: t.cancelLabel ?? UnifiedFieldsStrings.instance.cancel,
-                  textColor: t.cancelFg,
-                  borderSide: BorderSide(color: t.cancelFg.withValues(alpha: 0.6)),
-                  onPressed: () => Navigator.of(context).pop(),
+            if (_summary.isNotEmpty) ...[
+              Text(
+                _summary,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: t.headline,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 2,
-                child: UnifiedSheetButton(
-                  label: t.confirmLabel ?? UnifiedFieldsStrings.instance.confirm,
-                  color: t.confirmFill,
-                  textColor: t.confirmText,
-                  onPressed: _value.isComplete ? () => Navigator.of(context).pop(_value) : null,
-                ),
-              ),
+              const SizedBox(height: 10),
             ],
-          ),
-        ],
+            Row(
+              children: [
+                Expanded(
+                  child: UnifiedSheetButton(
+                    reverse: true,
+                    label:
+                        t.cancelLabel ?? UnifiedFieldsStrings.instance.cancel,
+                    textColor: t.cancelFg,
+                    borderSide: BorderSide(
+                      color: t.cancelFg.withValues(alpha: 0.6),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: UnifiedSheetButton(
+                    label:
+                        t.confirmLabel ?? UnifiedFieldsStrings.instance.confirm,
+                    color: t.confirmFill,
+                    textColor: t.confirmText,
+                    onPressed: _value.isComplete
+                        ? () => Navigator.of(context).pop(_value)
+                        : null,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -493,13 +547,14 @@ class _DayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final info = state.info;
-    final showBand = state.hasCompleteRange && (state.inRange || state.isSelected);
+    final showBand =
+        state.hasCompleteRange && (state.inRange || state.isSelected);
 
     final numberColor = state.disabled
         ? t.disabled
         : state.isSelected
-            ? t.onPrimary
-            : t.headline;
+        ? t.onPrimary
+        : t.headline;
 
     return SizedBox(
       height: height,
@@ -516,12 +571,16 @@ class _DayCell extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ColoredBox(
-                      color: state.isStart && !state.isEnd ? Colors.transparent : t.rangeBand,
+                      color: state.isStart && !state.isEnd
+                          ? Colors.transparent
+                          : t.rangeBand,
                     ),
                   ),
                   Expanded(
                     child: ColoredBox(
-                      color: state.isEnd && !state.isStart ? Colors.transparent : t.rangeBand,
+                      color: state.isEnd && !state.isStart
+                          ? Colors.transparent
+                          : t.rangeBand,
                     ),
                   ),
                 ],
@@ -567,7 +626,9 @@ class _DayCell extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w600,
-                    color: state.disabled ? t.disabled : info.labelColor ?? t.primary,
+                    color: state.disabled
+                        ? t.disabled
+                        : info.labelColor ?? t.primary,
                   ),
                 )
               else if (info?.dot ?? false)
@@ -611,7 +672,10 @@ List<String> _weekdayNames(BuildContext context, int firstDayOfWeekIndex) {
   final sunday = DateTime(2023, 1, 1);
   return [
     for (var i = 0; i < 7; i++)
-      fmt.format(sunday.add(Duration(days: (firstDayOfWeekIndex + i) % 7))).characters.first,
+      fmt
+          .format(sunday.add(Duration(days: (firstDayOfWeekIndex + i) % 7)))
+          .characters
+          .first,
   ];
 }
 
@@ -644,7 +708,11 @@ class _WeekdayHeader extends StatelessWidget {
 }
 
 class _MonthGrid extends StatelessWidget {
-  const _MonthGrid({required this.month, required this.host, required this.firstDayOfWeekIndex});
+  const _MonthGrid({
+    required this.month,
+    required this.host,
+    required this.firstDayOfWeekIndex,
+  });
 
   final DateTime month;
   final _UnifiedFieldsStyledCalendarPickerState host;
@@ -664,7 +732,8 @@ class _MonthGrid extends StatelessWidget {
                   child: () {
                     final i = r * 7 + c;
                     final day = i < cells.length ? cells[i] : null;
-                    if (day == null) return const SizedBox(height: _DayCell.height);
+                    if (day == null)
+                      return const SizedBox(height: _DayCell.height);
                     return _DayCell(
                       day: day,
                       state: host._cellState(day),
@@ -681,7 +750,11 @@ class _MonthGrid extends StatelessWidget {
 }
 
 class _ChevronButton extends StatelessWidget {
-  const _ChevronButton({required this.icon, required this.onPressed, required this.t});
+  const _ChevronButton({
+    required this.icon,
+    required this.onPressed,
+    required this.t,
+  });
 
   final IconData icon;
   final VoidCallback? onPressed;
@@ -813,7 +886,10 @@ class _MonthGridBodyState extends State<_MonthGridBody> {
             ),
             layoutBuilder: (currentChild, previousChildren) => Stack(
               alignment: Alignment.topCenter,
-              children: [...previousChildren, if (currentChild != null) currentChild],
+              children: [
+                ...previousChildren,
+                if (currentChild != null) currentChild,
+              ],
             ),
             child: KeyedSubtree(
               key: ValueKey('${_month.year}-${_month.month}'),
@@ -851,11 +927,13 @@ class _DateStripBodyState extends State<_DateStripBody> {
 
   UnifiedFieldsPickerTheme get t => host._t;
 
-  int get _dayCount => _dateOnly(host._max).difference(_dateOnly(host._min)).inDays + 1;
+  int get _dayCount =>
+      _dateOnly(host._max).difference(_dateOnly(host._min)).inDays + 1;
 
   DateTime _dayAt(int index) => _dateOnly(host._min).add(Duration(days: index));
 
-  int _indexOf(DateTime day) => _dateOnly(day).difference(_dateOnly(host._min)).inDays;
+  int _indexOf(DateTime day) =>
+      _dateOnly(day).difference(_dateOnly(host._min)).inDays;
 
   @override
   void initState() {
@@ -863,12 +941,17 @@ class _DateStripBodyState extends State<_DateStripBody> {
     final anchor = host._start ?? DateTime.now();
     final initialIndex = _indexOf(anchor).clamp(0, _dayCount - 1);
     _headerDate = _dayAt(initialIndex);
-    _controller = ScrollController(initialScrollOffset: initialIndex * _itemExtent);
+    _controller = ScrollController(
+      initialScrollOffset: initialIndex * _itemExtent,
+    );
     _controller.addListener(_syncHeader);
   }
 
   void _syncHeader() {
-    final index = (_controller.offset / _itemExtent).round().clamp(0, _dayCount - 1);
+    final index = (_controller.offset / _itemExtent).round().clamp(
+      0,
+      _dayCount - 1,
+    );
     final date = _dayAt(index);
     if (date.month != _headerDate.month || date.year != _headerDate.year) {
       setState(() => _headerDate = date);
@@ -878,8 +961,10 @@ class _DateStripBodyState extends State<_DateStripBody> {
   void _page(int direction) {
     final width = _controller.position.viewportDimension;
     _controller.animateTo(
-      (_controller.offset + direction * width * 0.8)
-          .clamp(0, _controller.position.maxScrollExtent),
+      (_controller.offset + direction * width * 0.8).clamp(
+        0,
+        _controller.position.maxScrollExtent,
+      ),
       duration: const Duration(milliseconds: 280),
       curve: Curves.easeOutCubic,
     );
@@ -915,8 +1000,16 @@ class _DateStripBodyState extends State<_DateStripBody> {
                 ),
               ),
             ),
-            _ChevronButton(icon: Icons.chevron_left, onPressed: () => _page(-1), t: t),
-            _ChevronButton(icon: Icons.chevron_right, onPressed: () => _page(1), t: t),
+            _ChevronButton(
+              icon: Icons.chevron_left,
+              onPressed: () => _page(-1),
+              t: t,
+            ),
+            _ChevronButton(
+              icon: Icons.chevron_right,
+              onPressed: () => _page(1),
+              t: t,
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -926,12 +1019,15 @@ class _DateStripBodyState extends State<_DateStripBody> {
           child: Listener(
             onPointerSignal: (signal) {
               if (signal is PointerScrollEvent && _controller.hasClients) {
-                final delta = signal.scrollDelta.dy.abs() > signal.scrollDelta.dx.abs()
+                final delta =
+                    signal.scrollDelta.dy.abs() > signal.scrollDelta.dx.abs()
                     ? signal.scrollDelta.dy
                     : signal.scrollDelta.dx;
                 _controller.jumpTo(
-                  (_controller.offset + delta)
-                      .clamp(0, _controller.position.maxScrollExtent),
+                  (_controller.offset + delta).clamp(
+                    0,
+                    _controller.position.maxScrollExtent,
+                  ),
                 );
               }
             },
@@ -986,8 +1082,8 @@ class _StripCard extends StatelessWidget {
     final fg = state.disabled
         ? t.disabled
         : selected
-            ? t.onPrimary
-            : t.headline;
+        ? t.onPrimary
+        : t.headline;
 
     return InkWell(
       onTap: state.disabled ? null : onTap,
@@ -1001,14 +1097,14 @@ class _StripCard extends StatelessWidget {
           color: selected
               ? t.primary
               : tinted
-                  ? t.rangeBand
-                  : t.background,
+              ? t.rangeBand
+              : t.background,
           border: Border.all(
             color: selected
                 ? t.primary
                 : state.isToday
-                    ? t.primary.withValues(alpha: 0.6)
-                    : t.border,
+                ? t.primary.withValues(alpha: 0.6)
+                : t.border,
           ),
           boxShadow: selected
               ? [
@@ -1028,7 +1124,9 @@ class _StripCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: selected ? t.onPrimary.withValues(alpha: 0.7) : t.subhead,
+                color: selected
+                    ? t.onPrimary.withValues(alpha: 0.7)
+                    : t.subhead,
               ),
             ),
             const SizedBox(height: 2),
@@ -1085,10 +1183,14 @@ class _StripReadout extends StatelessWidget {
     if (date == null) return const SizedBox(height: 30);
 
     final fmt = DateFormat.MMMEd(locale);
-    final text = host.widget.mode == UnifiedFieldsStyledCalendarMode.single || selection.end == null
+    final text =
+        host.widget.mode == UnifiedFieldsStyledCalendarMode.single ||
+            selection.end == null
         ? fmt.format(date)
         : '${fmt.format(selection.start!)} – ${fmt.format(selection.end!)}';
-    final info = selection.end == null ? host.widget.dayInfoBuilder?.call(date) : null;
+    final info = selection.end == null
+        ? host.widget.dayInfoBuilder?.call(date)
+        : null;
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 180),
@@ -1140,7 +1242,8 @@ class _VerticalMonthsBodyState extends State<_VerticalMonthsBody> {
     return (max.year - min.year) * 12 + max.month - min.month + 1;
   }
 
-  DateTime _monthAt(int index) => DateTime(host._min.year, host._min.month + index);
+  DateTime _monthAt(int index) =>
+      DateTime(host._min.year, host._min.month + index);
 
   @override
   void dispose() {
@@ -1235,7 +1338,11 @@ class _CascadeChipsBodyState extends State<_CascadeChipsBody> {
   Widget build(BuildContext context) {
     final locale = _localeOf(context);
 
-    Widget crumb(String text, {required bool active, required VoidCallback onTap}) {
+    Widget crumb(
+      String text, {
+      required bool active,
+      required VoidCallback onTap,
+    }) {
       return InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
@@ -1297,7 +1404,10 @@ class _CascadeChipsBodyState extends State<_CascadeChipsBody> {
           ),
           layoutBuilder: (currentChild, previousChildren) => Stack(
             alignment: Alignment.topCenter,
-            children: [...previousChildren, if (currentChild != null) currentChild],
+            children: [
+              ...previousChildren,
+              if (currentChild != null) currentChild,
+            ],
           ),
           child: KeyedSubtree(
             key: ValueKey('$_level-${_month.year}-${_month.month}'),
@@ -1344,7 +1454,8 @@ class _CascadeChipsBodyState extends State<_CascadeChipsBody> {
           () {
             final month = DateTime(_month.year, m);
             final lastOfMonth = DateTime(month.year, m + 1, 0);
-            final enabled = !lastOfMonth.isBefore(host._min) && !month.isAfter(host._max);
+            final enabled =
+                !lastOfMonth.isBefore(host._min) && !month.isAfter(host._max);
             return _CascadeChip(
               text: fmt.format(month),
               selected: m == _month.month,
@@ -1375,7 +1486,9 @@ class _CascadeChipsBodyState extends State<_CascadeChipsBody> {
             return _CascadeChip(
               text: '$d',
               subText: info?.label,
-              dotColor: (info?.dot ?? false) ? (info!.dotColor ?? t.accent) : null,
+              dotColor: (info?.dot ?? false)
+                  ? (info!.dotColor ?? t.accent)
+                  : null,
               selected: state.isSelected,
               tinted: state.inRange,
               outlined: state.isToday,
@@ -1417,8 +1530,8 @@ class _CascadeChip extends StatelessWidget {
     final fg = disabled
         ? t.disabled
         : selected
-            ? t.onPrimary
-            : t.headline;
+        ? t.onPrimary
+        : t.headline;
 
     return InkWell(
       onTap: disabled ? null : onTap,
@@ -1433,8 +1546,8 @@ class _CascadeChip extends StatelessWidget {
           color: selected
               ? t.primary
               : tinted
-                  ? t.rangeBand
-                  : t.background,
+              ? t.rangeBand
+              : t.background,
           border: Border.all(
             color: selected || outlined ? t.primary : t.border,
             width: outlined && !selected ? 1.4 : 1,
@@ -1476,7 +1589,10 @@ class _CascadeChip extends StatelessWidget {
                 width: 5,
                 height: 5,
                 margin: const EdgeInsets.only(top: 2),
-                decoration: BoxDecoration(shape: BoxShape.circle, color: dotColor),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: dotColor,
+                ),
               ),
           ],
         ),
@@ -1519,7 +1635,9 @@ class _WheelsBodyState extends State<_WheelsBody> {
     if (_value.isAfter(host._max)) _value = host._max;
     _dayCtrl = FixedExtentScrollController(initialItem: _value.day - 1);
     _monthCtrl = FixedExtentScrollController(initialItem: _value.month - 1);
-    _yearCtrl = FixedExtentScrollController(initialItem: _value.year - _minYear);
+    _yearCtrl = FixedExtentScrollController(
+      initialItem: _value.year - _minYear,
+    );
     // Report the initial wheel value so the sheet can enable confirm.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) host._setSingle(_value);
@@ -1535,11 +1653,7 @@ class _WheelsBodyState extends State<_WheelsBody> {
   }
 
   void _update({int? day, int? month, int? year}) {
-    var next = DateTime(
-      year ?? _value.year,
-      month ?? _value.month,
-      1,
-    );
+    var next = DateTime(year ?? _value.year, month ?? _value.month, 1);
     final maxDay = _daysIn(next);
     var nextDay = (day ?? _value.day).clamp(1, maxDay);
     next = DateTime(next.year, next.month, nextDay);
@@ -1548,7 +1662,9 @@ class _WheelsBodyState extends State<_WheelsBody> {
     setState(() => _value = next);
     host._setSingle(next);
     // Keep the day wheel in bounds when the month shrank.
-    if (_dayCtrl.hasClients && _dayCtrl.selectedItem != next.day - 1 && day == null) {
+    if (_dayCtrl.hasClients &&
+        _dayCtrl.selectedItem != next.day - 1 &&
+        day == null) {
       _dayCtrl.animateToItem(
         next.day - 1,
         duration: const Duration(milliseconds: 180),
@@ -1649,7 +1765,9 @@ class _DateWheel extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 17,
-              fontWeight: i == selectedIndex ? FontWeight.w700 : FontWeight.w400,
+              fontWeight: i == selectedIndex
+                  ? FontWeight.w700
+                  : FontWeight.w400,
               color: i == selectedIndex ? t.headline : t.subhead,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
@@ -1724,8 +1842,10 @@ class _HeroCalendarBodyState extends State<_HeroCalendarBody> {
           transitionBuilder: (child, animation) => FadeTransition(
             opacity: animation,
             child: SlideTransition(
-              position: Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
-                  .animate(animation),
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.15),
+                end: Offset.zero,
+              ).animate(animation),
               child: child,
             ),
           ),
@@ -1777,7 +1897,11 @@ class _HeroCalendarBodyState extends State<_HeroCalendarBody> {
         // Week strip with chevrons; swipe or click through weeks.
         Row(
           children: [
-            _ChevronButton(icon: Icons.chevron_left, onPressed: () => _shiftWeek(-1), t: t),
+            _ChevronButton(
+              icon: Icons.chevron_left,
+              onPressed: () => _shiftWeek(-1),
+              t: t,
+            ),
             Expanded(
               child: GestureDetector(
                 onHorizontalDragEnd: (details) {
@@ -1813,7 +1937,11 @@ class _HeroCalendarBodyState extends State<_HeroCalendarBody> {
                 ),
               ),
             ),
-            _ChevronButton(icon: Icons.chevron_right, onPressed: () => _shiftWeek(1), t: t),
+            _ChevronButton(
+              icon: Icons.chevron_right,
+              onPressed: () => _shiftWeek(1),
+              t: t,
+            ),
           ],
         ),
       ],
@@ -1845,8 +1973,8 @@ class _HeroWeekDay extends StatelessWidget {
           color: selected
               ? t.primary
               : state.inRange
-                  ? t.rangeBand
-                  : Colors.transparent,
+              ? t.rangeBand
+              : Colors.transparent,
           border: state.isToday && !selected
               ? Border.all(color: t.primary.withValues(alpha: 0.7))
               : null,
@@ -1858,7 +1986,9 @@ class _HeroWeekDay extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: selected ? t.onPrimary.withValues(alpha: 0.75) : t.subhead,
+                color: selected
+                    ? t.onPrimary.withValues(alpha: 0.75)
+                    : t.subhead,
               ),
             ),
             const SizedBox(height: 3),
@@ -1870,8 +2000,8 @@ class _HeroWeekDay extends StatelessWidget {
                 color: state.disabled
                     ? t.disabled
                     : selected
-                        ? t.onPrimary
-                        : t.headline,
+                    ? t.onPrimary
+                    : t.headline,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),

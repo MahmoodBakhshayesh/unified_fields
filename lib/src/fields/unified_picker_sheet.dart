@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../unified_fields_context.dart';
 import '../unified_fields_strings.dart';
 import 'unified_input_theme.dart';
 import 'unified_picker_item_builders.dart';
+import 'unified_picker_keyboard.dart';
 import '../scrollable_list/item_positions_listener.dart';
 import '../scrollable_list/scrollable_positioned_list.dart';
 
@@ -84,7 +86,19 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _positionsListener =
       ItemPositionsListener.create();
+  final FocusNode _sheetFocusNode = FocusNode(debugLabel: 'PickerSheetWidget');
+  final FocusNode _searchFocusNode = FocusNode(
+    debugLabel: 'PickerSheetWidgetSearch',
+  );
   bool autoPop = false;
+
+  /// Keyboard-highlighted row in the filtered list; `-1` when none.
+  int _highlight = -1;
+  List<T> _visibleItems = const [];
+
+  /// Grid tiles are app-built, so highlight chrome / scroll-to-row only apply
+  /// to the list layout.
+  bool get _keyboardNavEnabled => widget.gridItemBuilder == null;
 
   @override
   void initState() {
@@ -93,11 +107,26 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
       if (searchC.text.isNotEmpty) {
         _scrollToTop();
       }
+      // Enter picks the best match while a query is active.
+      _highlight = searchC.text.isEmpty ? -1 : 0;
       setState(() {});
     });
     if (widget.gridItemBuilder == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _focusOnOpen());
+  }
+
+  /// Takes keyboard focus so arrows / Enter work right after the sheet opens.
+  /// The search field is only focused when [PickerSheetWidget.searchAutoFocus]
+  /// asks for it, so phones do not get an unexpected soft keyboard.
+  void _focusOnOpen() {
+    if (!mounted) return;
+    if (widget.hasSearch && widget.searchAutoFocus) {
+      _searchFocusNode.requestFocus();
+      return;
+    }
+    _sheetFocusNode.requestFocus();
   }
 
   @override
@@ -111,8 +140,88 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
 
   @override
   void dispose() {
+    _sheetFocusNode.dispose();
+    _searchFocusNode.dispose();
     searchC.dispose();
     super.dispose();
+  }
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (!_keyboardNavEnabled) return KeyEventResult.ignored;
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final key = event.logicalKey;
+    final traverse = unifiedPickerTraversalDelta(event);
+    if (traverse != null) {
+      if (_searchFocusNode.hasFocus) {
+        _sheetFocusNode.requestFocus();
+      }
+      _moveHighlight(traverse);
+      return KeyEventResult.handled;
+    }
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.numpadEnter) {
+      if (_highlight < 0 || _highlight >= _visibleItems.length) {
+        // No highlight: leave Enter to the search field / focused row.
+        return KeyEventResult.ignored;
+      }
+      Navigator.of(context).pop(_visibleItems[_highlight]);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.escape) {
+      Navigator.of(context).maybePop();
+      return KeyEventResult.handled;
+    }
+    return _typeToSearch(event);
+  }
+
+  /// Typing while the sheet (not the search field) holds focus starts a query,
+  /// so desktop users do not have to click the search box first.
+  KeyEventResult _typeToSearch(KeyEvent event) {
+    if (!widget.hasSearch || !_sheetFocusNode.hasPrimaryFocus) {
+      return KeyEventResult.ignored;
+    }
+    final character = event.character;
+    if (character == null ||
+        character.length != 1 ||
+        character.trim().isEmpty ||
+        HardwareKeyboard.instance.isControlPressed ||
+        HardwareKeyboard.instance.isMetaPressed ||
+        HardwareKeyboard.instance.isAltPressed) {
+      return KeyEventResult.ignored;
+    }
+    _searchFocusNode.requestFocus();
+    final next = '${searchC.text}$character';
+    searchC.value = TextEditingValue(
+      text: next,
+      selection: TextSelection.collapsed(offset: next.length),
+    );
+    return KeyEventResult.handled;
+  }
+
+  void _moveHighlight(int delta) {
+    final items = _visibleItems;
+    if (items.isEmpty) return;
+    final raw = _highlight < 0
+        ? (delta > 0 ? 0 : items.length - 1)
+        : _highlight + delta;
+    final next = unifiedPickerWrapIndex(raw, items.length);
+    if (next == _highlight) return;
+    setState(() => _highlight = next);
+    _scrollToHighlight(next);
+  }
+
+  void _scrollToHighlight(int index) {
+    if (!_itemScrollController.isAttached) return;
+    if (_isIndexFullyVisible(index)) return;
+    _itemScrollController.scrollTo(
+      index: index,
+      duration: const Duration(milliseconds: 150),
+      curve: Curves.easeOut,
+      alignment: 0.3,
+    );
   }
 
   String _searchLabel(T item) =>
@@ -126,10 +235,9 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
         .where(
           (a) =>
               query.isEmpty ||
-              _searchLabel(a)
-                  .toLowerCase()
-                  .split(' ')
-                  .any((sp) => sp.startsWith(query)),
+              _searchLabel(
+                a,
+              ).toLowerCase().split(' ').any((sp) => sp.startsWith(query)),
         )
         .toList();
 
@@ -246,6 +354,8 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
   @override
   Widget build(BuildContext context) {
     final items = _filteredSorted();
+    _visibleItems = items;
+    if (_highlight >= items.length) _highlight = items.length - 1;
     // if (items.length == 1 && !autoPop) {
     //   autoPop = true;
     //   Future.delayed(Duration(milliseconds: 300), () {
@@ -279,7 +389,7 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
       context,
       pickerSheetBackgroundColor: widget.sheetBackgroundColor,
     );
-    return SafeArea(
+    final sheet = SafeArea(
       child: BottomSheet(
         backgroundColor: baseSheet.sheetBackgroundColor,
         shape: RoundedRectangleBorder(
@@ -311,6 +421,7 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
                     vertical: 4,
                   ),
                   controller: searchC,
+                  focusNode: _searchFocusNode,
                   autofocus: widget.searchAutoFocus,
                   onSubmitted: (a) {
                     if (a.isEmpty && widget.suggestion.isNotEmpty) {
@@ -327,6 +438,7 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
               Column(
                 children: widget.suggestion.map((s) {
                   return InkWell(
+                    canRequestFocus: false,
                     onTap: () => Navigator.of(context).pop(s),
                     child: Container(
                       decoration: BoxDecoration(
@@ -367,6 +479,14 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
         },
       ),
     );
+    return UnifiedPickerModalScope(
+      child: Focus(
+        focusNode: _sheetFocusNode,
+        skipTraversal: true,
+        onKeyEvent: _handleKeyEvent,
+        child: sheet,
+      ),
+    );
   }
 
   Widget _buildItemBody(BuildContext context, List<T> items) {
@@ -396,21 +516,25 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
       itemBuilder: (c, i) {
         final item = items[i];
         final isSelected = widget.value == item;
+        final isHighlighted = i == _highlight;
         return InkWell(
+          canRequestFocus: false,
           onTap: () => Navigator.of(context).pop(item),
           child: Container(
             decoration: BoxDecoration(
               color: isSelected
                   ? Colors.blueAccent.withValues(alpha: 0.3)
-                  : const Color(0xffF2F3F6),
-              border: const Border(
-                bottom: BorderSide(color: Colors.white),
+                  : (isHighlighted
+                        ? Colors.blueAccent.withValues(alpha: 0.12)
+                        : const Color(0xffF2F3F6)),
+              border: Border(
+                bottom: const BorderSide(color: Colors.white),
+                left: isHighlighted
+                    ? const BorderSide(color: Colors.blueAccent, width: 3)
+                    : BorderSide.none,
               ),
             ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
             child: Row(
               children: [
                 Expanded(
@@ -450,15 +574,14 @@ Future<T?> showUnifiedSinglePickerSheet<T>({
   UnifiedPickerSheetStyle? pickerSheetStyle,
   UnifiedPickerSheetModalSettings? pickerSheetModalSettings,
 }) async {
-  FocusScope.of(context).requestFocus(FocusNode());
-  final bg = sheetBackgroundColor ?? pickerSheetStyle?.pickerSheetBackgroundColor;
-  final header =
-      pickerHeaderStyle ?? pickerSheetStyle?.pickerHeaderStyle;
+  unifiedUnfocusBeforeModal(context);
+  final bg =
+      sheetBackgroundColor ?? pickerSheetStyle?.pickerSheetBackgroundColor;
+  final header = pickerHeaderStyle ?? pickerSheetStyle?.pickerHeaderStyle;
   final dynamic result = await showUnifiedFieldsPickerBottomSheet<dynamic>(
     context: context,
     pickerSheetStyle: pickerSheetStyle,
-    modalSettings:
-        pickerSheetModalSettings ?? pickerSheetStyle?.modalSettings,
+    modalSettings: pickerSheetModalSettings ?? pickerSheetStyle?.modalSettings,
     builder: (c) => Padding(
       padding: EdgeInsets.zero,
       child: PickerSheetWidget<T>(

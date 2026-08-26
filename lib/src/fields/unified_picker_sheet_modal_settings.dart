@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'unified_input_theme.dart';
+import 'unified_picker_keyboard.dart';
 
 /// Modal presentation flags for picker bottom sheets ([showModalBottomSheet]).
 ///
@@ -37,15 +38,17 @@ class UnifiedPickerSheetModalSettings {
   /// Package defaults for list / wheel picker sheets.
   static const UnifiedPickerSheetModalSettings defaults =
       UnifiedPickerSheetModalSettings(
-    isScrollControlled: true,
-    isDismissible: true,
-    enableDrag: true,
-    useSafeArea: true,
-    showDragHandle: false,
-  );
+        isScrollControlled: true,
+        isDismissible: true,
+        enableDrag: true,
+        useSafeArea: true,
+        showDragHandle: false,
+      );
 
   /// Merges [other] on top of this (non-null fields from [other] win).
-  UnifiedPickerSheetModalSettings merge(UnifiedPickerSheetModalSettings? other) {
+  UnifiedPickerSheetModalSettings merge(
+    UnifiedPickerSheetModalSettings? other,
+  ) {
     if (other == null) return this;
     return UnifiedPickerSheetModalSettings(
       isScrollControlled: other.isScrollControlled ?? isScrollControlled,
@@ -63,8 +66,9 @@ class UnifiedPickerSheetModalSettings {
     UnifiedPickerSheetStyle? pickerSheetStyle,
     bool? legacyIsDismissible,
   }) {
-    final theme =
-        UnifiedInputThemeScope.themeDataOf(context).pickerSheetModalSettings;
+    final theme = UnifiedInputThemeScope.themeDataOf(
+      context,
+    ).pickerSheetModalSettings;
     final merged = defaults
         .merge(theme)
         .merge(pickerSheetStyle?.modalSettings)
@@ -111,6 +115,6 @@ Future<T?> showUnifiedFieldsPickerBottomSheet<T>({
     shape: shape,
     backgroundColor: backgroundColor,
     clipBehavior: clipBehavior ?? Clip.antiAlias,
-    builder: builder,
+    builder: (ctx) => UnifiedPickerModalScope(child: builder(ctx)),
   );
 }
