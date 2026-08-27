@@ -10,6 +10,10 @@ enum UnifiedFieldLabelMode {
   floatingLabel,
 }
 
+/// True when a label string should allocate chrome (non-null, non-empty).
+bool unifiedFieldHasVisibleLabel(String? label) =>
+    label != null && label.trim().isNotEmpty;
+
 /// Resolves [UnifiedFieldLabelMode] from explicit [mode], legacy [labelInRow], or [themeMode].
 ///
 /// Order: explicit [mode] → field [labelInRow] flag → theme → floating.

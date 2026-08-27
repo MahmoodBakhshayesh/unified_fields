@@ -916,7 +916,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputPalette palette,
     UnifiedInputDecoration dec,
   ) {
-    if (widget.label == null) return const SizedBox.shrink();
+    if (!unifiedFieldHasVisibleLabel(widget.label)) return const SizedBox.shrink();
     const mode = UnifiedFieldLabelMode.labelInColumn;
     final defaultLabelStyle = _resolveLabelStyle(palette, dec, mode);
     return Padding(
@@ -1247,7 +1247,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputPalette palette,
     UnifiedInputDecoration dec,
   ) {
-    if (widget.label == null) return null;
+    if (!unifiedFieldHasVisibleLabel(widget.label)) return null;
     const mode = UnifiedFieldLabelMode.floatingLabel;
     final label = Row(
       mainAxisSize: MainAxisSize.min,
@@ -1398,9 +1398,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                           color: headerBg,
                           border: BorderDirectional(end: divider),
                         ),
-                        child: widget.label == null
-                            ? const SizedBox.shrink()
-                            : Padding(
+                      child: !unifiedFieldHasVisibleLabel(widget.label)
+                          ? const SizedBox.shrink()
+                          : Padding(
                                 padding: _resolveLabelPadding(
                                   dec,
                                   UnifiedFieldLabelMode.labelInRow,

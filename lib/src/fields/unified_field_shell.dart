@@ -110,7 +110,7 @@ class UnifiedFieldShell extends StatelessWidget {
       child: inner,
     );
 
-    if (dec.label == null) {
+    if (!unifiedFieldHasVisibleLabel(dec.label)) {
       return boxed;
     }
 
@@ -160,7 +160,7 @@ class _LabelRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dec = decoration;
-    if (dec.label == null) return const SizedBox.shrink();
+    if (!unifiedFieldHasVisibleLabel(dec.label)) return const SizedBox.shrink();
 
     final labelMode = dec.labelMode ??
         resolveUnifiedFieldLabelMode(labelInRow: dec.labelInRow);
