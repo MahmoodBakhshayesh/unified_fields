@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
@@ -78,6 +79,7 @@ class UnifiedInputThemeData {
     this.basePickerSheetStyle,
     this.pickerSheetModalSettings,
     this.pickerHeaderStyle,
+    this.pickerSearchInputFormatters,
     this.multiPickerCheckboxStyle,
     this.defaultSuffixIcons,
     this.phoneStyle,
@@ -177,6 +179,15 @@ class UnifiedInputThemeData {
   /// Picker sheet title bar padding, colors, and title style.
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
+  /// Optional input formatters for searchable picker sheet query fields.
+  ///
+  /// Applied by [PickerSheetWidget], [MultiPickerSheetWidget], and async query
+  /// picker sheets when the sheet does not pass its own `searchInputFormatters`.
+  ///
+  /// Defaults to `null` (no limitation). Apps that need keyboard/script limits
+  /// should set this on their [UnifiedInputThemeScope] (or per-sheet).
+  final List<TextInputFormatter>? pickerSearchInputFormatters;
+
   /// Multi-picker row checkbox colors and corner radius.
   final UnifiedInputMultiPickerCheckboxStyle? multiPickerCheckboxStyle;
 
@@ -242,6 +253,8 @@ class UnifiedInputThemeData {
           pickerSheetModalSettings?.merge(other.pickerSheetModalSettings) ??
               other.pickerSheetModalSettings,
       pickerHeaderStyle: other.pickerHeaderStyle ?? pickerHeaderStyle,
+      pickerSearchInputFormatters:
+          other.pickerSearchInputFormatters ?? pickerSearchInputFormatters,
       multiPickerCheckboxStyle:
           other.multiPickerCheckboxStyle ?? multiPickerCheckboxStyle,
       defaultSuffixIcons: other.defaultSuffixIcons ?? defaultSuffixIcons,

@@ -57,6 +57,12 @@ class MultiPickerSheetWidget<T> extends StatefulWidget {
   /// Header chrome; merged with theme [UnifiedInputThemeData.pickerHeaderStyle].
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
+  /// Optional formatters for the sheet search field.
+  ///
+  /// When null, falls back to [UnifiedInputThemeData.pickerSearchInputFormatters].
+  /// When both are null, **no** formatters are applied (unrestricted search input).
+  final List<TextInputFormatter>? searchInputFormatters;
+
   /// Creates a multi-picker sheet.
   const MultiPickerSheetWidget({
     super.key,
@@ -75,6 +81,7 @@ class MultiPickerSheetWidget<T> extends StatefulWidget {
     this.gridDelegate,
     this.sheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.searchInputFormatters,
   });
 
   @override
@@ -96,6 +103,11 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
   List<T> _visibleItems = const [];
 
   bool get _keyboardNavEnabled => widget.gridItemBuilder == null;
+
+  List<TextInputFormatter> _resolvedSearchFormatters(BuildContext context) =>
+      widget.searchInputFormatters ??
+      UnifiedInputThemeScope.themeDataOf(context).pickerSearchInputFormatters ??
+      const [];
 
   @override
   void initState() {
@@ -275,6 +287,7 @@ class _MultiPickerSheetWidgetState<T> extends State<MultiPickerSheetWidget<T>> {
                       controller: searchC,
                       focusNode: _searchFocusNode,
                       autofocus: widget.searchAutoFocus,
+                      inputFormatters: _resolvedSearchFormatters(context),
                       prefix: const Padding(
                         padding: EdgeInsets.all(8.0),
                         child: Icon(Icons.search),
@@ -446,6 +459,7 @@ Future<List<T>?> showUnifiedMultiPickerSheet<T>({
   UnifiedInputPickerHeaderStyle? pickerHeaderStyle,
   UnifiedPickerSheetStyle? pickerSheetStyle,
   UnifiedPickerSheetModalSettings? pickerSheetModalSettings,
+  List<TextInputFormatter>? searchInputFormatters,
 }) async {
   unifiedUnfocusBeforeModal(context);
   final bg =
@@ -473,6 +487,7 @@ Future<List<T>?> showUnifiedMultiPickerSheet<T>({
         gridDelegate: gridDelegate,
         sheetBackgroundColor: bg,
         pickerHeaderStyle: header,
+        searchInputFormatters: searchInputFormatters,
       ),
     ),
   );

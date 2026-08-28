@@ -57,6 +57,12 @@ class PickerSheetWidget<T> extends StatefulWidget {
   /// Header chrome; merged with theme [UnifiedInputThemeData.pickerHeaderStyle].
   final UnifiedInputPickerHeaderStyle? pickerHeaderStyle;
 
+  /// Optional formatters for the sheet search field.
+  ///
+  /// When null, falls back to [UnifiedInputThemeData.pickerSearchInputFormatters].
+  /// When both are null, **no** formatters are applied (unrestricted search input).
+  final List<TextInputFormatter>? searchInputFormatters;
+
   /// Creates a single-picker sheet.
   const PickerSheetWidget({
     super.key,
@@ -75,6 +81,7 @@ class PickerSheetWidget<T> extends StatefulWidget {
     this.gridDelegate,
     this.sheetBackgroundColor,
     this.pickerHeaderStyle,
+    this.searchInputFormatters,
   });
 
   @override
@@ -103,19 +110,36 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
   @override
   void initState() {
     super.initState();
-    searchC.addListener(() {
-      if (searchC.text.isNotEmpty) {
-        _scrollToTop();
-      }
-      // Enter picks the best match while a query is active.
-      _highlight = searchC.text.isEmpty ? -1 : 0;
-      setState(() {});
-    });
+    searchC.addListener(_onSearchChanged);
     if (widget.gridItemBuilder == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
     }
     WidgetsBinding.instance.addPostFrameCallback((_) => _focusOnOpen());
   }
+
+  /// Filtering rebuilds the list under a new [ValueKey]; jump to top so a prior
+  /// scroll-to-selected offset cannot leave a blank gap above the first match.
+  void _onSearchChanged() {
+    final query = searchC.text;
+    setState(() {
+      // Enter picks the best match while a query is active.
+      _highlight = query.isEmpty ? -1 : 0;
+    });
+    if (widget.gridItemBuilder != null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (query.isEmpty) {
+        _scrollToSelected();
+      } else {
+        _jumpToTop();
+      }
+    });
+  }
+
+  List<TextInputFormatter> _resolvedSearchFormatters(BuildContext context) =>
+      widget.searchInputFormatters ??
+      UnifiedInputThemeScope.themeDataOf(context).pickerSearchInputFormatters ??
+      const [];
 
   /// Takes keyboard focus so arrows / Enter work right after the sheet opens.
   /// The search field is only focused when [PickerSheetWidget.searchAutoFocus]
@@ -140,6 +164,7 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
 
   @override
   void dispose() {
+    searchC.removeListener(_onSearchChanged);
     _sheetFocusNode.dispose();
     _searchFocusNode.dispose();
     searchC.dispose();
@@ -193,11 +218,16 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
       return KeyEventResult.ignored;
     }
     _searchFocusNode.requestFocus();
-    final next = '${searchC.text}$character';
-    searchC.value = TextEditingValue(
-      text: next,
-      selection: TextSelection.collapsed(offset: next.length),
+    var next = TextEditingValue(
+      text: '${searchC.text}$character',
+      selection: TextSelection.collapsed(
+        offset: searchC.text.length + character.length,
+      ),
     );
+    for (final formatter in _resolvedSearchFormatters(context)) {
+      next = formatter.formatEditUpdate(searchC.value, next);
+    }
+    searchC.value = next;
     return KeyEventResult.handled;
   }
 
@@ -291,34 +321,14 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
     );
   }
 
-  void _scrollToTop() {
-    if (!mounted || widget.value == null) return;
-
-    final items = _filteredSorted(); // <- your filtered list
-    final idx = 0;
-    // Defer until laid out so positions are available
-    if (!_itemScrollController.isAttached ||
-        _positionsListener.itemPositions.value.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
+  void _jumpToTop() {
+    if (!mounted) return;
+    if (_visibleItems.isEmpty) return;
+    if (!_itemScrollController.isAttached) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _jumpToTop());
       return;
     }
-
-    // If everything fits, don't scroll
-    if (_listFitsInViewport(items.length)) {
-      return;
-    }
-
-    // If already fully visible, don't scroll
-    if (_isIndexFullyVisible(idx)) {
-      return;
-    }
-
-    _itemScrollController.scrollTo(
-      index: idx,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      alignment: 0.1,
-    );
+    _itemScrollController.jumpTo(index: 0, alignment: 0);
   }
 
   bool _listFitsInViewport(int itemCount) {
@@ -423,6 +433,7 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
                   controller: searchC,
                   focusNode: _searchFocusNode,
                   autofocus: widget.searchAutoFocus,
+                  inputFormatters: _resolvedSearchFormatters(context),
                   onSubmitted: (a) {
                     if (a.isEmpty && widget.suggestion.isNotEmpty) {
                       Navigator.of(context).pop(widget.suggestion.first);
@@ -508,7 +519,10 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
       );
     }
 
+    // Key by query so a filter rebuild resets scroll; otherwise a prior
+    // scroll-to-selected leaves a large blank gap above the first match.
     return ScrollablePositionedList.builder(
+      key: ValueKey<String>('picker_list_${searchC.text}'),
       padding: const EdgeInsets.only(bottom: 400),
       itemScrollController: _itemScrollController,
       itemPositionsListener: _positionsListener,
@@ -573,6 +587,7 @@ Future<T?> showUnifiedSinglePickerSheet<T>({
   UnifiedInputPickerHeaderStyle? pickerHeaderStyle,
   UnifiedPickerSheetStyle? pickerSheetStyle,
   UnifiedPickerSheetModalSettings? pickerSheetModalSettings,
+  List<TextInputFormatter>? searchInputFormatters,
 }) async {
   unifiedUnfocusBeforeModal(context);
   final bg =
@@ -600,6 +615,7 @@ Future<T?> showUnifiedSinglePickerSheet<T>({
         gridDelegate: gridDelegate,
         sheetBackgroundColor: bg,
         pickerHeaderStyle: header,
+        searchInputFormatters: searchInputFormatters,
       ),
     ),
   );

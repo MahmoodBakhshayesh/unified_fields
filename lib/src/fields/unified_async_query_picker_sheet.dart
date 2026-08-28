@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../unified_colors.dart';
 import '../unified_fields_context.dart';
@@ -31,6 +32,7 @@ class AsyncQueryPickerSheetWidget<T> extends StatefulWidget {
     this.pickerHeaderStyle,
     this.searchAutoFocus = true,
     this.showClearButton = false,
+    this.searchInputFormatters,
   });
 
   /// Sheet title.
@@ -69,6 +71,11 @@ class AsyncQueryPickerSheetWidget<T> extends StatefulWidget {
   /// Show Clear in the sheet header.
   final bool showClearButton;
 
+  /// Optional search formatters; falls back to theme when null.
+  ///
+  /// When both are null, **no** formatters are applied.
+  final List<TextInputFormatter>? searchInputFormatters;
+
   @override
   State<AsyncQueryPickerSheetWidget<T>> createState() =>
       _AsyncQueryPickerSheetWidgetState<T>();
@@ -82,6 +89,11 @@ class _AsyncQueryPickerSheetWidgetState<T>
   List<T> _items = const [];
   bool _loading = false;
   String? _errorText;
+
+  List<TextInputFormatter> _resolvedSearchFormatters(BuildContext context) =>
+      widget.searchInputFormatters ??
+      UnifiedInputThemeScope.themeDataOf(context).pickerSearchInputFormatters ??
+      const [];
 
   @override
   void initState() {
@@ -232,6 +244,7 @@ class _AsyncQueryPickerSheetWidgetState<T>
                   child: CupertinoTextField(
                     controller: _searchC,
                     autofocus: widget.searchAutoFocus,
+                    inputFormatters: _resolvedSearchFormatters(context),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 4,
@@ -313,6 +326,7 @@ class AsyncQueryMultiPickerSheetWidget<T> extends StatefulWidget {
     this.pickerHeaderStyle,
     this.searchAutoFocus = true,
     this.showClearButton = true,
+    this.searchInputFormatters,
   });
 
   /// Sheet title.
@@ -351,6 +365,11 @@ class AsyncQueryMultiPickerSheetWidget<T> extends StatefulWidget {
   /// Show Clear in the sheet header (clears temp selection).
   final bool showClearButton;
 
+  /// Optional search formatters; falls back to theme when null.
+  ///
+  /// When both are null, **no** formatters are applied.
+  final List<TextInputFormatter>? searchInputFormatters;
+
   @override
   State<AsyncQueryMultiPickerSheetWidget<T>> createState() =>
       _AsyncQueryMultiPickerSheetWidgetState<T>();
@@ -365,6 +384,11 @@ class _AsyncQueryMultiPickerSheetWidgetState<T>
   bool _loading = false;
   String? _errorText;
   late List<T> _selected;
+
+  List<TextInputFormatter> _resolvedSearchFormatters(BuildContext context) =>
+      widget.searchInputFormatters ??
+      UnifiedInputThemeScope.themeDataOf(context).pickerSearchInputFormatters ??
+      const [];
 
   @override
   void initState() {
@@ -537,6 +561,7 @@ class _AsyncQueryMultiPickerSheetWidgetState<T>
                   child: CupertinoTextField(
                     controller: _searchC,
                     autofocus: widget.searchAutoFocus,
+                    inputFormatters: _resolvedSearchFormatters(context),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 4,

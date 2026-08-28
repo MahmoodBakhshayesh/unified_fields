@@ -1,3 +1,13 @@
+## 1.0.4+8
+
+### Fixes
+
+* **Picker search scroll gap** — filtering a single-select picker no longer leaves a blank band above the first match. Search rebuilds the list from the top (and jumps to index 0); scroll-to-selected only runs when the query is empty. Also fixes `_scrollToTop` incorrectly scheduling `_scrollToSelected` when the list was not yet attached.
+
+### Features
+
+* **`pickerSearchInputFormatters`** — optional theme / sheet formatters for picker search fields (single, multi, and async query sheets). Default is **no** formatters; each app opts in via [UnifiedInputThemeData] or per-sheet `searchInputFormatters` if it needs limits (e.g. English-only).
+
 ## 1.0.4+7
 
 ### Fixes
@@ -7,8 +17,7 @@
 ### Improvements
 
 * **Keyboard reachable pickers** — single / multi / async / customizable pickers, date, time, duration and wheel fields keep a stable `FocusNode`, render focused chrome, and open their sheet on Space / Enter (focus alone never opens it). Focus returns to the field after the sheet closes.
-* **Picker sheet navigation** — the sheet takes focus on open (the search field only when `searchAutoFocus` is set, so phones keep their soft keyboard closed). Tab / Shift+Tab and arrow keys (including Left / Right) move focus or the list highlight through items, Enter confirms the highlighted row or the current wheel/calendar selection, and Escape dismisses every picker / popup.
-* **Wheel column focus** — hour / minute / second (and other wheel) columns are Tab / arrow-key stops; ArrowUp / ArrowDown step the focused column, ArrowLeft / ArrowRight move to the next column.
+* **Picker sheet navigation** — the sheet takes focus on open (the search field only when `searchAutoFocus` is set, so phones keep their soft keyboard closed), ArrowUp / ArrowDown move the highlight, Enter picks the highlighted row, typing starts a search, and Escape still dismisses.
 * **Number arrow step** — ArrowUp / ArrowDown on a focused numeric field step by `step` within `min` / `max` and `fractionDigits`; arrows with Ctrl / Cmd / Alt / Shift are left to text editing.
 
 ## 1.0.4+5
