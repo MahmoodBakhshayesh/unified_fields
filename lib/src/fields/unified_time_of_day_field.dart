@@ -334,6 +334,7 @@ class _UnifiedTimeOfDayFieldState extends State<UnifiedTimeOfDayField> {
     final d = chrome.resolved;
 
     return UnifiedPickerKeyboardActivator(
+      typeToOpen: UnifiedTypeToOpen.digits,
       enabled: _interactive,
       onActivate: () => _pick(context),
       child: GestureDetector(

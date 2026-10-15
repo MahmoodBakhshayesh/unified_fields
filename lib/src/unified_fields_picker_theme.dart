@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'fields/unified_input_palette.dart';
 import 'fields/unified_input_theme.dart';
 import 'unified_input_date_picker_style.dart';
 

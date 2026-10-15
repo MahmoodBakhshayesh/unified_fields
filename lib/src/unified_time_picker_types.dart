@@ -32,6 +32,10 @@ enum UnifiedFieldsTimePickerStyle {
 
   /// Analog dual-ring 24h clock face.
   clockDial,
+
+  /// Typed `HH:mm` + hour / minute columns; opens per
+  /// [UnifiedInputThemeData.pickerPresentation].
+  compact,
 }
 
 /// Whether [style] uses [UnifiedFieldsStyledTimePicker].
@@ -54,4 +58,7 @@ enum UnifiedFieldsDurationPickerStyle {
 
   /// Unified scroll wheels (matches date wheel chrome).
   wheels,
+
+  /// Typed entry (`1:30`, `90m`, `1h 30m`) + columns and quick chips.
+  compact,
 }

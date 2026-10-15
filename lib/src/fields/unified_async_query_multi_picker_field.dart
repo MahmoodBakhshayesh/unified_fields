@@ -370,6 +370,7 @@ class _UnifiedAsyncQueryMultiPickerState<T>
       ),
     );
     return UnifiedPickerKeyboardActivator(
+      typeToOpen: UnifiedTypeToOpen.any,
       enabled: !widget.locked && !widget.isDisabled,
       onActivate: () => _presentPicker(context),
       child: field,

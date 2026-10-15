@@ -21,6 +21,7 @@ import '../unified_time_picker_types.dart';
 import '../unified_wheel_scroll_behavior.dart';
 import 'unified_input_palette.dart';
 import 'unified_input_theme.dart';
+import '../unified_compact_pickers.dart';
 
 export '../unified_duration_columns.dart';
 export '../unified_time_picker_types.dart'
@@ -99,6 +100,30 @@ Future<Duration?> showUnifiedFieldsDurationPicker({
     granularity: granularity,
   );
   final clamped = unifiedClampDuration(initial, min, max);
+
+  final preferCompact = UnifiedInputThemeScope.themeDataOf(context).preferCompactPickers ?? false;
+  final simpleColumns = columns.every(
+    (c) =>
+        c == UnifiedFieldsDurationColumn.hour ||
+        c == UnifiedFieldsDurationColumn.minute ||
+        c == UnifiedFieldsDurationColumn.second,
+  );
+  if ((pickerStyle == UnifiedFieldsDurationPickerStyle.compact || preferCompact) &&
+      simpleColumns &&
+      initialCalendarKind == UnifiedFieldsCalendarKind.gregorian) {
+    return showUnifiedFieldsCompactDurationPicker(
+      context: context,
+      initial: clamped,
+      min: min,
+      max: max,
+      showHours: columns.contains(UnifiedFieldsDurationColumn.hour),
+      showSeconds: columns.contains(UnifiedFieldsDurationColumn.second),
+      title: title,
+      presentation: pickerSheetStyle?.presentation,
+      surfaceStyle: pickerSheetStyle?.surfaceStyle,
+      barrierDismissible: modal.isDismissible!,
+    ).then((d) => d == null ? null : unifiedClampDuration(d, min, max));
+  }
 
   if (pickerStyle == UnifiedFieldsDurationPickerStyle.cupertino) {
     return showUnifiedFieldsPickerBottomSheet<Duration?>(
@@ -633,6 +658,7 @@ class _UnifiedDurationFieldState extends State<UnifiedDurationField> {
       ),
     );
     return UnifiedPickerKeyboardActivator(
+      typeToOpen: UnifiedTypeToOpen.digits,
       enabled: !widget.locked && !widget.isDisabled,
       onActivate: () => _openSheet(context, d),
       child: field,

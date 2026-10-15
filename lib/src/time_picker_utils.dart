@@ -11,6 +11,8 @@ import 'unified_fields_picker_theme.dart';
 import 'unified_fields_styled_picker_bridge.dart';
 import 'unified_fields_styled_time_picker.dart';
 import 'unified_input_date_picker_style.dart';
+import 'fields/unified_input_theme.dart';
+import 'unified_compact_pickers.dart';
 
 /// Wraps platform and unified wheel time pickers.
 class TimePickerUtils {
@@ -37,6 +39,21 @@ class TimePickerUtils {
     List<TimeOfDay> presets = const [],
     bool includeNowPreset = false,
   }) async {
+    final preferCompact = UnifiedInputThemeScope.themeDataOf(context).preferCompactPickers ?? false;
+    final legacyStyle =
+        pickerStyle == UnifiedFieldsTimePickerStyle.dial || pickerStyle == UnifiedFieldsTimePickerStyle.wheels;
+    if ((pickerStyle == UnifiedFieldsTimePickerStyle.compact || (preferCompact && legacyStyle)) &&
+        initialCalendarKind == UnifiedFieldsCalendarKind.gregorian) {
+      return showUnifiedFieldsCompactTimePicker(
+        context: context,
+        initialTime: initialTime ?? TimeOfDay.now(),
+        initialSecond: initialSecond,
+        showSeconds: granularity == UnifiedFieldsTimeGranularity.hoursMinutesSeconds,
+        presets: presets,
+        includeNowPreset: true,
+        title: title,
+      );
+    }
     if (pickerStyle.isStyledPicker) {
       final picked = await showUnifiedFieldsStyledTimePickerSheet(
         context: context,

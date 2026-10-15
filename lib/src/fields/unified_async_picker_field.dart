@@ -403,6 +403,7 @@ class _UnifiedAsyncPickerFieldState<T>
       ),
     );
     return UnifiedPickerKeyboardActivator(
+      typeToOpen: UnifiedTypeToOpen.any,
       enabled: !widget.locked && !widget.isDisabled && !_loading,
       onActivate: _open,
       child: field,
@@ -806,6 +807,7 @@ class _UnifiedAsyncMultiPickerFieldState<T>
       ),
     );
     return UnifiedPickerKeyboardActivator(
+      typeToOpen: UnifiedTypeToOpen.any,
       enabled: !widget.locked && !widget.isDisabled && !_loading,
       onActivate: () => _open(dec),
       child: field,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'unified_base_picker_sheet_style.dart';
 import 'unified_picker_sheet_modal_settings.dart';
+import 'unified_picker_presentation.dart';
 
 /// A slot in a picker sheet header row ([UnifiedPickerSheetHeader]).
 enum UnifiedPickerHeaderItem {
@@ -39,6 +40,8 @@ class UnifiedPickerSheetStyle {
     this.pickerHeaderStyle,
     this.basePickerSheetStyle,
     this.modalSettings,
+    this.presentation,
+    this.surfaceStyle,
   });
 
   /// Sheet surface color; overrides theme [UnifiedInputThemeData.pickerSheetBackgroundColor].
@@ -52,6 +55,12 @@ class UnifiedPickerSheetStyle {
 
   /// [showModalBottomSheet] flags (`isScrollControlled`, `isDismissible`, …).
   final UnifiedPickerSheetModalSettings? modalSettings;
+
+  /// Overrides theme [UnifiedInputThemeData.pickerPresentation] for this field.
+  final UnifiedPickerPresentation? presentation;
+
+  /// Merged on top of theme [UnifiedInputThemeData.pickerSurfaceStyle].
+  final UnifiedPickerSurfaceStyle? surfaceStyle;
 }
 
 /// Resolves field-level picker sheet overrides (direct params win over [pickerSheetStyle]).

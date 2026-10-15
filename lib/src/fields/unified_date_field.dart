@@ -510,6 +510,7 @@ class _UnifiedDateFieldState extends State<UnifiedDateField> {
         d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26;
 
     return UnifiedPickerKeyboardActivator(
+      typeToOpen: UnifiedTypeToOpen.digits,
       enabled: _interactive,
       onActivate: () => _pick(context, d),
       child: GestureDetector(
@@ -861,6 +862,7 @@ class _UnifiedDateRangeFieldState extends State<UnifiedDateRangeField> {
         d.headerBackgroundColor ?? d.backgroundColor ?? Colors.black26;
 
     return UnifiedPickerKeyboardActivator(
+      typeToOpen: UnifiedTypeToOpen.digits,
       enabled: _interactive,
       onActivate: () => _pick(context, d),
       child: GestureDetector(

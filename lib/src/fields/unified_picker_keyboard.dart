@@ -101,6 +101,34 @@ void unifiedStepFixedExtentWheel(
   );
 }
 
+/// Which printable keys open a focused pick-only field (the key is carried
+/// into the picker's search / typed entry via [UnifiedPickerTypeAhead]).
+enum UnifiedTypeToOpen {
+  /// Only Space / Enter open the picker.
+  none,
+
+  /// Digits open it (date / time / duration typed entry).
+  digits,
+
+  /// Any printable character opens it (list picker search).
+  any,
+}
+
+/// One-shot hand-off of the key that opened a picker (type-to-open).
+abstract final class UnifiedPickerTypeAhead {
+  static String? _seed;
+
+  /// Stores [text] for the picker about to open.
+  static void seed(String text) => _seed = text;
+
+  /// Returns and clears the pending seed.
+  static String? take() {
+    final s = _seed;
+    _seed = null;
+    return s;
+  }
+}
+
 /// Opens a pick-only field with Space / Enter while it holds focus.
 ///
 /// The wrapper itself is not a traversal stop, so the inner read-only text
@@ -113,7 +141,11 @@ class UnifiedPickerKeyboardActivator extends StatelessWidget {
     required this.onActivate,
     required this.child,
     this.enabled = true,
+    this.typeToOpen = UnifiedTypeToOpen.none,
   });
+
+  /// Printable keys that also open the picker (seeded into its entry).
+  final UnifiedTypeToOpen typeToOpen;
 
   /// Called on Space / Enter (same path as a tap).
   final VoidCallback onActivate;
@@ -131,9 +163,22 @@ class UnifiedPickerKeyboardActivator extends StatelessWidget {
       skipTraversal: true,
       onKeyEvent: (node, event) {
         if (!enabled) return KeyEventResult.ignored;
+        if (typeToOpen != UnifiedTypeToOpen.none && event is KeyDownEvent && !_hasCommandModifier()) {
+          final ch = event.character;
+          final ok = ch != null &&
+              ch.length == 1 &&
+              ch.trim().isNotEmpty &&
+              (typeToOpen == UnifiedTypeToOpen.any || RegExp(r'[0-9]').hasMatch(ch));
+          if (ok) {
+            UnifiedPickerTypeAhead.seed(ch);
+            onActivate();
+            return KeyEventResult.handled;
+          }
+        }
         if (!unifiedIsPickerActivationEvent(event)) {
           return KeyEventResult.ignored;
         }
+        UnifiedPickerTypeAhead.take();
         onActivate();
         return KeyEventResult.handled;
       },

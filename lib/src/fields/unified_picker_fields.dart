@@ -352,6 +352,7 @@ class _UnifiedSinglePickerFieldState<T>
     final dec = chrome.resolved;
 
     return UnifiedPickerKeyboardActivator(
+      typeToOpen: UnifiedTypeToOpen.any,
       enabled: _interactive,
       onActivate: () => _open(context),
       child: GestureDetector(
@@ -755,6 +756,7 @@ class _UnifiedMultiPickerFieldState<T>
     final dec = chrome.resolved;
 
     return UnifiedPickerKeyboardActivator(
+      typeToOpen: UnifiedTypeToOpen.any,
       enabled: _interactive,
       onActivate: () => _open(context, dec),
       child: GestureDetector(

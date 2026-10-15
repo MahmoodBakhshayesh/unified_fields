@@ -1,12 +1,12 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../unified_fields_context.dart';
 import '../unified_fields_strings.dart';
 import 'unified_input_theme.dart';
 import 'unified_picker_item_builders.dart';
 import 'unified_picker_keyboard.dart';
+import 'unified_picker_list_chrome.dart';
+import 'unified_picker_presentation.dart';
 import '../scrollable_list/item_positions_listener.dart';
 import '../scrollable_list/scrollable_positioned_list.dart';
 
@@ -89,7 +89,7 @@ class PickerSheetWidget<T> extends StatefulWidget {
 }
 
 class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
-  final TextEditingController searchC = TextEditingController();
+  final TextEditingController searchC = TextEditingController(text: UnifiedPickerTypeAhead.take() ?? '');
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _positionsListener =
       ItemPositionsListener.create();
@@ -399,96 +399,70 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
       context,
       pickerSheetBackgroundColor: widget.sheetBackgroundColor,
     );
-    final sheet = SafeArea(
-      child: BottomSheet(
-        backgroundColor: baseSheet.sheetBackgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: baseSheet.sheetBorderRadius!,
-        ),
-        constraints: BoxConstraints(
-          maxHeight: context.unifiedFieldsScreenHeight * 0.9,
-        ),
-        // The outer showModalBottomSheet already owns drag-to-dismiss and the
-        // animation controller. Disabling drag here avoids the
-        // `BottomSheet.animationController cannot be null` assertion.
-        enableDrag: false,
-        onClosing: () {},
-        builder: (BuildContext context) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              UnifiedPickerSheetHeader(
-                title: widget.label,
-                showClear: widget.hasClear,
-                pickerHeaderStyle: widget.pickerHeaderStyle,
-              ),
-              if (widget.headerWidget != null) widget.headerWidget!,
-              // Search
-              if (widget.hasSearch)
-                CupertinoTextField(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  controller: searchC,
-                  focusNode: _searchFocusNode,
-                  autofocus: widget.searchAutoFocus,
-                  inputFormatters: _resolvedSearchFormatters(context),
-                  onSubmitted: (a) {
-                    if (a.isEmpty && widget.suggestion.isNotEmpty) {
-                      Navigator.of(context).pop(widget.suggestion.first);
-                    }
-                  },
-                  prefix: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Icon(Icons.search),
-                  ),
-                ),
-
-              // List
-              Column(
-                children: widget.suggestion.map((s) {
-                  return InkWell(
-                    canRequestFocus: false,
-                    onTap: () => Navigator.of(context).pop(s),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.green.withAlpha(8),
-                        border: const Border(
-                          bottom: BorderSide(color: Colors.white),
-                        ),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 12,
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: unifiedPickerResolveListItem(
-                              s,
-                              itemToWidget: widget.itemToWidget,
-                              valueToString: widget.valueToString,
-                            ),
-                          ),
-                          Text(
-                            UnifiedFieldsStrings.instance.suggestion,
-                            style: TextStyle(
-                              color: Colors.black45,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              Expanded(child: _buildItemBody(context, items)),
-            ],
-          );
-        },
+    final listChrome = UnifiedPickerListChrome.of(context);
+    final compact = UnifiedPickerPresentationScope.isCompactOf(context);
+    final anchored = UnifiedPickerPresentationScope.isAnchoredOf(context);
+    final surface = UnifiedResolvedPickerSurface.of(context);
+    final clearChip = widget.hasClear && anchored
+        ? UnifiedPickerActionButton(
+            label: UnifiedFieldsStrings.instance.clear,
+            onPressed: () => Navigator.of(context).pop(Null),
+          )
+        : null;
+    final sheet = UnifiedPickerFrame(
+      sheetBackgroundColor: baseSheet.sheetBackgroundColor,
+      sheetBorderRadius: baseSheet.sheetBorderRadius,
+      textStyle: listChrome.itemTextStyle,
+      listExtent: widget.gridItemBuilder != null
+          ? null
+          : (items.length * surface.rowExtentFor(context)).clamp(surface.rowExtentFor(context), double.infinity),
+      header: UnifiedPickerSheetHeader(
+        title: widget.label,
+        showClear: widget.hasClear,
+        pickerHeaderStyle: widget.pickerHeaderStyle,
       ),
+      search: widget.hasSearch
+          ? listChrome.buildSearchField(
+              controller: searchC,
+              focusNode: _searchFocusNode,
+              autofocus: widget.searchAutoFocus || anchored,
+              inputFormatters: _resolvedSearchFormatters(context),
+              trailing: clearChip,
+              onSubmitted: (a) {
+                if (a.isEmpty && widget.suggestion.isNotEmpty) {
+                  Navigator.of(context).pop(widget.suggestion.first);
+                } else if (items.isNotEmpty) {
+                  Navigator.of(context).pop(items[_highlight.clamp(0, items.length - 1)]);
+                }
+              },
+            )
+          : null,
+      top: [
+        if (!widget.hasSearch && clearChip != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(6, 6, 6, 0),
+            child: Align(alignment: AlignmentDirectional.centerEnd, child: clearChip),
+          ),
+        if (widget.headerWidget != null) widget.headerWidget!,
+        for (final s in widget.suggestion)
+          UnifiedPickerRow(
+            onTap: () => Navigator.of(context).pop(s),
+            trailing: Text(
+              UnifiedFieldsStrings.instance.suggestion,
+              style: surface.sectionTextStyle,
+            ),
+            child: unifiedPickerResolveListItem(
+              s,
+              itemToWidget: widget.itemToWidget,
+              valueToString: widget.valueToString,
+              textStyle: surface.itemTextStyle,
+            ),
+          ),
+        if (compact && widget.suggestion.isNotEmpty) Divider(height: 9, thickness: 1, color: surface.dividerColor),
+      ],
+      list: items.isEmpty && compact
+          ? Center(child: Text(UnifiedFieldsStrings.instance.asyncQueryNoResults, style: surface.mutedTextStyle))
+          : _buildItemBody(context, items, listChrome),
     );
     return UnifiedPickerModalScope(
       child: Focus(
@@ -500,7 +474,11 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
     );
   }
 
-  Widget _buildItemBody(BuildContext context, List<T> items) {
+  Widget _buildItemBody(
+    BuildContext context,
+    List<T> items,
+    UnifiedPickerListChrome listChrome,
+  ) {
     final gridBuilder = widget.gridItemBuilder;
     if (gridBuilder != null) {
       return GridView.builder(
@@ -523,7 +501,9 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
     // scroll-to-selected leaves a large blank gap above the first match.
     return ScrollablePositionedList.builder(
       key: ValueKey<String>('picker_list_${searchC.text}'),
-      padding: const EdgeInsets.only(bottom: 400),
+      padding: UnifiedPickerPresentationScope.isCompactOf(context)
+          ? UnifiedResolvedPickerSurface.of(context).padding.copyWith(left: 0, right: 0)
+          : const EdgeInsets.only(bottom: 400),
       itemScrollController: _itemScrollController,
       itemPositionsListener: _positionsListener,
       itemCount: items.length,
@@ -531,35 +511,15 @@ class _PickerSheetWidgetState<T> extends State<PickerSheetWidget<T>> {
         final item = items[i];
         final isSelected = widget.value == item;
         final isHighlighted = i == _highlight;
-        return InkWell(
-          canRequestFocus: false,
+        return UnifiedPickerRow(
+          selected: isSelected,
+          highlighted: isHighlighted,
           onTap: () => Navigator.of(context).pop(item),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? Colors.blueAccent.withValues(alpha: 0.3)
-                  : (isHighlighted
-                        ? Colors.blueAccent.withValues(alpha: 0.12)
-                        : const Color(0xffF2F3F6)),
-              border: Border(
-                bottom: const BorderSide(color: Colors.white),
-                left: isHighlighted
-                    ? const BorderSide(color: Colors.blueAccent, width: 3)
-                    : BorderSide.none,
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: unifiedPickerResolveListItem(
-                    item,
-                    itemToWidget: widget.itemToWidget,
-                    valueToString: widget.valueToString,
-                  ),
-                ),
-              ],
-            ),
+          child: unifiedPickerResolveListItem(
+            item,
+            itemToWidget: widget.itemToWidget,
+            valueToString: widget.valueToString,
+            textStyle: listChrome.itemTextStyle,
           ),
         );
       },

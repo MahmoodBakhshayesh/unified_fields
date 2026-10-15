@@ -41,6 +41,10 @@ enum UnifiedFieldsDatePickerStyle {
 
   /// Big animated day readout over a swipeable one-week strip.
   heroCalendar,
+
+  /// Compact calendar with typed entry; opens per
+  /// [UnifiedInputThemeData.pickerPresentation] (anchored dropdown on desktop).
+  compact,
 }
 
 /// Whether [style] uses the creative [UnifiedFieldsStyledCalendarPicker].

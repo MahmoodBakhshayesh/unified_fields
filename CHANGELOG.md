@@ -1,3 +1,24 @@
+## 1.1.0
+
+### Features
+
+* **Picker presentation** — `UnifiedInputThemeData.pickerPresentation` (+ per field `UnifiedPickerSheetStyle.presentation`): `bottomSheet` (default, unchanged), `anchored` (dropdown under the field, at least field-wide, flips above when there is no room, tap-outside / Escape closes), `dialog`, `adaptive` (anchored from `adaptiveBreakpoint`, sheet below). Applies to single, multi and async-query pickers via `showUnifiedFieldsPickerBottomSheet`.
+* **`UnifiedPickerSurfaceStyle`** — one token set for every picker surface: fill, outline, radius, shadows, row height / radius / spacing / hover / selected / keyboard-highlight colors, check icon, search box (height, fill, idle + focused outline, radius, styles), action buttons, popover gap / max height / min width / margins, barriers, mono digits, today ring. Resolved with `UnifiedResolvedPickerSurface.of`. Set once on `UnifiedInputThemeData.pickerSurfaceStyle` to match a design system.
+* **Compact pickers** — `UnifiedFieldsCompactDatePicker` (typed `yyyy-MM-dd` entry with mask, 6-row month grid, month view, arrows / PageUp / PageDown / Enter, Today), `UnifiedFieldsCompactTimePicker` (typed `HH:mm[:ss]`, hour / minute / second columns, presets, Now), `UnifiedFieldsCompactDurationPicker` (typed `1:30` · `90m` · `1h 30m`, columns, quick chips). New styles `UnifiedFieldsDatePickerStyle.compact`, `UnifiedFieldsTimePickerStyle.compact`, `UnifiedFieldsDurationPickerStyle.compact`; `preferCompactPickers: true` routes the legacy styles (calendar / wheels / dial / cupertino) to them. `typedDateFormat` sets the typed pattern.
+* **Compact date range** — `UnifiedFieldsCompactDateRangePicker` / `showUnifiedFieldsCompactDateRangePicker`: From / To typed entry, two months side by side (one below 520px), hover preview band, presets (Today · Last 7 days · Next 7 days · This month), day count. `showUnifiedFieldsDatePickerRange` uses it for `compact`, and for `calendar` / `wheels` / `verticalMonths` when `preferCompactPickers` is on.
+* **Type-to-open** — a printable key on a focused picker field opens it and seeds the search (lists) or the typed entry (date / time / duration: digits). `UnifiedPickerKeyboardActivator.typeToOpen`, `UnifiedPickerTypeAhead`.
+* **Building blocks** — `UnifiedPickerFrame`, `UnifiedPickerRow`, `UnifiedPickerActionButton`, `UnifiedPickerSearchBox`, `UnifiedPickerSurface`, `showUnifiedAnchoredPopover`, `showUnifiedPickerDialog`, `showUnifiedCompactPicker`, `UnifiedMaskedDigitsFormatter`, `unifiedParseTypedDuration`.
+
+### Changes
+
+* List rows use the surface style (transparent rows, hover tint, accent-tinted selection with a check, no white dividers / 3px highlight edge); multi rows keep the checkbox. Search box is a styled `TextField` (was `CupertinoTextField`).
+
+## 1.0.4+10
+
+### Fixes
+
+* **Dark picker list sheets** — single / multi / async-query picker rows, search fields, and empty-state text resolve from [UnifiedInputPalette] via [UnifiedPickerListChrome] instead of hardcoded light-grey rows and unstyled [CupertinoTextField] (which looked black on dark Material themes).
+
 ## 1.0.4+8
 
 ### Fixes

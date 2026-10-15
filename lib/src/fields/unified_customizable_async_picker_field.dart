@@ -383,6 +383,7 @@ class _UnifiedCustomizableAsyncPickerFieldState<T>
     if (canType) return field;
 
     return UnifiedPickerKeyboardActivator(
+      typeToOpen: UnifiedTypeToOpen.any,
       enabled: !widget.locked && !_inactive && !_loading,
       onActivate: _open,
       child: GestureDetector(
@@ -763,6 +764,7 @@ class _UnifiedCustomizableAsyncMultiPickerFieldState<T>
     if (canType) return field;
 
     return UnifiedPickerKeyboardActivator(
+      typeToOpen: UnifiedTypeToOpen.any,
       enabled: !widget.locked && !_inactive && !_loading,
       onActivate: _open,
       child: GestureDetector(

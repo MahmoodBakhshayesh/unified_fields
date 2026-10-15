@@ -14,6 +14,7 @@ import '../unified_input_date_picker_style.dart';
 import 'unified_base_picker_sheet_style.dart';
 import 'unified_picker_sheet_modal_settings.dart';
 import 'unified_picker_sheet_style.dart';
+import 'unified_picker_presentation.dart';
 
 /// Default suffix icons for unified field types when the field does not set its own.
 @immutable
@@ -90,6 +91,10 @@ class UnifiedInputThemeData {
     this.fieldDefaults,
     this.adornmentStyle,
     this.numericStepButtonStyle,
+    this.pickerPresentation,
+    this.pickerSurfaceStyle,
+    this.preferCompactPickers,
+    this.typedDateFormat,
   });
 
   /// When non-null, replaces inferred brightness from [Theme.of(context)].
@@ -215,6 +220,23 @@ class UnifiedInputThemeData {
   /// Global +/- step button chrome for [UnifiedNumberField].
   final UnifiedNumericStepButtonStyle? numericStepButtonStyle;
 
+  /// Where list / multi / async pickers (and compact date / time / duration
+  /// pickers) open. Defaults to [UnifiedPickerPresentation.bottomSheet];
+  /// use [UnifiedPickerPresentation.adaptive] for dropdowns on desktop.
+  final UnifiedPickerPresentation? pickerPresentation;
+
+  /// Popover / dialog / row / search tokens shared by every picker surface.
+  final UnifiedPickerSurfaceStyle? pickerSurfaceStyle;
+
+  /// When true, fields left on the legacy picker styles (date `calendar` /
+  /// `wheels`, time `dial` / `wheels`, duration `wheels` / `cupertino`) open the
+  /// compact pickers instead: typed entry + calendar / columns, presented per
+  /// [pickerPresentation]. Explicit creative styles are kept.
+  final bool? preferCompactPickers;
+
+  /// Typed-entry pattern for compact date pickers (`yyyy-MM-dd`, `dd.MM.yyyy`, `MM/dd/yyyy`).
+  final String? typedDateFormat;
+
   /// Returns a copy with the given fields replaced.
   UnifiedInputThemeData merge(UnifiedInputThemeData? other) {
     if (other == null) return this;
@@ -271,6 +293,10 @@ class UnifiedInputThemeData {
       numericStepButtonStyle:
           numericStepButtonStyle?.merge(other.numericStepButtonStyle) ??
               other.numericStepButtonStyle,
+      pickerPresentation: other.pickerPresentation ?? pickerPresentation,
+      pickerSurfaceStyle: pickerSurfaceStyle?.merge(other.pickerSurfaceStyle) ?? other.pickerSurfaceStyle,
+      preferCompactPickers: other.preferCompactPickers ?? preferCompactPickers,
+      typedDateFormat: other.typedDateFormat ?? typedDateFormat,
     );
   }
 }

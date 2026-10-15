@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'fields/unified_input_palette.dart';
 import 'fields/unified_input_theme.dart';
+import 'unified_compact_pickers.dart';
 import 'persian_jalali_calendar.dart';
 import 'unified_fields_context.dart';
 import 'unified_date_picker_types.dart';
@@ -58,6 +59,25 @@ Future<DateTime?> showUnifiedFieldsDatePicker({
   final first = DateUtils.dateOnly(firstDate);
   final last = DateUtils.dateOnly(lastDate);
   assert(!first.isAfter(last), 'firstDate must be on or before lastDate');
+
+  final preferCompact = UnifiedInputThemeScope.themeDataOf(context).preferCompactPickers ?? false;
+  final legacyStyle =
+      pickerStyle == UnifiedFieldsDatePickerStyle.calendar || pickerStyle == UnifiedFieldsDatePickerStyle.wheels;
+  if ((pickerStyle == UnifiedFieldsDatePickerStyle.compact || (preferCompact && legacyStyle)) &&
+      granularity == UnifiedFieldsDatePickerGranularity.day &&
+      initialCalendarKind == UnifiedFieldsCalendarKind.gregorian) {
+    final init = DateUtils.dateOnly(initialDate);
+    return showUnifiedFieldsCompactDatePicker(
+      context: context,
+      initialDate: init.isBefore(first) || init.isAfter(last) ? null : init,
+      firstDate: first,
+      lastDate: last,
+      title: title,
+      presentation: pickerSheetStyle?.presentation,
+      surfaceStyle: pickerSheetStyle?.surfaceStyle,
+      barrierDismissible: barrierDismissible ?? true,
+    );
+  }
 
   if (pickerStyle.isStyledPicker) {
     return showUnifiedFieldsStyledDatePicker(
@@ -155,6 +175,25 @@ Future<DateTimeRange?> showUnifiedFieldsDatePickerRange({
   final first = DateUtils.dateOnly(firstDate);
   final last = DateUtils.dateOnly(lastDate);
   assert(!first.isAfter(last), 'firstDate must be on or before lastDate');
+
+  final preferCompact = UnifiedInputThemeScope.themeDataOf(context).preferCompactPickers ?? false;
+  // The range field defaults to verticalMonths, so preferCompact also routes it here.
+  final legacyRange = pickerStyle == UnifiedFieldsDatePickerStyle.calendar ||
+      pickerStyle == UnifiedFieldsDatePickerStyle.wheels ||
+      pickerStyle == UnifiedFieldsDatePickerStyle.verticalMonths;
+  if ((pickerStyle == UnifiedFieldsDatePickerStyle.compact || (preferCompact && legacyRange)) &&
+      initialCalendarKind == UnifiedFieldsCalendarKind.gregorian) {
+    return showUnifiedFieldsCompactDateRangePicker(
+      context: context,
+      initialRange: initialRange,
+      firstDate: first,
+      lastDate: last,
+      title: title,
+      presentation: pickerSheetStyle?.presentation,
+      surfaceStyle: pickerSheetStyle?.surfaceStyle,
+      barrierDismissible: barrierDismissible ?? true,
+    );
+  }
 
   if (pickerStyle.isStyledPicker) {
     return showUnifiedFieldsStyledDatePickerRange(

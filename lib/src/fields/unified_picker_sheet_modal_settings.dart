@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'unified_input_theme.dart';
 import 'unified_picker_keyboard.dart';
+import 'unified_picker_presentation.dart';
 
 /// Modal presentation flags for picker bottom sheets ([showModalBottomSheet]).
 ///
@@ -105,7 +106,13 @@ Future<T?> showUnifiedFieldsPickerBottomSheet<T>({
     legacyIsDismissible: legacyIsDismissible,
   );
 
-  return showModalBottomSheet<T>(
+  return showUnifiedPickerPresented<T>(
+    context: context,
+    presentation: pickerSheetStyle?.presentation,
+    surfaceStyle: pickerSheetStyle?.surfaceStyle,
+    barrierDismissible: modal.isDismissible!,
+    builder: builder,
+    sheet: () => showModalBottomSheet<T>(
     context: context,
     isScrollControlled: modal.isScrollControlled!,
     isDismissible: modal.isDismissible!,
@@ -116,5 +123,6 @@ Future<T?> showUnifiedFieldsPickerBottomSheet<T>({
     backgroundColor: backgroundColor,
     clipBehavior: clipBehavior ?? Clip.antiAlias,
     builder: (ctx) => UnifiedPickerModalScope(child: builder(ctx)),
+    ),
   );
 }

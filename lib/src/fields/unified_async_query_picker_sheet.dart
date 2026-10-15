@@ -4,13 +4,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../unified_colors.dart';
-import '../unified_fields_context.dart';
 import '../unified_fields_strings.dart';
 import '../unified_sheet_button.dart';
 import 'unified_input_theme.dart';
 import 'unified_picker_item_builders.dart';
 import 'unified_picker_keyboard.dart';
+import 'unified_picker_list_chrome.dart';
+import 'unified_picker_presentation.dart';
 
 /// Loads options for [UnifiedAsyncQueryPicker] / [showUnifiedAsyncQueryPickerSheet].
 typedef UnifiedAsyncQueryFetcher<T> = Future<List<T>> Function(String query);
@@ -83,7 +83,7 @@ class AsyncQueryPickerSheetWidget<T> extends StatefulWidget {
 
 class _AsyncQueryPickerSheetWidgetState<T>
     extends State<AsyncQueryPickerSheetWidget<T>> {
-  final TextEditingController _searchC = TextEditingController();
+  final TextEditingController _searchC = TextEditingController(text: UnifiedPickerTypeAhead.take() ?? '');
   Timer? _debounce;
   int _fetchGeneration = 0;
   List<T> _items = const [];
@@ -147,7 +147,7 @@ class _AsyncQueryPickerSheetWidgetState<T>
     }
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(UnifiedPickerListChrome listChrome) {
     final query = _searchC.text;
     if (query.length < widget.queryThreshold) {
       return Center(
@@ -157,7 +157,7 @@ class _AsyncQueryPickerSheetWidgetState<T>
             widget.queryPromptMessage ??
                 UnifiedFieldsStrings.instance.asyncQueryTypeToFetch,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.black54, fontSize: 15),
+            style: listChrome.mutedTextStyle,
           ),
         ),
       );
@@ -181,31 +181,24 @@ class _AsyncQueryPickerSheetWidgetState<T>
       return Center(
         child: Text(
           UnifiedFieldsStrings.instance.asyncQueryNoResults,
-          style: const TextStyle(color: Colors.black54, fontSize: 15),
+          style: listChrome.mutedTextStyle,
         ),
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       itemCount: _items.length,
       itemBuilder: (context, index) {
         final item = _items[index];
         final isSelected = widget.value == item;
-        return InkWell(
+        return UnifiedPickerRow(
+          selected: isSelected,
           onTap: () => Navigator.of(context).pop(item),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? Colors.blueAccent.withValues(alpha: 0.3)
-                  : const Color(0xffF2F3F6),
-              border: const Border(bottom: BorderSide(color: Colors.white)),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            child: unifiedPickerResolveListItem(
-              item,
-              itemToWidget: widget.itemToWidget,
-              valueToString: widget.valueToString,
-            ),
+          child: unifiedPickerResolveListItem(
+            item,
+            itemToWidget: widget.itemToWidget,
+            valueToString: widget.valueToString,
+            textStyle: listChrome.itemTextStyle,
           ),
         );
       },
@@ -218,48 +211,34 @@ class _AsyncQueryPickerSheetWidgetState<T>
       context,
       pickerSheetBackgroundColor: widget.sheetBackgroundColor,
     );
+    final listChrome = UnifiedPickerListChrome.of(context);
+    final surface = UnifiedResolvedPickerSurface.of(context);
+    final anchored = UnifiedPickerPresentationScope.isAnchoredOf(context);
     return UnifiedPickerModalScope(
-      child: SafeArea(
-        child: BottomSheet(
-          backgroundColor: baseSheet.sheetBackgroundColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: baseSheet.sheetBorderRadius!,
-          ),
-          constraints: BoxConstraints(
-            maxHeight: context.unifiedFieldsScreenHeight * 0.9,
-          ),
-          enableDrag: false,
-          onClosing: () {},
-          builder: (context) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                UnifiedPickerSheetHeader(
-                  title: widget.label,
-                  showClear: widget.showClearButton,
-                  pickerHeaderStyle: widget.pickerHeaderStyle,
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                  child: CupertinoTextField(
-                    controller: _searchC,
-                    autofocus: widget.searchAutoFocus,
-                    inputFormatters: _resolvedSearchFormatters(context),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    prefix: const Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Icon(Icons.search),
-                    ),
-                  ),
-                ),
-                Expanded(child: _buildBody()),
-              ],
-            );
-          },
+      child: UnifiedPickerFrame(
+        sheetBackgroundColor: baseSheet.sheetBackgroundColor,
+        sheetBorderRadius: baseSheet.sheetBorderRadius,
+        textStyle: listChrome.itemTextStyle,
+        listExtent: _items.isEmpty
+            ? surface.rowHeight * 3
+            : _items.length * surface.rowExtentFor(context) + 8,
+        header: UnifiedPickerSheetHeader(
+          title: widget.label,
+          showClear: widget.showClearButton,
+          pickerHeaderStyle: widget.pickerHeaderStyle,
         ),
+        search: listChrome.buildSearchField(
+          controller: _searchC,
+          autofocus: widget.searchAutoFocus || anchored,
+          inputFormatters: _resolvedSearchFormatters(context),
+          trailing: anchored && widget.showClearButton
+              ? UnifiedPickerActionButton(
+                  label: UnifiedFieldsStrings.instance.clear,
+                  onPressed: () => Navigator.of(context).pop(Null),
+                )
+              : null,
+        ),
+        list: _buildBody(listChrome),
       ),
     );
   }
@@ -377,7 +356,7 @@ class AsyncQueryMultiPickerSheetWidget<T> extends StatefulWidget {
 
 class _AsyncQueryMultiPickerSheetWidgetState<T>
     extends State<AsyncQueryMultiPickerSheetWidget<T>> {
-  final TextEditingController _searchC = TextEditingController();
+  final TextEditingController _searchC = TextEditingController(text: UnifiedPickerTypeAhead.take() ?? '');
   Timer? _debounce;
   int _fetchGeneration = 0;
   List<T> _items = const [];
@@ -453,7 +432,7 @@ class _AsyncQueryMultiPickerSheetWidgetState<T>
     });
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(UnifiedPickerListChrome listChrome) {
     final query = _searchC.text;
     if (query.length < widget.queryThreshold) {
       return Center(
@@ -463,7 +442,7 @@ class _AsyncQueryMultiPickerSheetWidgetState<T>
             widget.queryPromptMessage ??
                 UnifiedFieldsStrings.instance.asyncQueryTypeToFetch,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.black54, fontSize: 15),
+            style: listChrome.mutedTextStyle,
           ),
         ),
       );
@@ -487,39 +466,26 @@ class _AsyncQueryMultiPickerSheetWidgetState<T>
       return Center(
         child: Text(
           UnifiedFieldsStrings.instance.asyncQueryNoResults,
-          style: const TextStyle(color: Colors.black54, fontSize: 15),
+          style: listChrome.mutedTextStyle,
         ),
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       itemCount: _items.length,
       itemBuilder: (context, index) {
         final item = _items[index];
         final isSelected = _selected.contains(item);
-        return InkWell(
+        return UnifiedPickerRow(
+          selected: isSelected,
+          showSelectedIcon: false,
           onTap: () => _toggle(item),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? Colors.blueAccent.withValues(alpha: 0.3)
-                  : const Color(0xffF2F3F6),
-              border: const Border(bottom: BorderSide(color: Colors.white)),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            child: Row(
-              children: [
-                UnifiedMultiPickerCheckbox(value: isSelected),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: unifiedPickerResolveListItem(
-                    item,
-                    itemToWidget: widget.itemToWidget,
-                    valueToString: widget.valueToString,
-                  ),
-                ),
-              ],
-            ),
+          leading: UnifiedMultiPickerCheckbox(value: isSelected),
+          child: unifiedPickerResolveListItem(
+            item,
+            itemToWidget: widget.itemToWidget,
+            valueToString: widget.valueToString,
+            textStyle: listChrome.itemTextStyle,
           ),
         );
       },
@@ -532,81 +498,81 @@ class _AsyncQueryMultiPickerSheetWidgetState<T>
       context,
       pickerSheetBackgroundColor: widget.sheetBackgroundColor,
     );
-    return UnifiedPickerModalScope(
-      onConfirm: () => Navigator.pop(context, _selected),
-      child: SafeArea(
-        child: BottomSheet(
-          backgroundColor: baseSheet.sheetBackgroundColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: baseSheet.sheetBorderRadius!,
-          ),
-          constraints: BoxConstraints(
-            maxHeight: context.unifiedFieldsScreenHeight * 0.9,
-          ),
-          enableDrag: false,
-          onClosing: () {},
-          builder: (context) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+    final listChrome = UnifiedPickerListChrome.of(context);
+    final surface = UnifiedResolvedPickerSurface.of(context);
+    final compact = UnifiedPickerPresentationScope.isCompactOf(context);
+    final footer = compact
+        ? Padding(
+            padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
+            child: Row(
               children: [
-                UnifiedPickerSheetHeader(
-                  title: UnifiedFieldsStrings.instance.multiPickerTitle(
-                    widget.label,
-                  ),
-                  showClear: widget.showClearButton,
-                  onClear: () => setState(() => _selected = []),
+                Expanded(child: Text('${_selected.length} selected', maxLines: 1, overflow: TextOverflow.fade, softWrap: false, style: surface.mutedTextStyle)),
+                UnifiedPickerActionButton(
+                  label: UnifiedFieldsStrings.instance.cancel,
+                  onPressed: () => Navigator.pop(context, widget.values),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                  child: CupertinoTextField(
-                    controller: _searchC,
-                    autofocus: widget.searchAutoFocus,
-                    inputFormatters: _resolvedSearchFormatters(context),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    prefix: const Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Icon(Icons.search),
-                    ),
+                const SizedBox(width: 6),
+                UnifiedPickerActionButton(
+                  primary: true,
+                  label: UnifiedFieldsStrings.instance.done,
+                  onPressed: () => Navigator.pop(context, _selected),
+                ),
+              ],
+            ),
+          )
+        : Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+            child: Row(
+              spacing: 12,
+              children: [
+                Expanded(
+                  child: UnifiedSheetButton(
+                    label: UnifiedFieldsStrings.instance.cancel,
+                    radius: 12,
+                    color: listChrome.palette.borderColor,
+                    reverse: true,
+                    textColor: listChrome.palette.fieldTextColor,
+                    borderSide: BorderSide(color: listChrome.palette.borderColor),
+                    onPressed: () => Navigator.pop(context, widget.values),
                   ),
                 ),
-                Expanded(child: _buildBody()),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                  child: Row(
-                    spacing: 12,
-                    children: [
-                      Expanded(
-                        child: UnifiedSheetButton(
-                          label: UnifiedFieldsStrings.instance.cancel,
-                          radius: 12,
-                          color: UnifiedColors.headlineColor,
-                          reverse: true,
-                          textColor: Colors.black,
-                          borderSide: const BorderSide(color: Colors.grey),
-                          onPressed: () {
-                            Navigator.pop(context, widget.values);
-                          },
-                        ),
-                      ),
-                      Expanded(
-                        child: UnifiedSheetButton(
-                          label: UnifiedFieldsStrings.instance.confirm,
-                          radius: 12,
-                          onPressed: () {
-                            Navigator.pop(context, _selected);
-                          },
-                        ),
-                      ),
-                    ],
+                Expanded(
+                  child: UnifiedSheetButton(
+                    label: UnifiedFieldsStrings.instance.confirm,
+                    radius: 12,
+                    onPressed: () => Navigator.pop(context, _selected),
                   ),
                 ),
               ],
-            );
-          },
+            ),
+          );
+    return UnifiedPickerModalScope(
+      onConfirm: () => Navigator.pop(context, _selected),
+      child: UnifiedPickerFrame(
+        sheetBackgroundColor: baseSheet.sheetBackgroundColor,
+        sheetBorderRadius: baseSheet.sheetBorderRadius,
+        textStyle: listChrome.itemTextStyle,
+        listExtent: _items.isEmpty
+            ? surface.rowHeight * 3
+            : _items.length * surface.rowExtentFor(context) + 8,
+        header: UnifiedPickerSheetHeader(
+          title: UnifiedFieldsStrings.instance.multiPickerTitle(widget.label),
+          showClear: widget.showClearButton,
+          onClear: () => setState(() => _selected = []),
         ),
+        search: listChrome.buildSearchField(
+          controller: _searchC,
+          autofocus: widget.searchAutoFocus || UnifiedPickerPresentationScope.isAnchoredOf(context),
+          inputFormatters: _resolvedSearchFormatters(context),
+          trailing: compact && widget.showClearButton && _selected.isNotEmpty
+              ? UnifiedPickerActionButton(
+                  label: UnifiedFieldsStrings.instance.clear,
+                  onPressed: () => setState(() => _selected = []),
+                )
+              : null,
+        ),
+        list: _buildBody(listChrome),
+        footer: footer,
       ),
     );
   }
