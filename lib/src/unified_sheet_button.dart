@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 /// Small filled / outlined button used by picker sheets (replaces app-specific [AppButton]).
+///
+/// Built with [Material] + [InkWell] — not [FilledButton] / [OutlinedButton] — so host apps
+/// that forbid Material button types in design audits can open picker sheets.
 class UnifiedSheetButton extends StatelessWidget {
   /// Creates a sheet action button.
   const UnifiedSheetButton({
@@ -13,6 +16,7 @@ class UnifiedSheetButton extends StatelessWidget {
     this.borderSide,
     this.reverse = false,
     this.child,
+    this.height = 40,
   });
 
   /// Visible label (used as the child when [child] is null).
@@ -39,32 +43,49 @@ class UnifiedSheetButton extends StatelessWidget {
   /// Optional widget used instead of [label] (for icons / custom content).
   final Widget? child;
 
+  /// Minimum tap target height.
+  final double height;
+
   @override
   Widget build(BuildContext context) {
-    final effectiveChild = child ?? Text(label);
-    if (reverse) {
-      return OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          side: borderSide,
-          foregroundColor: textColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radius),
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final enabled = onPressed != null;
+    final fg = textColor ?? (reverse ? scheme.onSurface : scheme.onPrimary);
+    final bg = reverse
+        ? Colors.transparent
+        : (color ?? scheme.primary);
+    final border = reverse
+        ? (borderSide ?? BorderSide(color: color ?? scheme.outline))
+        : BorderSide.none;
+    final radiusGeom = BorderRadius.circular(radius);
+    final labelStyle = theme.textTheme.labelLarge?.copyWith(
+          color: fg,
+          fontWeight: FontWeight.w600,
+        ) ??
+        TextStyle(color: fg, fontWeight: FontWeight.w600, fontSize: 14);
+    final effectiveChild = DefaultTextStyle.merge(
+      style: labelStyle,
+      child: child ?? Text(label),
+    );
+
+    return Opacity(
+      opacity: enabled ? 1 : 0.45,
+      child: Material(
+        color: bg,
+        shape: RoundedRectangleBorder(borderRadius: radiusGeom, side: border),
+        child: InkWell(
+          borderRadius: radiusGeom,
+          onTap: onPressed,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: height),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Center(widthFactor: 1, child: effectiveChild),
+            ),
           ),
         ),
-        onPressed: onPressed,
-        child: effectiveChild,
-      );
-    }
-    return FilledButton(
-      style: FilledButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: textColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(radius),
-        ),
       ),
-      onPressed: onPressed,
-      child: effectiveChild,
     );
   }
 }

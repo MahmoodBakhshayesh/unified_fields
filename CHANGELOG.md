@@ -1,3 +1,10 @@
+## 1.1.0+1
+
+### Fixes
+
+* **Sheet actions** — `UnifiedSheetButton` no longer uses Material `FilledButton` / `OutlinedButton`
+  (host design audits forbid those types). Same API; `Material` + `InkWell` chrome.
+
 ## 1.1.0
 
 ### Features
