@@ -36,7 +36,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^1.2.0
+  unified_fields: ^1.3.0
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -591,7 +591,7 @@ CustomWheelPicker(
 
 Imperative API: **`showUnifiedFieldsPickerBottomSheet`** (used internally by list/multi pickers).
 
-### Matching a Figma design (1.2.0)
+### Matching a Figma design (1.3.0)
 
 Copy values from Figma Dev Mode (or the Plugin API) into the theme once; fields
 then only pass content. Example: a dark field with the stroke style
@@ -642,7 +642,7 @@ UnifiedInputThemeScope(
 
 See `example/lib/figma_look_demo.dart` for a full screen.
 
-### Touch tap targets (1.2.0)
+### Touch tap targets (1.3.0)
 
 Picker metrics stay dense by default (34 px day cells, 40 px sheet buttons, 28 px month arrows).
 For touch input, set two fields on **`UnifiedPickerSurfaceStyle`** (via

@@ -118,7 +118,7 @@ class _UnifiedGradientBorderPainter extends CustomPainter {
 /// Shared chrome helper: solid [BorderSide] or optional [borderGradient].
 ///
 /// When [borderGradient] is null (or [forceSolid] is true), behavior matches the
-/// pre-1.2.0 `Container` + `BoxDecoration(border: …)` path — existing field
+/// pre-1.3.0 `Container` + `BoxDecoration(border: …)` path — existing field
 /// setups are unchanged. Gradient stroke is opt-in only.
 class UnifiedFieldBorderBox extends StatelessWidget {
   /// Creates a bordered field body.
@@ -214,7 +214,7 @@ class UnifiedFieldBorderBox extends StatelessWidget {
       );
     }
 
-    // Solid path: same layout contract as pre-1.2.0 Container + border.
+    // Solid path: same layout contract as pre-1.3.0 Container + border.
     return Container(
       height: height,
       constraints: height == null && minHeight != null

@@ -1470,7 +1470,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Do not set clipBehavior on the bordered container — it clips the stroke.
-          // Height lives on the inner SizedBox (pre-1.2.0 contract) so solid
+          // Height lives on the inner SizedBox (pre-1.3.0 contract) so solid
           // borders keep the same outer size; gradient pads outside that box.
           UnifiedFieldBorderBox(
             borderRadius: radius,
@@ -1610,7 +1610,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       fixedHeight: configuredGradient == null ? null : h,
     );
     if (configuredGradient == null) {
-      // Unchanged pre-1.2.0 floating layout when gradient is unset.
+      // Unchanged pre-1.3.0 floating layout when gradient is unset.
       return wrapInteraction(h == null ? field : SizedBox(height: h, child: field));
     }
     if (gradient == null) {
