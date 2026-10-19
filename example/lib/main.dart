@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:unified_fields/unified_fields.dart';
 
+import 'figma_look_demo.dart';
+
 void main() {
   UnifiedFieldsTypography.instance = const UnifiedFieldsTypography(
     usePersianDigitsGlobally: true, // all unified text / number fields
@@ -153,6 +155,13 @@ class _DemoHomePageState extends State<DemoHomePage> {
       appBar: AppBar(
         title: const Text('unified_fields demo'),
         actions: [
+          IconButton(
+            tooltip: 'Figma look (gradient fields, OTP)',
+            icon: const Icon(Icons.auto_awesome_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const FigmaLookDemoPage()),
+            ),
+          ),
           IconButton(
             tooltip: 'Open full showcase',
             icon: const Icon(Icons.dashboard_customize_outlined),

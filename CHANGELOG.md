@@ -23,6 +23,37 @@
   floating-label, `UnifiedFieldShell`, and `UnifiedPhoneField`. Existing apps that
   never set `borderGradient` need no migration.
 
+* **Figma gradients** — `UnifiedFigmaLinearGradient` takes a Figma
+  `gradientTransform` plus stops (Dev Mode / Plugin API values) and renders the
+  same stroke or fill at any box size.
+
+* **`UnifiedOtpField`** — one-time-code boxes over a single hidden `TextField`
+  (paste, SMS autofill, backspace work natively): `length`, box size / gap /
+  radius, fill, solid or gradient stroke, focused and error chrome, caret,
+  `obscureText`, `onCompleted`, digits-only by default, LTR digit order in RTL.
+
+* **Gradient fields match design tools** — with `borderGradient` and a `height`
+  (floating / no-label fields), the fill and tap target span the whole box and
+  the text line is vertically centered (top / bottom padding derived from the
+  text style); a validation error keeps that height (solid error outline, message
+  below). The stroke is painted above the fill, like Figma.
+
+* **`UnifiedTextField`** — `prefix`, `prefixIcon`, `suffixIcon` parameters
+  (override the decoration's), and `showPasswordToggle` (also on
+  `UnifiedBaseTextField` / `UnifiedFormTextField`) to hide the visibility toggle
+  of password fields.
+
+### Fixes
+
+* **Leading icons on empty fields** — floating / no-label fields passed
+  `prefixIcon` as Material `InputDecoration.prefix`, which stays hidden until the
+  field is focused or has text. It is now always shown, and the gap to the text is
+  `contentPadding.start` (as on the label-in-row / column path).
+* **Translucent placeholders** — a placeholder color with alpha < 1 is drawn as
+  opaque text inside an `Opacity` layer, so overlapping joined glyphs (Persian /
+  Arabic) are not blended twice. Matches Figma / CSS opacity; Latin text renders
+  as before.
+
 ## 1.1.0+1
 
 ### Fixes

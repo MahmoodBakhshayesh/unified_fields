@@ -56,8 +56,10 @@ class UnifiedGradientBorder extends StatelessWidget {
       content = ClipRRect(borderRadius: innerRadius, child: content);
     }
 
+    // Like Figma (and BoxDecoration borders): fill the full outer shape, then
+    // paint the stroke on top so opaque fills / child chrome never hide it.
     return CustomPaint(
-      painter: _UnifiedGradientBorderPainter(
+      foregroundPainter: _UnifiedGradientBorderPainter(
         gradient: gradient,
         borderRadius: borderRadius,
         strokeWidth: w,
@@ -65,7 +67,7 @@ class UnifiedGradientBorder extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: innerRadius,
+          borderRadius: borderRadius,
         ),
         child: content,
       ),

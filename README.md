@@ -591,6 +591,57 @@ CustomWheelPicker(
 
 Imperative API: **`showUnifiedFieldsPickerBottomSheet`** (used internally by list/multi pickers).
 
+### Matching a Figma design (1.2.0)
+
+Copy values from Figma Dev Mode (or the Plugin API) into the theme once; fields
+then only pass content. Example: a dark field with the stroke style
+"Linear Stroke pink + violet", 16 px radius, 57 px height, a 24 px leading icon
+16 px from the edge and 10 px before the text:
+
+```dart
+const stroke = UnifiedFigmaLinearGradient(
+  // Figma gradientTransform + stops, unchanged — renders the same at any size.
+  figmaTransform: [[0.9476, 0.0524, 0], [-0.9476, 0.9476, 0.5]],
+  colors: [Color(0xFF8B5CF6), Color(0xFF050517), Color(0xFFFF5CA8)],
+  stops: [0, 0.5926, 1],
+);
+
+UnifiedInputThemeScope(
+  data: UnifiedInputThemeData(
+    fieldDefaults: UnifiedInputFieldDefaults(
+      labelMode: UnifiedFieldLabelMode.floatingLabel,
+      height: 57,
+      backgroundColor: const Color(0xFF050517),
+      borderRadius: BorderRadius.circular(16),
+      borderSide: const BorderSide(width: 1), // stroke width (Figma "Inside")
+      borderGradient: stroke,
+      placeholderStyle: const TextStyle(
+        fontFamily: 'IRANYekan', fontWeight: FontWeight.w300, fontSize: 14,
+        height: 24 / 14, // Figma line height 24
+        leadingDistribution: TextLeadingDistribution.even, // Figma leading
+        color: Color(0x99FFFFFF), // opacity 60 %
+      ),
+      prefixIconColor: const Color(0xFF8B5CF6),
+      adornmentIconSize: 24,
+      prefixPadding: const EdgeInsetsDirectional.only(start: 16),
+      contentPadding: const EdgeInsetsDirectional.only(start: 10, end: 16),
+    ),
+  ),
+  child: const UnifiedTextField(
+    placeholder: 'شماره همراه',
+    prefixIcon: Icon(Icons.fingerprint), // or your SvgPicture
+  ),
+);
+```
+
+- Fill and tap target cover the whole `height`; the text line is centered.
+- `isPassword: true, showPasswordToggle: false` when the design has no eye icon.
+- `UnifiedOtpField` draws OTP boxes with the same stroke (`boxWidth`, `gap`,
+  `borderRadius`, `backgroundColor`, `borderGradient`, `focusedBorderSide`).
+- `UnifiedGradientBorder` puts the stroke on any other box (banners, cards).
+
+See `example/lib/figma_look_demo.dart` for a full screen.
+
 ### Touch tap targets (1.2.0)
 
 Picker metrics stay dense by default (34 px day cells, 40 px sheet buttons, 28 px month arrows).

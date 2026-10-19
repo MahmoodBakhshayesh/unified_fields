@@ -280,6 +280,7 @@ class UnifiedFormTextField extends StatefulWidget {
     this.label,
     this.mustResolveTextDirectionByInput = false,
     this.isPassword = false,
+    this.showPasswordToggle = true,
     this.isRequired = false,
     this.shakeOnError = false,
   });
@@ -386,6 +387,10 @@ class UnifiedFormTextField extends StatefulWidget {
 
   /// Render entered text as obscured and add a visibility toggle.
   final bool isPassword;
+
+  /// With [isPassword], whether to add the show / hide visibility toggle
+  /// (default true). When false a custom suffix icon is shown instead, if any.
+  final bool showPasswordToggle;
 
   /// Marks the field as required (visual hint only).
   final bool isRequired;
@@ -611,6 +616,7 @@ class _UnifiedFormTextFieldState extends State<UnifiedFormTextField> {
           minLines: widget.minLines,
           maxLength: widget.maxLength,
           isPassword: widget.isPassword || widget.obscureText,
+          showPasswordToggle: widget.showPasswordToggle,
           showClearButton: widget.showClearButton,
           textCapitalization: widget.textCapitalization,
           textAlign: widget.textAlign,

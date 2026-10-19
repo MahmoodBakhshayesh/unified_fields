@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -62,6 +64,7 @@ class UnifiedBaseTextField extends StatefulWidget {
     this.autofocus = false,
     this.selectTextOnFocus,
     this.isPassword = false,
+    this.showPasswordToggle = true,
     this.showClearButton,
     this.requiredField = false,
     this.labelInRow,
@@ -191,6 +194,10 @@ class UnifiedBaseTextField extends StatefulWidget {
 
   /// Render entered text as obscured and add a visibility toggle.
   final bool isPassword;
+
+  /// With [isPassword], whether to add the show / hide visibility toggle
+  /// (default true). When false a custom suffix icon is shown instead, if any.
+  final bool showPasswordToggle;
 
   /// Show an "x" suffix to clear the field when it has content (`null` → theme).
   final bool? showClearButton;
@@ -963,7 +970,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     } else if (widget.loading) {
       widgets.add(_loadingSuffix());
     } else {
-      if (widget.isPassword) {
+      if (widget.isPassword && widget.showPasswordToggle) {
         widgets.add(
           UnifiedSuffixIconChrome.build(
             icon: _obscure ? Icons.visibility : Icons.visibility_off,
@@ -1276,12 +1283,24 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     String? errorText,
     bool hasError,
     UnifiedInputPalette palette,
-    UnifiedInputDecoration dec,
-  ) {
+    UnifiedInputDecoration dec, {
+    double? fixedHeight,
+  }) {
     final hasText = _ctrl.text.isNotEmpty;
     final showErrorOnField = hasError &&
         UnifiedInputThemeResolver.fieldShowError(context, field: widget.showError) &&
         dec.showError;
+    final fieldStyle = _resolveFieldStyle(palette, dec);
+    final basePadding = dec.contentPadding ??
+        widget.padding ??
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 16);
+    final singleLine = widget.isPassword || widget.maxLines == 1;
+    // A dense decorator never grows its fill past one text line, so center the
+    // line in [fixedHeight] with vertical padding (Figma auto-layout style).
+    final contentPadding = fixedHeight != null && singleLine
+        ? _centeredPadding(basePadding, fixedHeight, fieldStyle, _placeholderStyle(palette, dec))
+        : basePadding;
+    final hint = _layerOpacityHint(_placeholderStyle(palette, dec));
     final field = TextField(
       controller: _ctrl,
       focusNode: _effectiveFocusNode,
@@ -1300,19 +1319,18 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       minLines: widget.minLines,
       maxLength: widget.maxLength,
       inputFormatters: widget.inputFormatters,
-      style: _resolveFieldStyle(palette, dec),
+      style: fieldStyle,
       onSubmitted: widget.onSubmit,
+      textAlignVertical: fixedHeight == null ? null : TextAlignVertical.center,
       decoration: InputDecoration(
         isDense: true,
         label: _floatingLabelWidget(palette, dec),
-        hintText: widget.placeholder,
+        hintText: hint == null ? widget.placeholder : null,
+        hint: hint,
         hintStyle: _placeholderStyle(palette, dec),
         filled: true,
         fillColor: _effectiveBackgroundColor(palette, dec),
-        contentPadding:
-            dec.contentPadding ??
-            widget.padding ??
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: contentPadding,
         border: _materialOutlineBorder(palette, hasError, dec),
         enabledBorder: _materialOutlineBorder(palette, hasError, dec),
         focusedBorder: _materialOutlineBorder(
@@ -1334,7 +1352,10 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
           color: _validationColor(palette, dec),
           fontSize: 12,
         ),
-        prefix: _buildPrefixRow(palette, dec),
+        // [InputDecoration.prefix] hides until focus / text; leading adornments
+        // must stay visible on an empty field (and size to their own row).
+        prefixIcon: _materialPrefixIcon(palette, dec, contentPadding),
+        prefixIconConstraints: const BoxConstraints(),
         suffixIcon: _buildSuffixRow(context, hasText, palette, dec),
       ),
     );
@@ -1342,6 +1363,81 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       return AbsorbPointer(child: field);
     }
     return field;
+  }
+
+  /// Placeholder drawn opaque inside an [Opacity] layer when its color is
+  /// translucent, so overlapping glyphs (joined Persian / Arabic letters) are
+  /// composited once — the way Figma and CSS apply layer opacity. Null when
+  /// the plain [InputDecoration.hintText] renders identically.
+  Widget? _layerOpacityHint(TextStyle style) {
+    final text = widget.placeholder;
+    final color = style.color;
+    if (text == null || text.isEmpty || color == null || color.a >= 1 || style.foreground != null) {
+      return null;
+    }
+    return Opacity(
+      opacity: color.a,
+      child: Text(
+        text,
+        style: style.copyWith(color: color.withValues(alpha: 1)),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: widget.textAlign,
+        textDirection: _resolveTextDirection(context),
+      ),
+    );
+  }
+
+  /// Leading adornments for the Material path. Material places
+  /// [InputDecoration.prefixIcon] a fixed gap (4 px in M3) before the text and
+  /// skips `contentPadding.start`; pad the row so the gap equals
+  /// `contentPadding.start`, like the Cupertino path.
+  Widget? _materialPrefixIcon(
+    UnifiedInputPalette palette,
+    UnifiedInputDecoration dec,
+    EdgeInsetsGeometry contentPadding,
+  ) {
+    final row = _buildPrefixRow(palette, dec);
+    if (row == null) return null;
+    final dir = Directionality.of(context);
+    final resolved = contentPadding.resolve(dir);
+    final start = dir == TextDirection.rtl ? resolved.right : resolved.left;
+    final builtInGap = Theme.of(context).useMaterial3 ? 4.0 : 0.0;
+    final extra = math.max(0.0, start - builtInGap);
+    if (extra == 0) return row;
+    return Padding(padding: EdgeInsetsDirectional.only(end: extra), child: row);
+  }
+
+  /// [padding] with top / bottom set so one line of [style] (or the taller
+  /// [hintStyle]) is centered in [height]. Horizontal insets are kept.
+  EdgeInsetsGeometry _centeredPadding(
+    EdgeInsetsGeometry padding,
+    double height,
+    TextStyle style,
+    TextStyle hintStyle,
+  ) {
+    final scaler = MediaQuery.textScalerOf(context);
+    double lineHeight(TextStyle s) {
+      final painter = TextPainter(
+        text: TextSpan(text: ' ', style: s),
+        textDirection: TextDirection.ltr,
+        textScaler: scaler,
+        maxLines: 1,
+      )..layout();
+      final h = painter.height;
+      painter.dispose();
+      return h;
+    }
+
+    final line = math.max(lineHeight(style), lineHeight(hintStyle));
+    final vertical = math.max(0.0, (height - line) / 2);
+    final resolved = padding.resolve(Directionality.of(context));
+    return EdgeInsetsDirectional.fromSTEB(
+      Directionality.of(context) == TextDirection.rtl ? resolved.right : resolved.left,
+      vertical,
+      Directionality.of(context) == TextDirection.rtl ? resolved.left : resolved.right,
+      vertical,
+    );
   }
 
   Widget _buildLabelInRowLayout(
@@ -1502,19 +1598,25 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec,
     Widget Function(Widget child) wrapInteraction,
   ) {
+    final h = dec.height ?? widget.height;
+    final configuredGradient = dec.borderGradient ?? widget.borderGradient;
+    final gradient = hasError ? null : configuredGradient;
     final field = _materialFloatingField(
       context,
       errorText,
       hasError,
       palette,
       dec,
+      fixedHeight: configuredGradient == null ? null : h,
     );
-    final h = dec.height ?? widget.height;
-    final gradient =
-        hasError ? null : (dec.borderGradient ?? widget.borderGradient);
-    if (gradient == null) {
+    if (configuredGradient == null) {
       // Unchanged pre-1.2.0 floating layout when gradient is unset.
       return wrapInteraction(h == null ? field : SizedBox(height: h, child: field));
+    }
+    if (gradient == null) {
+      // Error on a gradient field: same box height (padding centers the text),
+      // solid Material error outline, message below the box.
+      return wrapInteraction(field);
     }
     final radius =
         dec.borderRadius ?? widget.borderRadius ?? palette.borderRadius;

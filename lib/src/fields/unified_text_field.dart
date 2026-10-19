@@ -45,8 +45,21 @@ class UnifiedTextField extends StatefulWidget {
     this.label,
     this.mustResolveTextDirectionByInput,
     this.isPassword = false,
+    this.showPasswordToggle = true,
     this.isRequired = false,
+    this.prefix,
+    this.prefixIcon,
+    this.suffixIcon,
   });
+
+  /// Leading widget (overrides [UnifiedInputDecoration.prefix]).
+  final Widget? prefix;
+
+  /// Leading icon (overrides [UnifiedInputDecoration.prefixIcon]).
+  final Widget? prefixIcon;
+
+  /// Trailing icon (overrides [UnifiedInputDecoration.suffixIcon]).
+  final Widget? suffixIcon;
 
   /// Visual chrome overrides; merged on top of palette defaults.
   final UnifiedInputDecoration? decoration;
@@ -141,6 +154,10 @@ class UnifiedTextField extends StatefulWidget {
 
   /// When true, the field obscures content and adds a visibility toggle.
   final bool isPassword;
+
+  /// With [isPassword], whether to add the show / hide visibility toggle
+  /// (default true). When false a custom suffix icon is shown instead, if any.
+  final bool showPasswordToggle;
 
   /// When true, marks the field as required (visual hint only).
   final bool isRequired;
@@ -308,9 +325,9 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       showError: d.showError,
       validationColor: d.validationColor,
       validationIcon: d.validationIcon,
-      prefix: d.prefix,
-      prefixIcon: d.prefixIcon,
-      suffixIcon: d.suffixIcon,
+      prefix: widget.prefix ?? d.prefix,
+      prefixIcon: widget.prefixIcon ?? d.prefixIcon,
+      suffixIcon: widget.suffixIcon ?? d.suffixIcon,
       padding: d.contentPadding,
       validator: _fc != null
           ? (v) {
@@ -338,6 +355,7 @@ class _UnifiedTextFieldState extends State<UnifiedTextField> {
       minLines: widget.minLines,
       maxLength: widget.maxLength,
       isPassword: widget.isPassword || widget.obscureText,
+      showPasswordToggle: widget.showPasswordToggle,
       showClearButton: widget.showClearButton,
       textCapitalization: widget.textCapitalization,
       textAlign: widget.textAlign,
