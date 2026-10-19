@@ -125,7 +125,7 @@ class UnifiedTypedEntryField extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          height: s.searchHeight,
+          height: s.tapExtent(s.searchHeight),
           child: TextField(
             controller: controller,
             focusNode: focusNode,
@@ -250,8 +250,8 @@ class _NavButton extends StatelessWidget {
         borderRadius: radius,
         onTap: onPressed,
         child: SizedBox(
-          width: 28,
-          height: 28,
+          width: s.tapExtent(28),
+          height: s.tapExtent(28),
           child: Icon(icon, size: 18, color: s.secondaryActionTextColor.withValues(alpha: onPressed == null ? 0.3 : 1)),
         ),
       ),
@@ -475,7 +475,8 @@ class _UnifiedFieldsCompactDatePickerState extends State<UnifiedFieldsCompactDat
                 child: InkWell(
                   borderRadius: BorderRadius.circular(s.actionRadius),
                   onTap: () => setState(() => _monthsView = !_monthsView),
-                  child: Padding(
+                  child: Container(
+                    constraints: BoxConstraints(minHeight: s.minTapTarget),
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -652,7 +653,7 @@ class _DayCell extends StatelessWidget {
           hoverColor: s.rowHoverColor,
           onTap: enabled ? onTap : null,
           child: SizedBox(
-            height: 34,
+            height: s.dayCellExtent,
             child: Center(
               child: Text(
                 '${date.day}',
@@ -866,7 +867,9 @@ class _PresetChip extends StatelessWidget {
         canRequestFocus: false,
         borderRadius: radius,
         onTap: onTap,
-        child: Padding(
+        child: Container(
+          constraints: BoxConstraints(minHeight: s.minTapTarget),
+          alignment: s.minTapTarget > 0 ? Alignment.center : null,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           child: Text(
             label,
@@ -1585,7 +1588,7 @@ class _UnifiedFieldsCompactDateRangePickerState extends State<UnifiedFieldsCompa
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           SizedBox(
-                            height: 28,
+                            height: s.tapExtent(28),
                             child: Row(
                               children: [
                                 if (i == 0)
@@ -1597,7 +1600,7 @@ class _UnifiedFieldsCompactDateRangePickerState extends State<UnifiedFieldsCompa
                                         : null,
                                   )
                                 else
-                                  const SizedBox(width: 28),
+                                  SizedBox(width: s.tapExtent(28)),
                                 Expanded(
                                   child: Center(
                                     child: Text(
@@ -1615,7 +1618,7 @@ class _UnifiedFieldsCompactDateRangePickerState extends State<UnifiedFieldsCompa
                                         : null,
                                   )
                                 else
-                                  const SizedBox(width: 28),
+                                  SizedBox(width: s.tapExtent(28)),
                               ],
                             ),
                           ),
@@ -1722,7 +1725,7 @@ class _RangeMonth extends StatelessWidget {
                     builder: (context) {
                       final d = DateUtils.dateOnly(DateTime(start0.year, start0.month, start0.day + r * 7 + c));
                       final inMonth = d.month == month.month;
-                      if (!inMonth) return const SizedBox(height: 34);
+                      if (!inMonth) return SizedBox(height: s.dayCellExtent);
                       final isStart = start != null && DateUtils.isSameDay(d, start);
                       final isEnd = end != null && DateUtils.isSameDay(d, end);
                       final between = start != null && end != null && d.isAfter(start!) && d.isBefore(end!);
@@ -1732,7 +1735,7 @@ class _RangeMonth extends StatelessWidget {
                       return MouseRegion(
                         onEnter: (_) => onHover(d),
                         child: Container(
-                          height: 34,
+                          height: s.dayCellExtent,
                           margin: const EdgeInsets.symmetric(vertical: 1),
                           decoration: BoxDecoration(
                             color: band ? s.rowSelectedColor.withValues(alpha: preview ? 0.5 : 1) : null,

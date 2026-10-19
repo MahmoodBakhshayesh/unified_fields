@@ -1,4 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
+import 'fields/unified_picker_presentation.dart';
 
 /// Small filled / outlined button used by picker sheets (replaces app-specific [AppButton]).
 ///
@@ -43,7 +47,8 @@ class UnifiedSheetButton extends StatelessWidget {
   /// Optional widget used instead of [label] (for icons / custom content).
   final Widget? child;
 
-  /// Minimum tap target height.
+  /// Minimum tap target height (raised to [UnifiedPickerSurfaceStyle.minTapTarget]
+  /// when the theme sets one).
   final double height;
 
   @override
@@ -59,6 +64,7 @@ class UnifiedSheetButton extends StatelessWidget {
         ? (borderSide ?? BorderSide(color: color ?? scheme.outline))
         : BorderSide.none;
     final radiusGeom = BorderRadius.circular(radius);
+    final minTap = UnifiedResolvedPickerSurface.of(context).minTapTarget;
     final labelStyle = theme.textTheme.labelLarge?.copyWith(
           color: fg,
           fontWeight: FontWeight.w600,
@@ -78,7 +84,7 @@ class UnifiedSheetButton extends StatelessWidget {
           borderRadius: radiusGeom,
           onTap: onPressed,
           child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: height),
+            constraints: BoxConstraints(minHeight: math.max(height, minTap), minWidth: minTap),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               child: Center(widthFactor: 1, child: effectiveChild),

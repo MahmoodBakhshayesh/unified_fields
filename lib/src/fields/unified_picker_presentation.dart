@@ -81,7 +81,17 @@ class UnifiedPickerSurfaceStyle {
     this.adaptiveBreakpoint,
     this.monoTextStyle,
     this.todayColor,
+    this.dayCellExtent,
+    this.minTapTarget,
   });
+
+  /// Touch preset: 44 px day cells and a 44 × 44 tap-target floor (iOS HIG /
+  /// WCAG 2.5.5). Merge it into a touch theme, e.g.
+  /// `UnifiedPickerSurfaceStyle(...).merge(UnifiedPickerSurfaceStyle.touch)`.
+  static const UnifiedPickerSurfaceStyle touch = UnifiedPickerSurfaceStyle(
+    dayCellExtent: 44,
+    minTapTarget: 44,
+  );
 
   /// Surface fill.
   final Color? backgroundColor;
@@ -224,6 +234,15 @@ class UnifiedPickerSurfaceStyle {
   /// Outline of "today" in the compact calendar.
   final Color? todayColor;
 
+  /// Height of a day cell in the compact date / range calendars (default 34).
+  final double? dayCellExtent;
+
+  /// Minimum tap-target size for picker buttons (sheet footer / header
+  /// actions, Close, month navigation) and calendar day cells. Null (the
+  /// default) adds no floor, so pointer / desktop layouts stay dense; set 44
+  /// under touch input ([UnifiedPickerSurfaceStyle.touch]).
+  final double? minTapTarget;
+
   /// Non-null values of [other] win.
   UnifiedPickerSurfaceStyle merge(UnifiedPickerSurfaceStyle? other) {
     if (other == null) return this;
@@ -276,6 +295,8 @@ class UnifiedPickerSurfaceStyle {
       adaptiveBreakpoint: other.adaptiveBreakpoint ?? adaptiveBreakpoint,
       monoTextStyle: monoTextStyle?.merge(other.monoTextStyle) ?? other.monoTextStyle,
       todayColor: other.todayColor ?? todayColor,
+      dayCellExtent: other.dayCellExtent ?? dayCellExtent,
+      minTapTarget: other.minTapTarget ?? minTapTarget,
     );
   }
 }
@@ -331,6 +352,8 @@ class UnifiedResolvedPickerSurface {
     required this.adaptiveBreakpoint,
     required this.monoTextStyle,
     required this.todayColor,
+    required this.dayCellExtent,
+    required this.minTapTarget,
   });
 
   /// See [UnifiedPickerSurfaceStyle.backgroundColor].
@@ -427,6 +450,13 @@ class UnifiedResolvedPickerSurface {
   final TextStyle monoTextStyle;
   /// See [UnifiedPickerSurfaceStyle.todayColor].
   final Color todayColor;
+  /// See [UnifiedPickerSurfaceStyle.dayCellExtent]; never below [minTapTarget].
+  final double dayCellExtent;
+  /// See [UnifiedPickerSurfaceStyle.minTapTarget] (0 when unset).
+  final double minTapTarget;
+
+  /// [size] raised to [minTapTarget].
+  double tapExtent(double size) => math.max(size, minTapTarget);
 
   /// Resolves theme [UnifiedInputThemeData.pickerSurfaceStyle] + [override] over defaults.
   factory UnifiedResolvedPickerSurface.of(BuildContext context, {UnifiedPickerSurfaceStyle? override}) {
@@ -497,6 +527,8 @@ class UnifiedResolvedPickerSurface {
         fontFeatures: const [FontFeature.tabularFigures()],
       ).merge(s.monoTextStyle),
       todayColor: s.todayColor ?? accent,
+      dayCellExtent: math.max(s.dayCellExtent ?? 34, s.minTapTarget ?? 0),
+      minTapTarget: s.minTapTarget ?? 0,
     );
   }
 
@@ -1047,7 +1079,8 @@ class UnifiedPickerActionButton extends StatelessWidget {
           borderRadius: radius,
           onTap: onPressed,
           child: Container(
-            height: s.actionHeight,
+            height: s.tapExtent(s.actionHeight),
+            constraints: BoxConstraints(minWidth: s.minTapTarget),
             padding: const EdgeInsets.symmetric(horizontal: 12),
             alignment: Alignment.center,
             child: Row(

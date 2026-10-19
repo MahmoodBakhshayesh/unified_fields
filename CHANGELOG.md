@@ -1,3 +1,16 @@
+## 1.2.0
+
+### Features
+
+* **Touch tap targets (additive, opt-in)** — `UnifiedPickerSurfaceStyle.dayCellExtent`
+  (day-cell height, default `34`) and `UnifiedPickerSurfaceStyle.minTapTarget` (minimum
+  tap-target size, default unset = no floor), plus the `UnifiedPickerSurfaceStyle.touch`
+  preset (both `44`). With `minTapTarget` set, compact date / range day cells, month
+  navigation and title, range presets, typed-entry boxes, `UnifiedPickerActionButton`,
+  `UnifiedSheetButton` (footer Clear / Cancel / Confirm) and the sheet header Close button
+  are at least that size; the calendar sheet's day circles and rows follow `dayCellExtent`.
+  Unset (the default), every picker lays out exactly as in 1.1.x.
+
 ## 1.1.0+1
 
 ### Fixes

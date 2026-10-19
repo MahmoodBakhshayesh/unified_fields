@@ -36,7 +36,7 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^1.0.1
+  unified_fields: ^1.2.0
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -590,6 +590,28 @@ CustomWheelPicker(
 **Precedence:** field `pickerSheetModalSettings` → `pickerSheetStyle.modalSettings` → theme → package defaults (`isScrollControlled` / `isDismissible` / `enableDrag` / `useSafeArea`: `true`; `showDragHandle`: `false`).
 
 Imperative API: **`showUnifiedFieldsPickerBottomSheet`** (used internally by list/multi pickers).
+
+### Touch tap targets (1.2.0)
+
+Picker metrics stay dense by default (34 px day cells, 40 px sheet buttons, 28 px month arrows).
+For touch input, set two fields on **`UnifiedPickerSurfaceStyle`** (via
+`UnifiedInputThemeData.pickerSurfaceStyle` or per field `UnifiedPickerSheetStyle.surfaceStyle`):
+
+| Field | Default | Effect |
+| --- | --- | --- |
+| `dayCellExtent` | `34` | Day-cell height in the compact date / range calendars (and day circles + rows in the calendar sheet). |
+| `minTapTarget` | `null` (no floor) | Minimum size for sheet footer / header buttons (`UnifiedSheetButton`, `UnifiedPickerActionButton`), Close, month navigation, month title, range presets, typed-entry boxes and day cells. |
+
+`UnifiedPickerSurfaceStyle.touch` sets both to **44** (iOS HIG / WCAG 2.5.5):
+
+```dart
+UnifiedInputThemeData(
+  pickerSurfaceStyle: UnifiedPickerSurfaceStyle(
+    accentColor: brand,
+    // ...
+  ).merge(isTouch ? UnifiedPickerSurfaceStyle.touch : null),
+)
+```
 
 ### List row helpers (0.2.6)
 

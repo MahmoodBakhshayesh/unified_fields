@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'unified_field_label_mode.dart';
@@ -177,8 +179,16 @@ class UnifiedInputThemeResolver {
           _theme(context).pickerSheetBackgroundColor,
     );
     final themed = _theme(context).datePickerStyle;
+    // Touch sizing from [UnifiedPickerSurfaceStyle] (only when set) so the
+    // calendar sheet matches the compact pickers (rows inset each day by 2 px);
+    // explicit date styles still win.
+    final surface = _theme(context).pickerSurfaceStyle;
+    final dayExtent = math.max(surface?.dayCellExtent ?? 0, surface?.minTapTarget ?? 0);
     return const UnifiedInputDatePickerStyle()
         .applyDefaults(p, materialTheme, sheetBackground: sheetBg)
+        .merge(dayExtent > 0
+            ? UnifiedInputDatePickerStyle(dayCircleSize: dayExtent, cellHeight: math.max(40, dayExtent + 4))
+            : null)
         .merge(themed)
         .merge(overrides);
   }

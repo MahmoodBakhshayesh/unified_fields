@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../unified_fields_strings.dart';
 import '../unified_sheet_button.dart';
 import 'unified_input_theme.dart';
+import 'unified_picker_presentation.dart';
 
 /// Shared title bar for [PickerSheetWidget] and [MultiPickerSheetWidget].
 ///
@@ -98,7 +99,14 @@ class UnifiedPickerSheetHeader extends StatelessWidget {
       helpStyle,
       textDirection: textDirection,
     );
-    final closeChild = closeButton ?? const CloseButton();
+    final minTap = UnifiedResolvedPickerSurface.of(context).minTapTarget;
+    final closeChild = closeButton ??
+        (minTap > 0
+            ? ConstrainedBox(
+                constraints: BoxConstraints(minWidth: minTap, minHeight: minTap),
+                child: const CloseButton(),
+              )
+            : const CloseButton());
     final clearChild = showClear
         ? (clearButton ??
               UnifiedSheetButton(
