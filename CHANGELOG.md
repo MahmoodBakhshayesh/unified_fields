@@ -30,7 +30,8 @@
 * **`UnifiedOtpField`** — one-time-code boxes over a single hidden `TextField`
   (paste, SMS autofill, backspace work natively): `length`, box size / gap /
   radius, fill, solid or gradient stroke, focused and error chrome, caret,
-  `obscureText`, `onCompleted`, digits-only by default, LTR digit order in RTL.
+  `obscureText`, `onCompleted`, digits-only by default (Persian / Arabic-Indic
+  keypad digits are converted to ASCII), LTR digit order in RTL.
 
 * **Gradient fields match design tools** — with `borderGradient` and a `height`
   (floating / no-label fields), the fill and tap target span the whole box and

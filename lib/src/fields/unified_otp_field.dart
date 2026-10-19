@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../unified_fields_typography.dart';
 import 'unified_gradient_border.dart';
 import 'unified_input_theme.dart';
 
@@ -121,7 +122,9 @@ class UnifiedOtpField extends StatefulWidget {
   /// Keyboard (numeric by default).
   final TextInputType keyboardType;
 
-  /// Input filters (digits only by default).
+  /// Input filters (digits only by default). Persian (۰–۹) and Arabic-Indic
+  /// (٠–٩) digits are always converted to ASCII first, so codes reach
+  /// [onChanged] / [onCompleted] as `0`–`9`.
   final List<TextInputFormatter>? inputFormatters;
 
   /// Order of the boxes; codes read left-to-right even in RTL layouts.
@@ -174,6 +177,8 @@ class _UnifiedOtpFieldState extends State<UnifiedOtpField> {
       enabled: widget.enabled,
       keyboardType: widget.keyboardType,
       inputFormatters: [
+        // Persian / Arabic-Indic keypads: ۱۲۳ → 123 before any filter runs.
+        const _AsciiDigitsFormatter(),
         ...(widget.inputFormatters ?? [FilteringTextInputFormatter.digitsOnly]),
         LengthLimitingTextInputFormatter(widget.length),
       ],
@@ -252,5 +257,16 @@ class _UnifiedOtpFieldState extends State<UnifiedOtpField> {
         );
       },
     );
+  }
+}
+
+class _AsciiDigitsFormatter extends TextInputFormatter {
+  const _AsciiDigitsFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final text = UnifiedFieldsTypography.fromPersianDigits(newValue.text);
+    // One UTF-16 unit per digit either way, so the selection stays valid.
+    return text == newValue.text ? newValue : newValue.copyWith(text: text);
   }
 }

@@ -175,6 +175,16 @@ void main() {
       expect(tester.getCenter(find.text('1')).dx, lessThan(tester.getCenter(find.text('2')).dx));
     });
 
+    testWidgets('accepts Persian and Arabic-Indic keypad digits', (tester) async {
+      final completed = <String>[];
+      final ctrl = TextEditingController();
+      await tester.pumpWidget(_app(UnifiedOtpField(length: 5, controller: ctrl, onCompleted: completed.add)));
+      await tester.enterText(find.byType(TextField), '۱۲۳٤٥');
+      await tester.pump();
+      expect(ctrl.text, '12345');
+      expect(completed, ['12345']);
+    });
+
     testWidgets('obscures characters', (tester) async {
       await tester.pumpWidget(_app(UnifiedOtpField(length: 4, controller: TextEditingController(text: '42'), obscureText: true)));
       expect(find.text('•'), findsNWidgets(2));
