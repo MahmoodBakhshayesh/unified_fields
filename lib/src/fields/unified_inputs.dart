@@ -4,6 +4,7 @@ export 'unified_customizable_async_picker_field.dart';
 export 'unified_customizable_picker_controller.dart';
 export 'unified_customizable_picker_fields.dart';
 export 'unified_field_shell.dart';
+export 'unified_gradient_border.dart';
 export 'unified_base_text_field.dart';
 export 'unified_async_picker_field.dart';
 export 'unified_async_query_picker_field.dart';

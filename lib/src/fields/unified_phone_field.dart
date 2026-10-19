@@ -11,6 +11,7 @@ import '../phone/unified_phone_models.dart';
 import '../unified_date_picker_types.dart';
 import '../unified_fields_typography.dart';
 import 'unified_field_label_mode.dart';
+import 'unified_gradient_border.dart';
 import 'unified_input_brightness.dart';
 import 'unified_field_decoration_context.dart';
 import 'unified_input_decoration.dart';
@@ -506,18 +507,6 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
 
   double _fieldHeight(UnifiedInputDecoration d) => widget.height ?? d.height ?? 56;
 
-  Border? _fieldBorder(UnifiedInputDecoration d, UnifiedInputPalette palette, String? error) {
-    final hasError = error != null && error.isNotEmpty;
-    final resolved = d.borderSide ?? palette.defaultBorderSide;
-    final side = hasError
-        ? BorderSide(
-            color: d.validationColor ?? palette.validationColor,
-            width: resolved.width,
-          )
-        : resolved;
-    return Border.fromBorderSide(side);
-  }
-
   String? _localizedPlaceholder(String? placeholder) {
     if (placeholder == null || placeholder.isEmpty) return placeholder;
     return unifiedPhoneLocalizeDisplay(
@@ -705,15 +694,13 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _labelBlock(d, palette, error),
-        ClipRRect(
+        UnifiedFieldBorderBox(
           borderRadius: radius,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              border: _fieldBorder(d, palette, error),
-            ),
-            child: _phoneEditorBox(d, palette, ps),
-          ),
+          borderSide: _resolvedBorderSide(d, palette, error),
+          borderGradient: (error != null && error.isNotEmpty) ? null : d.borderGradient,
+          forceSolid: error != null && error.isNotEmpty,
+          clipInner: true,
+          child: _phoneEditorBox(d, palette, ps),
         ),
       ],
     );
@@ -734,13 +721,14 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     final headerBg =
         d.headerBackgroundColor ?? d.backgroundColor ?? palette.headerBackground;
     final bodyBg = d.backgroundColor ?? palette.bodyBackground;
+    final hasError = error != null && error.isNotEmpty;
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        border: _fieldBorder(d, palette, error),
-      ),
-      clipBehavior: Clip.antiAlias,
+    return UnifiedFieldBorderBox(
+      borderRadius: radius,
+      borderSide: _resolvedBorderSide(d, palette, error),
+      borderGradient: hasError ? null : d.borderGradient,
+      forceSolid: hasError,
+      clipInner: true,
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -788,7 +776,11 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
   ) {
     final h = _fieldHeight(d);
     final radius = d.borderRadius ?? palette.borderRadius;
-    return InputDecorator(
+    final hasError = error != null && error.isNotEmpty;
+    final useGradient = !hasError && d.borderGradient != null;
+    final stroke = d.borderSide ?? palette.defaultBorderSide;
+    final strokeW = stroke.width <= 0 ? 1.0 : stroke.width;
+    final field = InputDecorator(
       decoration: InputDecoration(
         labelText: d.label,
         hintText: _localizedPlaceholder(d.placeholder),
@@ -799,11 +791,15 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
         isDense: true,
         border: OutlineInputBorder(
           borderRadius: radius,
-          borderSide: d.borderSide ?? BorderSide.none,
+          borderSide: useGradient
+              ? BorderSide.none
+              : (d.borderSide ?? BorderSide.none),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: radius,
-          borderSide: d.borderSide ?? BorderSide.none,
+          borderSide: useGradient
+              ? BorderSide.none
+              : (d.borderSide ?? BorderSide.none),
         ),
         errorText: error,
       ),
@@ -813,6 +809,29 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
         child: _phoneRowContent(d, palette, ps),
       ),
     );
+    if (!useGradient) return field;
+    return UnifiedGradientBorder(
+      gradient: d.borderGradient!,
+      borderRadius: radius,
+      width: strokeW,
+      child: field,
+    );
+  }
+
+  BorderSide _resolvedBorderSide(
+    UnifiedInputDecoration d,
+    UnifiedInputPalette palette,
+    String? error,
+  ) {
+    final hasError = error != null && error.isNotEmpty;
+    final resolved = d.borderSide ?? palette.defaultBorderSide;
+    if (hasError) {
+      return BorderSide(
+        color: d.validationColor ?? palette.validationColor,
+        width: resolved.width,
+      );
+    }
+    return resolved;
   }
 
   UnifiedInputDecoration _resolvedDecoration(
@@ -834,6 +853,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
       headerBackgroundColor: d.headerBackgroundColor,
       borderRadius: d.borderRadius,
       borderSide: d.borderSide,
+      borderGradient: d.borderGradient,
       height: widget.height ?? d.height,
       rowLabelRatio: d.optionalRowLabelRatio ?? const [],
       labelInRow: useRow,

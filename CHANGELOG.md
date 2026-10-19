@@ -11,6 +11,18 @@
   are at least that size; the calendar sheet's day circles and rows follow `dayCellExtent`.
   Unset (the default), every picker lays out exactly as in 1.1.x.
 
+* **Gradient field borders (additive, opt-in)** — optional `borderGradient` on
+  `UnifiedInputDecoration`, `UnifiedInputFieldDefaults`, and `UnifiedBaseTextField`.
+  When **unset** (`null`, the default), chrome is unchanged from 1.1.x
+  (`Container` / Material outline + solid `borderSide`). When set, field chrome
+  paints a **stroke-only** gradient via `UnifiedGradientBorder` /
+  `UnifiedFieldBorderBox` (`CustomPainter` + `PaintingStyle.stroke` — translucent
+  fills never show the gradient as a background). Stroke thickness still comes
+  from `borderSide.width` (default `1`). Errors / `forceSolid` fall back to a
+  solid validation border. Wired for label-in-column, label-in-row,
+  floating-label, `UnifiedFieldShell`, and `UnifiedPhoneField`. Existing apps that
+  never set `borderGradient` need no migration.
+
 ## 1.1.0+1
 
 ### Fixes

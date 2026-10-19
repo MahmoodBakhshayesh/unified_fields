@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../unified_colors.dart';
 import 'unified_field_label_mode.dart';
+import 'unified_gradient_border.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_theme.dart';
 
@@ -93,20 +94,24 @@ class UnifiedFieldShell extends StatelessWidget {
       ],
     );
 
-    final boxed = Container(
-      constraints: BoxConstraints(minHeight: h),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: (dec.labelMode ??
-                    resolveUnifiedFieldLabelMode(labelInRow: dec.labelInRow)) ==
-                UnifiedFieldLabelMode.labelInRow
-            ? BorderRadiusDirectional.horizontal(
-                end: Radius.circular(radius.bottomRight.x),
-              )
-            : radius,
-        border: Border.fromBorderSide(border),
-      ),
+    final labelModeForRadius = dec.labelMode ??
+        resolveUnifiedFieldLabelMode(labelInRow: dec.labelInRow);
+    final resolvedRadius = labelModeForRadius == UnifiedFieldLabelMode.labelInRow
+        ? BorderRadiusDirectional.horizontal(
+            end: Radius.circular(radius.bottomRight.x),
+          ).resolve(Directionality.of(context))
+        : radius;
+    final boxed = UnifiedFieldBorderBox(
+      borderRadius: resolvedRadius,
+      borderSide: showStrip
+          ? BorderSide(color: validationColor, width: border.width)
+          : border,
+      borderGradient: showStrip ? null : dec.borderGradient,
+      backgroundColor: bg,
+      minHeight: h,
       alignment: Alignment.center,
+      forceSolid: showStrip,
+      clipInner: false,
       child: inner,
     );
 

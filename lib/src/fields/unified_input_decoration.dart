@@ -58,7 +58,18 @@ class UnifiedInputDecoration {
   final BorderRadius? borderRadius;
 
   /// Border side of the field box.
+  ///
+  /// When [borderGradient] is set, [borderSide.width] (default `1`) is used as
+  /// the gradient stroke thickness; [borderSide.color] is ignored for the stroke.
   final BorderSide? borderSide;
+
+  /// Optional gradient stroke for the field box (pink→violet, etc.).
+  ///
+  /// **`null` (default) keeps solid [borderSide] chrome unchanged** — additive
+  /// and safe for existing apps. Material [OutlineInputBorder] cannot paint
+  /// gradients; when set, chrome uses [UnifiedGradientBorder] /
+  /// [UnifiedFieldBorderBox]. Validation errors still use a solid border.
+  final Gradient? borderGradient;
 
   /// Fixed minimum height of the inner field row.
   final double? height;
@@ -152,6 +163,7 @@ class UnifiedInputDecoration {
     this.headerBackgroundColor,
     this.borderRadius,
     this.borderSide,
+    this.borderGradient,
     this.height,
     this.rowLabelRatio = const [],
     this.labelInRow = false,
@@ -206,6 +218,7 @@ class UnifiedInputDecoration {
           other.headerBackgroundColor ?? headerBackgroundColor,
       borderRadius: other.borderRadius ?? borderRadius,
       borderSide: other.borderSide ?? borderSide,
+      borderGradient: other.borderGradient ?? borderGradient,
       height: other.height ?? height,
       rowLabelRatio: other.rowLabelRatio.isNotEmpty
           ? other.rowLabelRatio
@@ -254,6 +267,7 @@ class UnifiedInputDecoration {
       headerBackgroundColor: headerBackgroundColor ?? palette.headerBackground,
       borderRadius: borderRadius ?? palette.borderRadius,
       borderSide: borderSide ?? palette.defaultBorderSide,
+      borderGradient: borderGradient,
       height: height,
       rowLabelRatio: rowLabelRatio,
       labelInRow: labelInRow,

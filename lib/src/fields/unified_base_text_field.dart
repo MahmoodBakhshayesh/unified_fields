@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../unified_date_picker_types.dart';
 import '../unified_fields_typography.dart';
 import 'unified_field_label_mode.dart';
+import 'unified_gradient_border.dart';
 import 'unified_input_brightness.dart';
 import 'unified_input_decoration.dart';
 import 'unified_input_palette.dart';
@@ -38,6 +39,7 @@ class UnifiedBaseTextField extends StatefulWidget {
     this.headerBackgroundColor,
     this.borderRadius,
     this.borderSide,
+    this.borderGradient,
     this.height,
     this.padding,
     this.keyboardType,
@@ -121,6 +123,9 @@ class UnifiedBaseTextField extends StatefulWidget {
 
   /// Border side of the field box (`null` → theme / palette).
   final BorderSide? borderSide;
+
+  /// Optional gradient stroke (see [UnifiedInputDecoration.borderGradient]).
+  final Gradient? borderGradient;
 
   /// Minimum height of the inner row.
   final double? height;
@@ -532,6 +537,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     if (widget.borderSide != null) {
       d = d.merge(UnifiedInputDecoration(borderSide: widget.borderSide));
     }
+    if (widget.borderGradient != null) {
+      d = d.merge(UnifiedInputDecoration(borderGradient: widget.borderGradient));
+    }
     if (widget.height != null) {
       d = d.merge(UnifiedInputDecoration(height: widget.height));
     }
@@ -609,22 +617,6 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       r'[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]',
     ).hasMatch(first);
     return rtl ? TextDirection.rtl : TextDirection.ltr;
-  }
-
-  Border? _borderFromSide(
-    BorderSide? side,
-    UnifiedInputPalette palette,
-    UnifiedInputDecoration dec, [
-    bool? hasError,
-  ]) {
-    if (hasError ?? false) {
-      return Border.all(
-        color: _validationColor(palette, dec),
-        width: side?.width ?? 1,
-      );
-    }
-    if (side == null) return null;
-    return Border.fromBorderSide(side);
   }
 
   bool get _visuallyDisabled => widget.isDisabled || widget.disabled;
@@ -1227,6 +1219,17 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec, {
     bool focused = false,
   }) {
+    final radius =
+        dec.borderRadius ?? widget.borderRadius ?? palette.borderRadius;
+    // Gradient strokes are painted by [UnifiedGradientBorder]; hide Material stroke.
+    final useGradient =
+        !hasError && (dec.borderGradient ?? widget.borderGradient) != null;
+    if (useGradient) {
+      return OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: BorderSide.none,
+      );
+    }
     final resolved =
         dec.borderSide ?? widget.borderSide ?? palette.defaultBorderSide;
     final side = hasError
@@ -1235,8 +1238,6 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
             width: resolved.width,
           )
         : resolved;
-    final radius =
-        dec.borderRadius ?? widget.borderRadius ?? palette.borderRadius;
     return OutlineInputBorder(
       borderRadius: radius,
       borderSide: side,
@@ -1373,58 +1374,60 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Do not set clipBehavior on the bordered container — it clips the stroke.
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              border: _borderFromSide(
-                dec.borderSide ?? widget.borderSide,
-                palette,
-                dec,
-                hasError,
-              ),
-            ),
+          // Height lives on the inner SizedBox (pre-1.2.0 contract) so solid
+          // borders keep the same outer size; gradient pads outside that box.
+          UnifiedFieldBorderBox(
+            borderRadius: radius,
+            borderSide: hasError
+                ? BorderSide(
+                    color: _validationColor(palette, dec),
+                    width: (dec.borderSide ?? widget.borderSide)?.width ?? 1,
+                  )
+                : (dec.borderSide ?? widget.borderSide ?? palette.defaultBorderSide),
+            borderGradient: hasError
+                ? null
+                : (dec.borderGradient ?? widget.borderGradient),
+            forceSolid: hasError,
+            clipInner: true,
             child: SizedBox(
               height: h,
-              child: ClipRRect(
-                borderRadius: radius,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      flex: labelFlex,
-                      child: Container(
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: headerBg,
-                          border: BorderDirectional(end: divider),
-                        ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    flex: labelFlex,
+                    child: Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: headerBg,
+                        border: BorderDirectional(end: divider),
+                      ),
                       child: !unifiedFieldHasVisibleLabel(widget.label)
                           ? const SizedBox.shrink()
                           : Padding(
-                                padding: _resolveLabelPadding(
-                                  dec,
-                                  UnifiedFieldLabelMode.labelInRow,
-                                ),
-                                child: _labelRowCompact(palette, dec),
+                              padding: _resolveLabelPadding(
+                                dec,
+                                UnifiedFieldLabelMode.labelInRow,
                               ),
+                              child: _labelRowCompact(palette, dec),
+                            ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: bodyFlex,
+                    child: ColoredBox(
+                      color: _effectiveBackgroundColor(palette, dec),
+                      child: _bodyRow(
+                        context,
+                        errorText,
+                        hasError,
+                        palette,
+                        dec,
+                        labelInRow: true,
                       ),
                     ),
-                    Expanded(
-                      flex: bodyFlex,
-                      child: Container(
-                        color: _effectiveBackgroundColor(palette, dec),
-                        child: _bodyRow(
-                          context,
-                          errorText,
-                          hasError,
-                          palette,
-                          dec,
-                          labelInRow: true,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -1462,28 +1465,28 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _labelBlock(errorText, palette, dec),
-          Container(
+          UnifiedFieldBorderBox(
             height: dec.height ?? widget.height ?? 56,
-            decoration: BoxDecoration(
-              color: _effectiveBackgroundColor(palette, dec),
-              borderRadius: radius,
-              border: _borderFromSide(
-                dec.borderSide ?? widget.borderSide,
-                palette,
-                dec,
-                hasError,
-              ),
-            ),
-            child: ClipRRect(
-              borderRadius: radius,
-              child: _bodyRow(
-                context,
-                errorText,
-                hasError,
-                palette,
-                dec,
-                labelInRow: false,
-              ),
+            borderRadius: radius,
+            backgroundColor: _effectiveBackgroundColor(palette, dec),
+            borderSide: hasError
+                ? BorderSide(
+                    color: _validationColor(palette, dec),
+                    width: (dec.borderSide ?? widget.borderSide)?.width ?? 1,
+                  )
+                : (dec.borderSide ?? widget.borderSide ?? palette.defaultBorderSide),
+            borderGradient: hasError
+                ? null
+                : (dec.borderGradient ?? widget.borderGradient),
+            forceSolid: hasError,
+            clipInner: true,
+            child: _bodyRow(
+              context,
+              errorText,
+              hasError,
+              palette,
+              dec,
+              labelInRow: false,
             ),
           ),
         ],
@@ -1507,8 +1510,26 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       dec,
     );
     final h = dec.height ?? widget.height;
+    final gradient =
+        hasError ? null : (dec.borderGradient ?? widget.borderGradient);
+    if (gradient == null) {
+      // Unchanged pre-1.2.0 floating layout when gradient is unset.
+      return wrapInteraction(h == null ? field : SizedBox(height: h, child: field));
+    }
+    final radius =
+        dec.borderRadius ?? widget.borderRadius ?? palette.borderRadius;
+    final stroke =
+        dec.borderSide ?? widget.borderSide ?? palette.defaultBorderSide;
+    final strokeW = stroke.width <= 0 ? 1.0 : stroke.width;
+    // Stroke is painted inside bounds (same outer size as Material outline).
+    final inner = h == null ? field : SizedBox(height: h, child: field);
     return wrapInteraction(
-      h == null ? field : SizedBox(height: h, child: field),
+      UnifiedGradientBorder(
+        gradient: gradient,
+        borderRadius: radius,
+        width: strokeW,
+        child: inner,
+      ),
     );
   }
 

@@ -19,6 +19,7 @@ class UnifiedInputFieldDefaults {
     this.height,
     this.borderRadius,
     this.borderSide,
+    this.borderGradient,
     this.backgroundColor,
     this.headerBackgroundColor,
     this.showError,
@@ -73,6 +74,9 @@ class UnifiedInputFieldDefaults {
 
   /// Field box border.
   final BorderSide? borderSide;
+
+  /// Optional gradient stroke (see [UnifiedInputDecoration.borderGradient]).
+  final Gradient? borderGradient;
 
   /// Editing-area background.
   final Color? backgroundColor;
@@ -166,6 +170,7 @@ class UnifiedInputFieldDefaults {
       height: height,
       borderRadius: borderRadius,
       borderSide: borderSide,
+      borderGradient: borderGradient,
       backgroundColor: backgroundColor,
       headerBackgroundColor: headerBackgroundColor,
       showError: showError ?? true,
@@ -202,6 +207,7 @@ class UnifiedInputFieldDefaults {
       height: other.height ?? height,
       borderRadius: other.borderRadius ?? borderRadius,
       borderSide: other.borderSide ?? borderSide,
+      borderGradient: other.borderGradient ?? borderGradient,
       backgroundColor: other.backgroundColor ?? backgroundColor,
       headerBackgroundColor:
           other.headerBackgroundColor ?? headerBackgroundColor,
