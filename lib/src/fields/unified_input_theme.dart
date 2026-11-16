@@ -602,5 +602,18 @@ class UnifiedInputThemeResolver {
     UnifiedInputDecoration? decoration,
   }) =>
       resolveAdornmentStyle(context, decoration: decoration).gap ?? 0;
+
+  /// Minimum tap target of interactive adornments (0 = no floor).
+  ///
+  /// [UnifiedInputThemeData.adornmentStyle]`.minTapTarget`, else [UnifiedPickerSurfaceStyle.minTapTarget] of the theme,
+  /// so the touch preset turns it on.
+  static double adornmentMinTapTarget(
+    BuildContext context, {
+    UnifiedInputDecoration? decoration,
+  }) {
+    final own = resolveAdornmentStyle(context, decoration: decoration).minTapTarget;
+    final v = own ?? _theme(context).pickerSurfaceStyle?.minTapTarget ?? 0;
+    return v.isFinite && v > 0 ? v : 0;
+  }
 }
 

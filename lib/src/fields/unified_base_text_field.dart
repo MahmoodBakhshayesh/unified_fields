@@ -866,9 +866,12 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     final row = _joinAdornments(widgets, dec);
     if (row == null) return null;
     return Padding(
-      padding: UnifiedInputThemeResolver.prefixAdornmentPadding(
-        context,
-        decoration: dec,
+      padding: _adornmentPadding(
+        UnifiedInputThemeResolver.prefixAdornmentPadding(
+          context,
+          decoration: dec,
+        ),
+        dec,
       ),
       child: row,
     );
@@ -1022,9 +1025,12 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     if (widgets.isEmpty) return null;
     final row = _joinAdornments(widgets, dec);
     return Padding(
-      padding: UnifiedInputThemeResolver.suffixAdornmentPadding(
-        context,
-        decoration: dec,
+      padding: _adornmentPadding(
+        UnifiedInputThemeResolver.suffixAdornmentPadding(
+          context,
+          decoration: dec,
+        ),
+        dec,
       ),
       child: row,
     );
@@ -1543,6 +1549,23 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     );
   }
 
+  /// With adornment tap targets on, only the horizontal part of the
+  /// adornment padding applies: vertical padding would cap the slot below
+  /// the field height. The row is centred, so the chips do not move.
+  EdgeInsetsGeometry _adornmentPadding(
+    EdgeInsetsGeometry padding,
+    UnifiedInputDecoration dec,
+  ) {
+    if (!_adornmentTapTargetsOn(dec)) return padding;
+    final r = padding.resolve(Directionality.of(context));
+    return EdgeInsets.only(left: r.left, right: r.right);
+  }
+
+  /// Touch adornment targets on: the box lets them reach the outer edge
+  /// (label-in-column; label-in-row already gives the body the full height).
+  bool _adornmentTapTargetsOn(UnifiedInputDecoration dec) =>
+      UnifiedInputThemeResolver.adornmentMinTapTarget(context, decoration: dec) > 0;
+
   Widget _buildLabelInColumnLayout(
     BuildContext context,
     String? errorText,
@@ -1576,6 +1599,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                 : (dec.borderGradient ?? widget.borderGradient),
             forceSolid: hasError,
             clipInner: true,
+            strokeOverChild: _adornmentTapTargetsOn(dec),
             child: _bodyRow(
               context,
               errorText,

@@ -1,4 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+
+import 'unified_input_theme.dart';
 
 /// Shared suffix sizing for [UnifiedBaseTextField] and picker fields.
 ///
@@ -20,11 +25,7 @@ abstract final class UnifiedSuffixIconChrome {
       width != null || height != null;
 
   /// Centers [child] in a fixed slot (used for icons and explicit overrides).
-  static Widget slot(
-    Widget child, {
-    double? width,
-    double? height,
-  }) {
+  static Widget slot(Widget child, {double? width, double? height}) {
     return SizedBox(
       width: _slotWidth(width),
       height: _slotHeight(height),
@@ -41,27 +42,35 @@ abstract final class UnifiedSuffixIconChrome {
     double glyphSize = iconSize,
     double? slotWidth,
     double? slotHeight,
+    double? minTapTarget,
   }) {
     final w = _slotWidth(slotWidth);
     final h = _slotHeight(slotHeight);
     final iconWidget = Icon(icon, size: glyphSize, color: color);
     if (onPressed == null) {
-      return ExcludeFocus(child: slot(iconWidget, width: w, height: h));
+      return ExcludeFocus(
+        child: slot(iconWidget, width: w, height: h),
+      );
     }
     return ExcludeFocus(
-      child: IconButton(
-        style: IconButton.styleFrom(
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          padding: EdgeInsets.zero,
-          minimumSize: Size(w, h),
-          fixedSize: Size(w, h),
-          visualDensity: VisualDensity.compact,
-        ),
-        padding: EdgeInsets.zero,
-        constraints: BoxConstraints.tightFor(width: w, height: h),
-        onPressed: onPressed,
+      child: UnifiedAdornmentTapTarget(
+        minTapTarget: minTapTarget,
+        onTap: onPressed,
         tooltip: tooltip,
-        icon: iconWidget,
+        child: IconButton(
+          style: IconButton.styleFrom(
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            padding: EdgeInsets.zero,
+            minimumSize: Size(w, h),
+            fixedSize: Size(w, h),
+            visualDensity: VisualDensity.compact,
+          ),
+          padding: EdgeInsets.zero,
+          constraints: BoxConstraints.tightFor(width: w, height: h),
+          onPressed: onPressed,
+          tooltip: tooltip,
+          icon: iconWidget,
+        ),
       ),
     );
   }
@@ -81,7 +90,11 @@ abstract final class UnifiedSuffixIconChrome {
     Color? iconColor,
     double? iconSize,
   }) {
-    adornment = _applyIconStyle(adornment, iconColor: iconColor, iconSize: iconSize);
+    adornment = _applyIconStyle(
+      adornment,
+      iconColor: iconColor,
+      iconSize: iconSize,
+    );
 
     if (_hasExplicitSize(width, height)) {
       return _slotAdornment(
@@ -115,7 +128,9 @@ abstract final class UnifiedSuffixIconChrome {
         );
       }
       if (child is Icon) {
-        return ExcludeFocus(child: slot(child, width: width, height: height));
+        return ExcludeFocus(
+          child: slot(child, width: width, height: height),
+        );
       }
     }
 
@@ -141,7 +156,11 @@ abstract final class UnifiedSuffixIconChrome {
       final child = adornment.child;
       if (child is Icon || child is IconButton) {
         return ExcludeFocus(
-          child: _applyIconStyle(child, iconColor: iconColor, iconSize: iconSize),
+          child: _applyIconStyle(
+            child,
+            iconColor: iconColor,
+            iconSize: iconSize,
+          ),
         );
       }
     }
@@ -199,7 +218,8 @@ abstract final class UnifiedSuffixIconChrome {
   }) {
     return build(
       icon: _iconDataFromWidget(button.icon) ?? Icons.arrow_drop_down,
-      color: _colorFromWidget(button.icon) ?? iconColor ?? const Color(0xFF000000),
+      color:
+          _colorFromWidget(button.icon) ?? iconColor ?? const Color(0xFF000000),
       onPressed: button.onPressed,
       tooltip: button.tooltip,
       slotWidth: slotWidth,
@@ -216,5 +236,165 @@ abstract final class UnifiedSuffixIconChrome {
   static Color? _colorFromWidget(Widget icon) {
     if (icon is Icon) return icon.color;
     return null;
+  }
+}
+
+/// Raises the hit-test and accessibility area of an interactive field
+/// adornment to [minTapTarget] without changing the visual [child].
+///
+/// The slot is `max(child width, minTapTarget)` wide and
+/// `max(child height, minTapTarget)` tall, clamped to the incoming
+/// constraints, so it never makes the field taller. [child] stays centred and
+/// keeps its own size; a tap anywhere in the slot reaches it. The slot is one
+/// button node for assistive technologies ([tooltip] / [semanticLabel],
+/// [onTap]); [child]'s own semantics are excluded.
+///
+/// When [minTapTarget] is null it is read from the theme
+/// ([UnifiedInputThemeResolver.adornmentMinTapTarget]). With no floor, or a
+/// child already as large, [child] is returned unchanged.
+class UnifiedAdornmentTapTarget extends StatelessWidget {
+  /// Wraps an interactive adornment.
+  const UnifiedAdornmentTapTarget({
+    super.key,
+    required this.child,
+    this.onTap,
+    this.tooltip,
+    this.semanticLabel,
+    this.minTapTarget,
+  });
+
+  /// The visual adornment (handles its own gestures).
+  final Widget child;
+
+  /// Semantic tap action (normally the same callback as [child]'s).
+  final VoidCallback? onTap;
+
+  /// Accessibility tooltip (e.g. "Show password").
+  final String? tooltip;
+
+  /// Accessibility label.
+  final String? semanticLabel;
+
+  /// Floor in logical pixels; null reads the theme, 0 disables.
+  final double? minTapTarget;
+
+  @override
+  Widget build(BuildContext context) {
+    final min =
+        minTapTarget ??
+        UnifiedInputThemeResolver.adornmentMinTapTarget(context);
+    if (!(min > 0)) return child;
+    return Semantics(
+      container: true,
+      button: true,
+      enabled: onTap != null,
+      tooltip: tooltip,
+      label: semanticLabel,
+      onTap: onTap,
+      child: _TapTargetBox(
+        minExtent: min,
+        child: ExcludeSemantics(child: child),
+      ),
+    );
+  }
+}
+
+class _TapTargetBox extends SingleChildRenderObjectWidget {
+  const _TapTargetBox({required this.minExtent, super.child});
+
+  final double minExtent;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderTapTargetBox(minExtent);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderTapTargetBox renderObject,
+  ) {
+    renderObject.minExtent = minExtent;
+  }
+}
+
+class _RenderTapTargetBox extends RenderShiftedBox {
+  _RenderTapTargetBox(this._minExtent) : super(null);
+
+  double _minExtent;
+  double get minExtent => _minExtent;
+  set minExtent(double v) {
+    if (v == _minExtent) return;
+    _minExtent = v;
+    markNeedsLayout();
+  }
+
+  Size _sizeFor(BoxConstraints constraints, Size childSize) {
+    final w = math.max(childSize.width, _minExtent);
+    // Unbounded height (no field around): keep the child height, never grow.
+    final h = constraints.hasBoundedHeight
+        ? math.max(childSize.height, _minExtent)
+        : childSize.height;
+    return constraints.constrain(Size(w, h));
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) =>
+      math.max(child?.getMinIntrinsicWidth(height) ?? 0, _minExtent);
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      math.max(child?.getMaxIntrinsicWidth(height) ?? 0, _minExtent);
+
+  // Heights report the child's own: a parent sizing by intrinsics (e.g. a
+  // Material decorator) must not grow the field for the hit area.
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      child?.getMinIntrinsicHeight(width) ?? 0;
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      child?.getMaxIntrinsicHeight(width) ?? 0;
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    final c = child;
+    if (c == null) return constraints.constrain(Size.square(_minExtent));
+    return _sizeFor(constraints, c.getDryLayout(constraints.loosen()));
+  }
+
+  @override
+  void performLayout() {
+    final c = child;
+    if (c == null) {
+      size = constraints.constrain(Size.square(_minExtent));
+      return;
+    }
+    c.layout(constraints.loosen(), parentUsesSize: true);
+    size = _sizeFor(constraints, c.size);
+    (c.parentData! as BoxParentData).offset = Alignment.center.alongOffset(
+      size - c.size as Offset,
+    );
+  }
+
+  @override
+  bool hitTestSelf(Offset position) => true;
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    final c = child;
+    if (c == null) return false;
+    final offset = (c.parentData! as BoxParentData).offset;
+    // Any point of the slot hits the chip at the nearest point inside it.
+    final local = position - offset;
+    final clamped = Offset(
+      local.dx.clamp(0.0, math.max(0.0, c.size.width - 0.01)),
+      local.dy.clamp(0.0, math.max(0.0, c.size.height - 0.01)),
+    );
+    return result.addWithPaintOffset(
+      offset: offset + (local - clamped),
+      position: position,
+      hitTest: (result, transformed) =>
+          c.hitTest(result, position: transformed),
+    );
   }
 }

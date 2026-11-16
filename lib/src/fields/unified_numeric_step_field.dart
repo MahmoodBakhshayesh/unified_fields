@@ -28,7 +28,8 @@ double _pow10(int digits) {
 /// When [UnifiedNumericStepField.allowDecimals] is true and [fractionDigits] is null,
 /// step rounding uses this many fraction digits. Display formatting stays natural unless
 /// [fractionDigits] is set explicitly.
-const int _kDecimalStepQuantizeDigits = kUnifiedNumberDefaultDecimalQuantizeDigits;
+const int _kDecimalStepQuantizeDigits =
+    kUnifiedNumberDefaultDecimalQuantizeDigits;
 
 /// Numeric step field on [UnifiedBaseTextField]: +/- controls and typed entry.
 ///
@@ -274,8 +275,8 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       widget.fractionDigits ?? _kDecimalStepQuantizeDigits;
 
   bool get _shouldLocalizeDigits => unifiedNumberInputAllowsLocalizedDigits(
-        calendarKind: widget.digitCalendarKind,
-      );
+    calendarKind: widget.digitCalendarKind,
+  );
 
   @override
   void initState() {
@@ -313,8 +314,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     _suppressDisplaySync = true;
     _effectiveController.value = TextEditingValue(
       text: text,
-      selection:
-          selection ?? TextSelection.collapsed(offset: text.length),
+      selection: selection ?? TextSelection.collapsed(offset: text.length),
     );
     _suppressDisplaySync = false;
   }
@@ -539,11 +539,11 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
   }
 
   String _formatCommitted(num value) => formatUnifiedNumberFieldText(
-        value,
-        allowDecimals: widget.allowDecimals,
-        fractionDigits: widget.fractionDigits,
-        calendarKind: widget.digitCalendarKind,
-      );
+    value,
+    allowDecimals: widget.allowDecimals,
+    fractionDigits: widget.fractionDigits,
+    calendarKind: widget.digitCalendarKind,
+  );
 
   List<TextInputFormatter> get _formatters {
     final pattern = unifiedNumberInputPattern(
@@ -586,19 +586,13 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
 
   List<Widget> _decrementStepWidgets(BuildContext context) =>
       _showDecrementButton
-          ? [
-              _stepButton(
-                context,
-                icon: widget.decrementIcon,
-                delta: -widget.step,
-              ),
-            ]
-          : const [];
+      ? [_stepButton(context, icon: widget.decrementIcon, delta: -widget.step)]
+      : const [];
 
   List<Widget> _incrementStepWidgets(BuildContext context) =>
       _showIncrementButton
-          ? [_stepButton(context, icon: widget.incrementIcon, delta: widget.step)]
-          : const [];
+      ? [_stepButton(context, icon: widget.incrementIcon, delta: widget.step)]
+      : const [];
 
   List<Widget> _stepWidgetsForSide({
     required bool leading,
@@ -682,10 +676,7 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     );
   }
 
-  Widget? _joinRow(
-    BuildContext context,
-    List<Widget> children,
-  ) {
+  Widget? _joinRow(BuildContext context, List<Widget> children) {
     if (children.isEmpty) return null;
     final dec = widget.adornmentDecoration ?? const UnifiedInputDecoration();
     final gap = UnifiedInputThemeResolver.adornmentGap(
@@ -717,13 +708,13 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     final steps = _stepWidgetsForSide(leading: true, context: context);
     final children = switch (widget.leadingAdornmentOrder) {
       UnifiedNumericLeadingAdornmentOrder.adornmentsThenSteps => [
-          ...adornments,
-          ...steps,
-        ],
+        ...adornments,
+        ...steps,
+      ],
       UnifiedNumericLeadingAdornmentOrder.stepsThenAdornments => [
-          ...steps,
-          ...adornments,
-        ],
+        ...steps,
+        ...adornments,
+      ],
     };
     final row = _joinRow(context, children);
     return row;
@@ -735,13 +726,13 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     final steps = _stepWidgetsForSide(leading: false, context: context);
     final children = switch (widget.trailingAdornmentOrder) {
       UnifiedNumericTrailingAdornmentOrder.stepsThenAdornments => [
-          ...steps,
-          if (trailing != null) trailing,
-        ],
+        ...steps,
+        if (trailing != null) trailing,
+      ],
       UnifiedNumericTrailingAdornmentOrder.adornmentsThenSteps => [
-          if (trailing != null) trailing,
-          ...steps,
-        ],
+        if (trailing != null) trailing,
+        ...steps,
+      ],
     };
     return _joinRow(context, children);
   }
@@ -762,16 +753,18 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
       decorationStyle: widget.adornmentDecoration?.numericStepButtonStyle,
       widgetStyle: widget.stepButtonStyle,
     );
-    final enabledColor = style.iconColor ??
+    final enabledColor =
+        style.iconColor ??
         UnifiedInputThemeResolver.resolvedSuffixIconColor(
           context,
           palette,
           decoration: widget.adornmentDecoration,
         );
-    final disabledColor = style.disabledIconColor ??
-        enabledColor.withValues(alpha: 0.35);
+    final disabledColor =
+        style.disabledIconColor ?? enabledColor.withValues(alpha: 0.35);
     final buttonWidth = style.buttonWidth ?? 40;
-    final buttonHeight = style.buttonHeight ??
+    final buttonHeight =
+        style.buttonHeight ??
         (widget.height != null
             ? (widget.height! - 8).clamp(32.0, 56.0).toDouble()
             : 40.0);
@@ -779,21 +772,29 @@ class _UnifiedNumericStepFieldState extends State<UnifiedNumericStepField> {
     final spacing = style.spacing ?? 0.0;
 
     final button = ExcludeFocus(
-      child: Material(
-        color: style.backgroundColor ?? Colors.transparent,
-        borderRadius: style.borderRadius,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: enabled ? (_) => _beginStepHold(delta) : null,
-          onTapUp: enabled ? (_) => _endStepHold() : null,
-          onTapCancel: enabled ? _endStepHold : null,
-          child: SizedBox(
-            width: buttonWidth,
-            height: buttonHeight,
-            child: Icon(
-              icon,
-              size: iconSize,
-              color: enabled ? enabledColor : disabledColor,
+      child: UnifiedAdornmentTapTarget(
+        minTapTarget: UnifiedInputThemeResolver.adornmentMinTapTarget(
+          context,
+          decoration: widget.adornmentDecoration,
+        ),
+        onTap: enabled ? () => _applyDelta(delta) : null,
+        semanticLabel: delta > 0 ? 'Increase' : 'Decrease',
+        child: Material(
+          color: style.backgroundColor ?? Colors.transparent,
+          borderRadius: style.borderRadius,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTapDown: enabled ? (_) => _beginStepHold(delta) : null,
+            onTapUp: enabled ? (_) => _endStepHold() : null,
+            onTapCancel: enabled ? _endStepHold : null,
+            child: SizedBox(
+              width: buttonWidth,
+              height: buttonHeight,
+              child: Icon(
+                icon,
+                size: iconSize,
+                color: enabled ? enabledColor : disabledColor,
+              ),
             ),
           ),
         ),

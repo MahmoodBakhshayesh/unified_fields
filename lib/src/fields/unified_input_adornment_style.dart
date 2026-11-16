@@ -18,6 +18,7 @@ class UnifiedInputAdornmentStyle {
     this.suffixHeight,
     this.iconSize,
     this.gap,
+    this.minTapTarget,
   });
 
   /// Tint for leading [Icon] adornments when they omit an explicit color.
@@ -50,6 +51,19 @@ class UnifiedInputAdornmentStyle {
   /// Horizontal gap between multiple adornments on the same side.
   final double? gap;
 
+  /// Minimum hit-test and accessibility size of interactive adornments
+  /// (password show / hide, clear, [IconButton] suffixes, phone country
+  /// picker, numeric step buttons).
+  ///
+  /// The visual chip keeps its size and is centred; the slot grows to
+  /// `minTapTarget` wide and up to `minTapTarget` tall (never taller than the
+  /// field, so the field height does not change) and taps anywhere in it hit
+  /// the chip. Null (the default) falls back to
+  /// [UnifiedPickerSurfaceStyle.minTapTarget] of the theme (44 with
+  /// [UnifiedPickerSurfaceStyle.touch]); 0 turns the floor off. With neither
+  /// set, layout is exactly the dense pointer layout.
+  final double? minTapTarget;
+
   /// Merges [other] on top of this; non-null fields from [other] win.
   UnifiedInputAdornmentStyle merge(UnifiedInputAdornmentStyle? other) {
     if (other == null) return this;
@@ -64,6 +78,7 @@ class UnifiedInputAdornmentStyle {
       suffixHeight: other.suffixHeight ?? suffixHeight,
       iconSize: other.iconSize ?? iconSize,
       gap: other.gap ?? gap,
+      minTapTarget: other.minTapTarget ?? minTapTarget,
     );
   }
 }

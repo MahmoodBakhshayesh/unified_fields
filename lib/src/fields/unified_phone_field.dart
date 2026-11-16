@@ -171,7 +171,9 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
   bool _hovered = false;
 
   List<UnifiedCountry> get _countries =>
-      widget.countries ?? widget.fieldController?.countries ?? UnifiedCountries.defaults;
+      widget.countries ??
+      widget.fieldController?.countries ??
+      UnifiedCountries.defaults;
 
   bool get _showCodeSection =>
       widget.showCountryCodeSection ?? widget.fixedCountry == null;
@@ -179,8 +181,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
   /// One `CupertinoTextField`: `+` + dial digits + national digits.
   bool get _unifiedEntryMode =>
       widget.fixedCountry == null &&
-      (!_showCodeSection ||
-          (widget.editableCountryCode && _showCodeSection));
+      (!_showCodeSection || (widget.editableCountryCode && _showCodeSection));
 
   /// Fixed or picker-only dial label beside national-only input.
   bool get _splitDialLabelMode =>
@@ -190,9 +191,9 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
   String get _mask => widget.nationalMask ?? kUnifiedPhoneDefaultNationalMask;
 
   bool get _persianDigits => unifiedPhoneUsePersianDigits(
-        usePersianDigits: widget.usePersianDigits,
-        digitCalendarKind: widget.digitCalendarKind,
-      );
+    usePersianDigits: widget.usePersianDigits,
+    digitCalendarKind: widget.digitCalendarKind,
+  );
 
   void _syncPersianConfigToController() {
     _fc.usePersianDigits = widget.usePersianDigits;
@@ -229,7 +230,9 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     );
     if (widget.invalidDialCodeDisplay == null) return base;
     return base.merge(
-      UnifiedInputPhoneStyle(invalidDialCodeDisplay: widget.invalidDialCodeDisplay),
+      UnifiedInputPhoneStyle(
+        invalidDialCodeDisplay: widget.invalidDialCodeDisplay,
+      ),
     );
   }
 
@@ -317,7 +320,9 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     final ascii = UnifiedFieldsTypography.fromPersianDigits(raw);
     final code = ascii.startsWith('+')
         ? ascii.replaceAll(RegExp(r'[^\d+]'), '')
-        : UnifiedFieldsTypography.fromPersianDigits(_fc.dialCodeController.text);
+        : UnifiedFieldsTypography.fromPersianDigits(
+            _fc.dialCodeController.text,
+          );
     if (code.length <= 1) {
       setState(() => _dialCodeInvalid = false);
       return;
@@ -337,10 +342,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
       digitCalendarKind: widget.digitCalendarKind,
     );
     if (!mounted || picked == null) return;
-    _fc.setCountry(
-      picked,
-      unifiedTextField: _unifiedEntryMode,
-    );
+    _fc.setCountry(picked, unifiedTextField: _unifiedEntryMode);
     if (_unifiedEntryMode) {
       _validateDialPrefix(_fc.nationalController.text);
     }
@@ -376,7 +378,8 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     if (resolved != null && base.color == null) {
       base = base.copyWith(color: palette.fieldTextColor);
     }
-    if (dialCode && _dialCodeInvalid &&
+    if (dialCode &&
+        _dialCodeInvalid &&
         _invalidDisplay(ps) == UnifiedInvalidDialCodeDisplay.highlightText) {
       return base.copyWith(color: ps.invalidDialCodeTextColor);
     }
@@ -386,10 +389,14 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
   Widget _flagPrefix(UnifiedInputPhoneStyle ps) {
     final flag = UnifiedFlag(code: _fc.country.isoCode, style: ps);
     final child = _canPickCountry
-        ? GestureDetector(
+        ? UnifiedAdornmentTapTarget(
             onTap: _openCountryPicker,
-            behavior: HitTestBehavior.opaque,
-            child: flag,
+            semanticLabel: _fc.country.name,
+            child: GestureDetector(
+              onTap: _openCountryPicker,
+              behavior: HitTestBehavior.opaque,
+              child: flag,
+            ),
           )
         : flag;
     return Padding(
@@ -425,7 +432,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     final box = _dialCodeBoxDecoration(ps);
     final padding = box != null
         ? (ps.dialCodePadding ??
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 8))
+              const EdgeInsets.symmetric(horizontal: 10, vertical: 8))
         : const EdgeInsetsDirectional.only(end: 6);
 
     Widget inner = UnifiedCountryWidget(
@@ -438,17 +445,11 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
       digitCalendarKind: widget.digitCalendarKind,
     );
     if (widget.fixedCountry == null && _canPickCountry) {
-      inner = InkWell(
-        onTap: _openCountryPicker,
-        child: inner,
-      );
+      inner = InkWell(onTap: _openCountryPicker, child: inner);
     }
 
     if (box == null) {
-      return Padding(
-        padding: padding,
-        child: inner,
-      );
+      return Padding(padding: padding, child: inner);
     }
 
     return Container(
@@ -463,7 +464,6 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
   Widget _phoneSuffix(UnifiedInputDecoration d, UnifiedInputPalette palette) {
     final extra = widget.suffixIcon ?? d.suffixIcon;
     final widgets = <Widget>[
-
       UnifiedInputThemeResolver.defaultSuffixIcon(
         context,
         UnifiedInputFieldSuffixKind.phone,
@@ -478,10 +478,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     ];
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: widgets,
-      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: widgets),
     );
   }
 
@@ -505,7 +502,8 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     ];
   }
 
-  double _fieldHeight(UnifiedInputDecoration d) => widget.height ?? d.height ?? 56;
+  double _fieldHeight(UnifiedInputDecoration d) =>
+      widget.height ?? d.height ?? 56;
 
   String? _localizedPlaceholder(String? placeholder) {
     if (placeholder == null || placeholder.isEmpty) return placeholder;
@@ -520,32 +518,30 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     UnifiedInputDecoration d,
     UnifiedInputPalette palette,
     UnifiedFieldLabelMode labelMode,
-  ) =>
-      _mergeDigitStyle(
-        UnifiedInputLabelModeStyle.resolveLabelStyle(
-              mode: labelMode,
-              decorationStyle: d.labelStyle,
-              fieldDefaults: UnifiedInputThemeScope.themeDataOf(context)
-                  .fieldDefaults,
-            ) ??
-            d.labelStyle ??
-            TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: palette.labelColor,
-            ),
-      );
+  ) => _mergeDigitStyle(
+    UnifiedInputLabelModeStyle.resolveLabelStyle(
+          mode: labelMode,
+          decorationStyle: d.labelStyle,
+          fieldDefaults: UnifiedInputThemeScope.themeDataOf(
+            context,
+          ).fieldDefaults,
+        ) ??
+        d.labelStyle ??
+        TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: palette.labelColor,
+        ),
+  );
 
   EdgeInsetsGeometry _labelPadding(
     UnifiedInputDecoration d,
     UnifiedFieldLabelMode labelMode,
-  ) =>
-      UnifiedInputLabelModeStyle.resolveLabelPadding(
-        mode: labelMode,
-        decorationPadding: d.labelPadding,
-        fieldDefaults:
-            UnifiedInputThemeScope.themeDataOf(context).fieldDefaults,
-      );
+  ) => UnifiedInputLabelModeStyle.resolveLabelPadding(
+    mode: labelMode,
+    decorationPadding: d.labelPadding,
+    fieldDefaults: UnifiedInputThemeScope.themeDataOf(context).fieldDefaults,
+  );
 
   TextStyle _placeholderTextStyle(
     UnifiedInputDecoration d,
@@ -604,7 +600,10 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     );
   }
 
-  Widget _labelRowCompact(UnifiedInputDecoration d, UnifiedInputPalette palette) {
+  Widget _labelRowCompact(
+    UnifiedInputDecoration d,
+    UnifiedInputPalette palette,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
@@ -630,7 +629,8 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     UnifiedInputPalette palette,
     UnifiedInputPhoneStyle ps,
   ) {
-    final useDialHighlight = _unifiedEntryMode &&
+    final useDialHighlight =
+        _unifiedEntryMode &&
         _dialCodeInvalid &&
         _invalidDisplay(ps) == UnifiedInvalidDialCodeDisplay.highlightText;
 
@@ -654,7 +654,9 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
             textDirection: TextDirection.ltr,
             inputFormatters: _inputFormatters(),
             style: fieldStyle,
-            placeholder: _localizedPlaceholder(widget.placeholder ?? d.placeholder),
+            placeholder: _localizedPlaceholder(
+              widget.placeholder ?? d.placeholder,
+            ),
             placeholderStyle: _placeholderTextStyle(d, palette),
             padding:
                 d.contentPadding ?? const EdgeInsets.symmetric(horizontal: 8),
@@ -697,7 +699,9 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
         UnifiedFieldBorderBox(
           borderRadius: radius,
           borderSide: _resolvedBorderSide(d, palette, error),
-          borderGradient: (error != null && error.isNotEmpty) ? null : d.borderGradient,
+          borderGradient: (error != null && error.isNotEmpty)
+              ? null
+              : d.borderGradient,
           forceSolid: error != null && error.isNotEmpty,
           clipInner: true,
           child: _phoneEditorBox(d, palette, ps),
@@ -719,7 +723,9 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
     final radius = d.borderRadius ?? palette.borderRadius;
     final divider = d.borderSide ?? palette.defaultBorderSide;
     final headerBg =
-        d.headerBackgroundColor ?? d.backgroundColor ?? palette.headerBackground;
+        d.headerBackgroundColor ??
+        d.backgroundColor ??
+        palette.headerBackground;
     final bodyBg = d.backgroundColor ?? palette.bodyBackground;
     final hasError = error != null && error.isNotEmpty;
 
@@ -898,8 +904,7 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
           hasError: hasError,
           showValid: false,
           readOnly: widget.readOnly && !inactive && !widget.locked,
-          focused:
-              _fc.focusNode.hasFocus && !inactive && !widget.locked,
+          focused: _fc.focusNode.hasFocus && !inactive && !widget.locked,
           hovered:
               _hovered &&
               !_fc.focusNode.hasFocus &&
@@ -916,23 +921,23 @@ class _UnifiedPhoneFieldState extends State<UnifiedPhoneField> {
 
     final Widget field = switch (mode) {
       UnifiedFieldLabelMode.labelInRow => _buildLabelInRowLayout(
-          d,
-          palette,
-          ps,
-          error,
-        ),
+        d,
+        palette,
+        ps,
+        error,
+      ),
       UnifiedFieldLabelMode.labelInColumn => _buildLabelInColumnLayout(
-          d,
-          palette,
-          ps,
-          error,
-        ),
+        d,
+        palette,
+        ps,
+        error,
+      ),
       UnifiedFieldLabelMode.floatingLabel => _buildFloatingLabelLayout(
-          d,
-          palette,
-          ps,
-          error,
-        ),
+        d,
+        palette,
+        ps,
+        error,
+      ),
     };
 
     final Widget interactive = MouseRegion(

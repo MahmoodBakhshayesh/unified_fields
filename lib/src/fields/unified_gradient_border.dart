@@ -134,6 +134,7 @@ class UnifiedFieldBorderBox extends StatelessWidget {
     this.alignment,
     this.forceSolid = false,
     this.clipInner = true,
+    this.strokeOverChild = false,
   });
 
   /// Content inside the bordered box.
@@ -141,6 +142,15 @@ class UnifiedFieldBorderBox extends StatelessWidget {
 
   /// Outer corner radius.
   final BorderRadius borderRadius;
+
+  /// Solid path only: paint the stroke on top of [child] instead of insetting
+  /// it, and inset [child] horizontally only. Text sits where it did, but the
+  /// child spans the full outer height, so hit areas and accessibility rects
+  /// can reach the outer edge (a 44 px field yields 44 px targets, not 44
+  /// minus two strokes). Used when adornment tap targets are on
+  /// ([UnifiedInputAdornmentStyle.minTapTarget]). The gradient path always
+  /// fills the full area.
+  final bool strokeOverChild;
 
   /// Solid stroke when [borderGradient] is null or [forceSolid] is true.
   final BorderSide? borderSide;
@@ -210,6 +220,34 @@ class UnifiedFieldBorderBox extends StatelessWidget {
         width: w,
         backgroundColor: backgroundColor,
         clipInner: clipInner,
+        child: content,
+      );
+    }
+
+    final hasStroke = side != null && side.style != BorderStyle.none;
+    if (strokeOverChild && hasStroke) {
+      final inset = side.width;
+      Widget content = clipInner
+          ? ClipRRect(borderRadius: borderRadius, child: child)
+          : child;
+      content = Padding(
+        padding: EdgeInsets.symmetric(horizontal: inset),
+        child: content,
+      );
+      return Container(
+        height: height,
+        constraints: height == null && minHeight != null
+            ? BoxConstraints(minHeight: minHeight!)
+            : null,
+        alignment: alignment,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: borderRadius,
+        ),
+        foregroundDecoration: BoxDecoration(
+          borderRadius: borderRadius,
+          border: Border.fromBorderSide(side),
+        ),
         child: content,
       );
     }
