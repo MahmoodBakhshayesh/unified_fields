@@ -447,7 +447,8 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   }
 
   void _detachFocusListener(FocusNode? previousExternal) {
-    final node = previousExternal ?? (_ownsFocusNode ? _internalFocusNode : null);
+    final node =
+        previousExternal ?? (_ownsFocusNode ? _internalFocusNode : null);
     node?.removeListener(_onFocusChanged);
     _focusListenerAttached = false;
   }
@@ -480,9 +481,13 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     super.dispose();
   }
 
-  UnifiedInputFieldVisualState _visualState(BuildContext context, bool hasError) {
+  UnifiedInputFieldVisualState _visualState(
+    BuildContext context,
+    bool hasError,
+  ) {
     final set = widget.decorationSet;
-    final showValid = hasError == false &&
+    final showValid =
+        hasError == false &&
         set?.valid != null &&
         isValid(context) &&
         (_validationRequested ||
@@ -531,11 +536,15 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       );
     }
     if (widget.backgroundColor != null) {
-      d = d.merge(UnifiedInputDecoration(backgroundColor: widget.backgroundColor));
+      d = d.merge(
+        UnifiedInputDecoration(backgroundColor: widget.backgroundColor),
+      );
     }
     if (widget.headerBackgroundColor != null) {
       d = d.merge(
-        UnifiedInputDecoration(headerBackgroundColor: widget.headerBackgroundColor),
+        UnifiedInputDecoration(
+          headerBackgroundColor: widget.headerBackgroundColor,
+        ),
       );
     }
     if (widget.borderRadius != null) {
@@ -545,7 +554,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       d = d.merge(UnifiedInputDecoration(borderSide: widget.borderSide));
     }
     if (widget.borderGradient != null) {
-      d = d.merge(UnifiedInputDecoration(borderGradient: widget.borderGradient));
+      d = d.merge(
+        UnifiedInputDecoration(borderGradient: widget.borderGradient),
+      );
     }
     if (widget.height != null) {
       d = d.merge(UnifiedInputDecoration(height: widget.height));
@@ -645,9 +656,13 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec,
     UnifiedFieldLabelMode labelMode,
   ) {
-    final fieldDefaults =
-        UnifiedInputThemeScope.themeDataOf(context).fieldDefaults;
-    final modeStyle = UnifiedInputLabelModeStyle.forMode(fieldDefaults, labelMode);
+    final fieldDefaults = UnifiedInputThemeScope.themeDataOf(
+      context,
+    ).fieldDefaults;
+    final modeStyle = UnifiedInputLabelModeStyle.forMode(
+      fieldDefaults,
+      labelMode,
+    );
     final base =
         dec.labelStyle?.color ??
         widget.labelStyle?.color ??
@@ -681,8 +696,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec,
     UnifiedFieldLabelMode labelMode,
   ) {
-    final fieldDefaults =
-        UnifiedInputThemeScope.themeDataOf(context).fieldDefaults;
+    final fieldDefaults = UnifiedInputThemeScope.themeDataOf(
+      context,
+    ).fieldDefaults;
     final base =
         UnifiedInputLabelModeStyle.resolveLabelStyle(
           mode: labelMode,
@@ -715,7 +731,8 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputDecoration dec,
   ) {
     final base =
-        _resolvedFieldTextStyle(dec) ?? TextStyle(color: palette.fieldTextColor);
+        _resolvedFieldTextStyle(dec) ??
+        TextStyle(color: palette.fieldTextColor);
     final textBase = base.color ?? palette.fieldTextColor;
     TextStyle resolved;
     if (_visuallyDisabled && _useLegacyDisabledChrome()) {
@@ -751,7 +768,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         dec.backgroundColor ?? widget.backgroundColor ?? palette.bodyBackground;
     if (_visuallyDisabled && _useLegacyDisabledChrome()) {
       return bg.withValues(
-        alpha: UnifiedInputThemeResolver.disabledFieldBackgroundOpacity(context),
+        alpha: UnifiedInputThemeResolver.disabledFieldBackgroundOpacity(
+          context,
+        ),
       );
     }
     if (widget.locked && _useLegacyLockedChrome()) {
@@ -918,42 +937,60 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     UnifiedInputPalette palette,
     UnifiedInputDecoration dec,
   ) {
-    if (!unifiedFieldHasVisibleLabel(widget.label)) return const SizedBox.shrink();
+    if (!unifiedFieldHasVisibleLabel(widget.label))
+      return const SizedBox.shrink();
     const mode = UnifiedFieldLabelMode.labelInColumn;
     final defaultLabelStyle = _resolveLabelStyle(palette, dec, mode);
     return Padding(
       padding: _resolveLabelPadding(dec, mode),
-      child: IgnorePointer(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Text(widget.label!, style: defaultLabelStyle),
-                  if (widget.requiredField)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 6, right: 4),
-                      child: UnifiedInputThemeResolver.requiredIcon(
-                        context,
-                        palette,
-                        fallbackColor: palette.labelColor,
+      child: _labelTapToFocus(
+        IgnorePointer(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Text(widget.label!, style: defaultLabelStyle),
+                    if (widget.requiredField)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6, right: 4),
+                        child: UnifiedInputThemeResolver.requiredIcon(
+                          context,
+                          palette,
+                          fallbackColor: palette.labelColor,
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Text(
-              errorText ?? '',
-              style: TextStyle(
-                color: _validationColor(palette, dec),
-                fontSize: 12,
+              Text(
+                errorText ?? '',
+                style: TextStyle(
+                  color: _validationColor(palette, dec),
+                  fontSize: 12,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-          ],
+              const SizedBox(width: 12),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  /// Tapping the label above the box focuses an editable field (pointer and
+  /// touch). The label is a convenience duplicate of the box, so its gesture
+  /// is excluded from semantics: assistive technologies see one text field,
+  /// not an extra ~18 px tap target. Read-only / blocked fields keep the
+  /// label pass-through, so a picker's own tap handler still opens it.
+  Widget _labelTapToFocus(Widget label) {
+    if (widget.readOnly || _blocksInteraction) return label;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      excludeFromSemantics: true,
+      onTap: () => _effectiveFocusNode.requestFocus(),
+      child: label,
     );
   }
 
@@ -967,7 +1004,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     final customSuffix = widget.suffixIcon ?? dec.suffixIcon;
 
     if (_visuallyDisabled) {
-      widgets.add(_stateSuffixIcon(Icons.not_interested_outlined, palette, dec));
+      widgets.add(
+        _stateSuffixIcon(Icons.not_interested_outlined, palette, dec),
+      );
     } else if (widget.locked) {
       widgets.add(_stateSuffixIcon(Icons.lock_outline, palette, dec));
     } else if (widget.loading) {
@@ -1009,7 +1048,11 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
             icon: Icons.clear,
             color: UnifiedInputThemeResolver.clearButtonColor(context, palette)
                 .withValues(
-                  alpha: UnifiedInputThemeScope.themeDataOf(context).suffixIconOpacity ?? 0.7,
+                  alpha:
+                      UnifiedInputThemeScope.themeDataOf(
+                        context,
+                      ).suffixIconOpacity ??
+                      0.7,
                 ),
             glyphSize: UnifiedInputThemeResolver.adornmentIconSize(
               context,
@@ -1057,7 +1100,10 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     );
   }
 
-  Color _validationColor(UnifiedInputPalette palette, UnifiedInputDecoration dec) =>
+  Color _validationColor(
+    UnifiedInputPalette palette,
+    UnifiedInputDecoration dec,
+  ) =>
       dec.validationColor ??
       widget.validationColor ??
       UnifiedInputThemeResolver.validationColor(context, palette);
@@ -1219,9 +1265,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
       constraints: labelInRow ? null : BoxConstraints(minHeight: h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(child: field),
-        ],
+        children: [Expanded(child: field)],
       ),
     );
   }
@@ -1251,10 +1295,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
             width: resolved.width,
           )
         : resolved;
-    return OutlineInputBorder(
-      borderRadius: radius,
-      borderSide: side,
-    );
+    return OutlineInputBorder(borderRadius: radius, borderSide: side);
   }
 
   Widget? _floatingLabelWidget(
@@ -1278,10 +1319,7 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
           ),
       ],
     );
-    return Padding(
-      padding: _resolveLabelPadding(dec, mode),
-      child: label,
-    );
+    return Padding(padding: _resolveLabelPadding(dec, mode), child: label);
   }
 
   Widget _materialFloatingField(
@@ -1293,18 +1331,28 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     double? fixedHeight,
   }) {
     final hasText = _ctrl.text.isNotEmpty;
-    final showErrorOnField = hasError &&
-        UnifiedInputThemeResolver.fieldShowError(context, field: widget.showError) &&
+    final showErrorOnField =
+        hasError &&
+        UnifiedInputThemeResolver.fieldShowError(
+          context,
+          field: widget.showError,
+        ) &&
         dec.showError;
     final fieldStyle = _resolveFieldStyle(palette, dec);
-    final basePadding = dec.contentPadding ??
+    final basePadding =
+        dec.contentPadding ??
         widget.padding ??
         const EdgeInsets.symmetric(horizontal: 16, vertical: 16);
     final singleLine = widget.isPassword || widget.maxLines == 1;
     // A dense decorator never grows its fill past one text line, so center the
     // line in [fixedHeight] with vertical padding (Figma auto-layout style).
     final contentPadding = fixedHeight != null && singleLine
-        ? _centeredPadding(basePadding, fixedHeight, fieldStyle, _placeholderStyle(palette, dec))
+        ? _centeredPadding(
+            basePadding,
+            fixedHeight,
+            fieldStyle,
+            _placeholderStyle(palette, dec),
+          )
         : basePadding;
     final hint = _layerOpacityHint(_placeholderStyle(palette, dec));
     final field = TextField(
@@ -1378,7 +1426,11 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   Widget? _layerOpacityHint(TextStyle style) {
     final text = widget.placeholder;
     final color = style.color;
-    if (text == null || text.isEmpty || color == null || color.a >= 1 || style.foreground != null) {
+    if (text == null ||
+        text.isEmpty ||
+        color == null ||
+        color.a >= 1 ||
+        style.foreground != null) {
       return null;
     }
     return Opacity(
@@ -1411,7 +1463,10 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     final builtInGap = Theme.of(context).useMaterial3 ? 4.0 : 0.0;
     final extra = math.max(0.0, start - builtInGap);
     if (extra == 0) return row;
-    return Padding(padding: EdgeInsetsDirectional.only(end: extra), child: row);
+    return Padding(
+      padding: EdgeInsetsDirectional.only(end: extra),
+      child: row,
+    );
   }
 
   /// [padding] with top / bottom set so one line of [style] (or the taller
@@ -1439,9 +1494,13 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     final vertical = math.max(0.0, (height - line) / 2);
     final resolved = padding.resolve(Directionality.of(context));
     return EdgeInsetsDirectional.fromSTEB(
-      Directionality.of(context) == TextDirection.rtl ? resolved.right : resolved.left,
+      Directionality.of(context) == TextDirection.rtl
+          ? resolved.right
+          : resolved.left,
       vertical,
-      Directionality.of(context) == TextDirection.rtl ? resolved.left : resolved.right,
+      Directionality.of(context) == TextDirection.rtl
+          ? resolved.left
+          : resolved.right,
       vertical,
     );
   }
@@ -1465,9 +1524,13 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
         widget.borderSide ??
         const BorderSide(color: Color(0xff58514C), width: 0.5);
     final headerBg = _effectiveHeaderBackgroundColor(palette, dec);
-    final showErrorMessage = hasError &&
+    final showErrorMessage =
+        hasError &&
         errorText != null &&
-        UnifiedInputThemeResolver.fieldShowError(context, field: widget.showError) &&
+        UnifiedInputThemeResolver.fieldShowError(
+          context,
+          field: widget.showError,
+        ) &&
         dec.showError;
 
     return wrapInteraction(
@@ -1485,7 +1548,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                     color: _validationColor(palette, dec),
                     width: (dec.borderSide ?? widget.borderSide)?.width ?? 1,
                   )
-                : (dec.borderSide ?? widget.borderSide ?? palette.defaultBorderSide),
+                : (dec.borderSide ??
+                      widget.borderSide ??
+                      palette.defaultBorderSide),
             borderGradient: hasError
                 ? null
                 : (dec.borderGradient ?? widget.borderGradient),
@@ -1564,7 +1629,11 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
   /// Touch adornment targets on: the box lets them reach the outer edge
   /// (label-in-column; label-in-row already gives the body the full height).
   bool _adornmentTapTargetsOn(UnifiedInputDecoration dec) =>
-      UnifiedInputThemeResolver.adornmentMinTapTarget(context, decoration: dec) > 0;
+      UnifiedInputThemeResolver.adornmentMinTapTarget(
+        context,
+        decoration: dec,
+      ) >
+      0;
 
   Widget _buildLabelInColumnLayout(
     BuildContext context,
@@ -1593,7 +1662,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
                     color: _validationColor(palette, dec),
                     width: (dec.borderSide ?? widget.borderSide)?.width ?? 1,
                   )
-                : (dec.borderSide ?? widget.borderSide ?? palette.defaultBorderSide),
+                : (dec.borderSide ??
+                      widget.borderSide ??
+                      palette.defaultBorderSide),
             borderGradient: hasError
                 ? null
                 : (dec.borderGradient ?? widget.borderGradient),
@@ -1635,7 +1706,9 @@ class UnifiedBaseTextFieldState extends State<UnifiedBaseTextField> {
     );
     if (configuredGradient == null) {
       // Unchanged pre-1.3.0 floating layout when gradient is unset.
-      return wrapInteraction(h == null ? field : SizedBox(height: h, child: field));
+      return wrapInteraction(
+        h == null ? field : SizedBox(height: h, child: field),
+      );
     }
     if (gradient == null) {
       // Error on a gradient field: same box height (padding centers the text),
