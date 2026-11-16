@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:unified_fields/unified_fields.dart';
 
 /// Recreates the SareNakh Figma fields (sign-in / sign-up / search / OTP) with

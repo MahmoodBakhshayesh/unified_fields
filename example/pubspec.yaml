@@ -4,8 +4,8 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.10.0
-  flutter: ">=3.22.0"
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
 
 dependencies:
   flutter:
@@ -13,6 +13,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   unified_fields:
     path: ../
+  material_ui: ^1.11.1
+  cupertino_ui: ^1.1.7
 
 dev_dependencies:
   flutter_test:

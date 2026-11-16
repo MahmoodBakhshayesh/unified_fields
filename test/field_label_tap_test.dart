@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,7 +37,7 @@ List<SemanticsData> _tapNodes(WidgetTester tester) {
     });
   }
 
-  walk(tester.binding.pipelineOwner.semanticsOwner!.rootSemanticsNode!);
+  walk(tester.binding.renderViews.first.owner!.semanticsOwner!.rootSemanticsNode!);
   return out;
 }
 

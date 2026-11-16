@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Paints a [gradient] **stroke only** around [child] (not a filled background).
 ///

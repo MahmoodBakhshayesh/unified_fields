@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// [BuildContext] helpers for unified field layout (prefixed to avoid clashing with app extensions).
 extension UnifiedFieldsContextX on BuildContext {

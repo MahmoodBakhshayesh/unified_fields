@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unified_fields/src/controllers/field_controller_sync.dart';
 import 'package:unified_fields/src/controllers/unified_field_validation.dart';

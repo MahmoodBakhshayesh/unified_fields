@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../fields/unified_duration_field.dart';
 import '../unified_fields_duration_format_style.dart';

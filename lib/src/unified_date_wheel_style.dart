@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'fields/unified_input_palette.dart';
 import 'fields/unified_input_theme.dart';

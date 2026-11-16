@@ -3,6 +3,7 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - lib/src/scrollable_list/**
+    - build/**
 
 linter:
   rules:

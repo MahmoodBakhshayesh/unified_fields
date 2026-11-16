@@ -1,5 +1,5 @@
 // Smoke test for the unified_fields example app.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:unified_fields_example/main.dart';

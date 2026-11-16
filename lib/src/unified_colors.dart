@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Static design palette used by `unified_fields` for default field chrome
 /// (label color, hint color, borders, sheets) and for several semantic accents

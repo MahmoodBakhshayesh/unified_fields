@@ -1,8 +1,8 @@
-﻿/// Form-aware (FormField) wrappers around the unified picker, date/time,
+/// Form-aware (FormField) wrappers around the unified picker, date/time,
 /// duration, number, and async query fields.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../controllers/field_controller_sync.dart';
 import '../controllers/unified_async_picker_field_controller.dart';

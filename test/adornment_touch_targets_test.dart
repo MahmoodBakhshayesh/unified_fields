@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:unified_fields/unified_fields.dart';
@@ -20,7 +20,7 @@ List<(Rect, SemanticsData)> _tapNodes(WidgetTester tester) {
     });
   }
 
-  final root = tester.binding.pipelineOwner.semanticsOwner!.rootSemanticsNode!;
+  final root = tester.binding.renderViews.first.owner!.semanticsOwner!.rootSemanticsNode!;
   walk(root, Matrix4.diagonal3Values(1 / view.devicePixelRatio, 1 / view.devicePixelRatio, 1));
   return out;
 }
@@ -149,7 +149,7 @@ void main() {
         of: find.widgetWithIcon(IconButton, Icons.visibility),
         matching: find.byType(UnifiedAdornmentTapTarget),
       ));
-      tester.binding.pipelineOwner.semanticsOwner!.performAction(node.id, SemanticsAction.tap);
+      tester.binding.renderViews.first.owner!.semanticsOwner!.performAction(node.id, SemanticsAction.tap);
       await tester.pump();
       expect(find.byIcon(Icons.visibility_off), findsOneWidget);
       h.dispose();
