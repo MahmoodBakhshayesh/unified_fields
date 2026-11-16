@@ -36,7 +36,9 @@ Published on **[pub.dev/packages/unified_fields](https://pub.dev/packages/unifie
 
 ```yaml
 dependencies:
-  unified_fields: ^1.3.0
+  unified_fields: ^2.0.0
+  material_ui: ^1.11.1
+  cupertino_ui: ^1.1.7
 ```
 
 Run **`dart pub get`** (or **`flutter pub get`**).
@@ -47,7 +49,14 @@ Run **`dart pub get`** (or **`flutter pub get`**).
 import 'package:unified_fields/unified_fields.dart';
 ```
 
-**SDK:** Dart `^3.10`, Flutter `>=3.22` (see `pubspec.yaml`).
+**SDK:** Dart `^3.13`, Flutter `>=3.47` (see `pubspec.yaml`).
+
+**2.0 uses `material_ui` / `cupertino_ui`** (Flutter's standalone Material and Cupertino
+libraries) instead of the deprecated `package:flutter/material.dart` /
+`cupertino.dart`. Your app must use them too, otherwise types such as `TimeOfDay`,
+`DateTimeRange` or `InputBorder` do not match and the fields do not see your `Theme`.
+Migrate the app with `dart fix --apply --code=migrate_design_widgets`. Apps that stay on
+legacy Material use `unified_fields: ^1.3.0`. See [Upgrading to 2.0.0](#upgrading-to-200).
 
 ### Git or local path (contributors / forks)
 
@@ -664,6 +673,15 @@ UnifiedInputThemeData(
 )
 ```
 
+**Field adornments (2.0.0).** `pickerSurfaceStyle.minTapTarget` also sets the floor for
+interactive field adornments (password show / hide, clear, `IconButton` suffixes /
+prefixes, phone country picker, numeric − / +): each gets a hit-test and accessibility
+slot of at least 44 × 44 (clamped to the field height; the visual chip keeps its size).
+Override with `UnifiedInputThemeData.adornmentStyle:
+UnifiedInputAdornmentStyle(minTapTarget: …)` (`0` = off). Wrap a custom interactive
+adornment in `UnifiedAdornmentTapTarget(onTap: …, semanticLabel: …, child: …)` to get the
+same slot.
+
 ### List row helpers (0.2.6)
 
 ```dart
@@ -1092,6 +1110,7 @@ A runnable example app lives in **`example/`** — open it with `flutter run` fr
 | **`intl`** | Date/number formatting in date fields and picker |
 | **`shamsi_date`** | Jalali calendar conversion |
 | **`collection`** | Used by the **vendored** scrollable list implementation |
+| **`material_ui`** / **`cupertino_ui`** | Flutter's standalone Material / Cupertino libraries (2.0+) |
 
 Async pickers show loading via the field **suffix spinner** (`loading` on **`UnifiedBaseTextField`**), not a full-field overlay.
 
@@ -1121,7 +1140,24 @@ flowchart TB
 
 ## Version
 
-Current release: **`1.0.1`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+Current release: **`2.0.0`** (see **`pubspec.yaml`** and [pub.dev](https://pub.dev/packages/unified_fields/versions) for the latest). Follow semver when upgrading.
+
+### Upgrading to 2.0.0
+
+From **1.3.x**:
+
+* **Breaking:** the package is built on `material_ui` / `cupertino_ui`. In your app run
+  `flutter pub add material_ui cupertino_ui`, then
+  `dart fix --apply --code=migrate_design_widgets`, then depend on
+  `unified_fields: ^2.0.0`. Dart `^3.13` / Flutter `>=3.47` required. Widget names are
+  unchanged; `TimeOfDay`, `DateTimeRange`, `DatePickerEntryMode`, `TimePickerEntryMode`,
+  `InputBorder`, … are the `material_ui` types. Staying on legacy Material? Stay on
+  `^1.3.0`.
+* **Touch:** themes using `UnifiedPickerSurfaceStyle.touch` now also get 44 px tap targets
+  on field adornments (see [Touch tap targets](#touch-tap-targets-130)); set
+  `UnifiedInputAdornmentStyle(minTapTarget: 0)` to keep the 1.3 slots.
+* Tapping a label-in-column label focuses the field; the label is no longer a separate
+  accessibility tap target.
 
 ### Upgrading to 1.0.1
 

@@ -1,3 +1,61 @@
+## 2.0.0
+
+### Breaking
+
+* **Built on `material_ui` / `cupertino_ui`.** Flutter 3.47 deprecates
+  `package:flutter/material.dart` and `package:flutter/cupertino.dart`; the package
+  now imports `package:material_ui/material_ui.dart` (`^1.11.1`) and
+  `package:cupertino_ui/cupertino_ui.dart` (`^1.1.7`). Widget and API names are
+  unchanged, but the Material / Cupertino types in the public API (`TimeOfDay`,
+  `DateTimeRange`, `DatePickerEntryMode`, `TimePickerEntryMode`, `InputBorder`,
+  `ThemeData`, `IconData` from `Icons`, …) are now the `material_ui` types, and the
+  widgets read `material_ui`'s `Theme` / `MaterialLocalizations`. An app still on the
+  legacy Flutter Material library would pass a different `TimeOfDay` and lose its
+  theme inside the fields.
+* **Minimum SDK:** Dart `^3.13.0`, Flutter `>=3.47.0` (what `material_ui` 1.11 needs).
+
+**How to migrate:** in the app, `flutter pub add material_ui cupertino_ui`, then run
+the same fix the package used:
+
+```sh
+dart fix --apply --code=migrate_design_widgets
+```
+
+and bump to `unified_fields: ^2.0.0`. If you use `flutter_localizations`' delegates,
+switch to the `material_ui` / `cupertino_ui` classes of the same name
+(`localizationsDelegates: GlobalMaterialLocalizations.delegates`). Other dependencies
+still on legacy Material can be bridged with `material_ui`'s
+`MaterialUiCompatibilityBridge`. Apps that stay on legacy
+`package:flutter/material.dart` stay on `unified_fields: ^1.3.0`.
+
+### Features
+
+* **Touch tap targets for field adornments** — new
+  `UnifiedInputAdornmentStyle.minTapTarget` (default `null`). When `null` it falls back
+  to `UnifiedPickerSurfaceStyle.minTapTarget`, so a theme that already uses
+  `UnifiedPickerSurfaceStyle.touch` gets it with no change; `0` turns it off. With a
+  floor, the password show / hide toggle, the clear button, `IconButton` suffixes /
+  prefixes, the phone country picker and the numeric − / + buttons get a hit-test and
+  accessibility slot of at least `minTapTarget` × `minTapTarget` (clamped to the field
+  height; the 32 px chip stays centred; neighbouring adornments do not overlap). The
+  field height and text position do not change. Unset, the layout is exactly 1.3.0's.
+  New public `UnifiedAdornmentTapTarget` widget does the sizing for custom adornments;
+  `UnifiedSuffixIconChrome.build` takes an optional `minTapTarget`;
+  `UnifiedFieldBorderBox.strokeOverChild` (default `false`) paints a solid stroke over
+  the body so targets reach the outer edge (used by label-in-column fields when the
+  floor is on); `UnifiedInputThemeResolver.adornmentMinTapTarget`.
+* **Field label** — tapping the label above the box (label-in-column) focuses an
+  editable field (pointer and touch). The label's gesture is excluded from semantics,
+  so assistive technologies see one text field and no separate small tap target.
+  Read-only / picker / disabled / locked fields keep the label pass-through (a picker
+  label still opens the picker).
+
+### Fixes
+
+* **`UnifiedOtpField`** accepts Persian / Arabic-Indic keypad digits (۰–۹ / ٠–٩):
+  they are converted to ASCII before the digits-only filter, so codes typed on the
+  Persian iOS keypad reach callbacks as `0-9`.
+
 ## 1.3.0
 
 ### Features
@@ -30,8 +88,7 @@
 * **`UnifiedOtpField`** — one-time-code boxes over a single hidden `TextField`
   (paste, SMS autofill, backspace work natively): `length`, box size / gap /
   radius, fill, solid or gradient stroke, focused and error chrome, caret,
-  `obscureText`, `onCompleted`, digits-only by default (Persian / Arabic-Indic
-  keypad digits are converted to ASCII), LTR digit order in RTL.
+  `obscureText`, `onCompleted`, digits-only by default, LTR digit order in RTL.
 
 * **Gradient fields match design tools** — with `borderGradient` and a `height`
   (floating / no-label fields), the fill and tap target span the whole box and
